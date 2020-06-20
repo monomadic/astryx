@@ -24,13 +24,28 @@ fn node(i: &str) -> IResult<&str, Node> {
 
 fn element(i: &str) -> IResult<&str, Element> {
 	let (input, (_, ident, _, attributes, _)) =
-	nom::sequence::tuple(
-		(multispace0, symbolic1, space0, nom::multi::many0(symbolic1), take_while_newline)
-	)(i)?;
+		nom::sequence::tuple(
+			(multispace0, symbolic1, space0, nom::multi::many0(attribute), take_while_newline)
+		)(i)?;
 
 	return Ok((input,
 		Element {
 			ident: ident.into(),
+			attributes: attributes,
+		}
+    ))
+}
+
+fn attribute(i: &str) -> IResult<&str, Attribute> {
+	let (input, (_, ident, _)) =
+		nom::sequence::tuple(
+			(multispace0, symbolic1, space1)
+		)(i)?;
+
+	return Ok((input,
+		Attribute {
+			ident: String::from(ident),
+			// value: attributes,
 		}
     ))
 }

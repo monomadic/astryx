@@ -8,10 +8,11 @@ page path=./ title="hello"
 const EEE: &str = r#"
 "hello"
 "hi"
-page path=./ title="hello"
+page centered path=./ title="hello"
 "#;
 
 fn main() {
     let result = parse::run(EEE).unwrap();
+    println!("{}", EEE);
     println!("{:?}", result);
 }
