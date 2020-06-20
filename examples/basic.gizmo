@@ -1,0 +1,14 @@
+
+page \
+    path="/" \
+    title="monomadic"
+    stylesheet=./basic.css
+
+    row centered
+        column max-width=960px
+            image ./monomadic.svg
+            | monomadic
+
+            map markdown(./posts) as post
+                link href=post.href
+                    | post.title
