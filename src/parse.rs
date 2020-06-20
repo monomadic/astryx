@@ -37,15 +37,36 @@ fn element(i: &str) -> IResult<&str, Element> {
 }
 
 fn attribute(i: &str) -> IResult<&str, Attribute> {
+    alt((
+        attribute_assignment,
+        attribute_symbol,
+    ))(i)
+}
+
+fn attribute_symbol(i: &str) -> IResult<&str, Attribute> {
 	let (input, (_, ident, _)) =
 		nom::sequence::tuple(
-			(multispace0, symbolic1, space0, opt(char('=')))
+			(multispace0, symbolic1, space0)
 		)(i)?;
 
 	return Ok((input,
 		Attribute {
 			ident: String::from(ident),
-			// value: attributes,
+			value: None,
+		}
+    ))
+}
+
+fn attribute_assignment(i: &str) -> IResult<&str, Attribute> {
+	let (input, (_, ident, _, value, _)) =
+		nom::sequence::tuple(
+			(multispace0, symbolic1, char('='), quoted_string, space0)
+		)(i)?;
+
+	return Ok((input,
+		Attribute {
+			ident: String::from(ident),
+			value: Some(String::from(value)),
 		}
     ))
 }

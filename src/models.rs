@@ -15,5 +15,5 @@ pub struct Element {
 #[derive(Debug, Clone)]
 pub struct Attribute {
     pub ident: String,
-    // pub value: Option<VariableType>,
+    pub value: Option<String>,
 }
