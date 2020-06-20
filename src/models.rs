@@ -13,7 +13,13 @@ pub struct Element {
 }
 
 #[derive(Debug, Clone)]
-pub struct Attribute {
-    pub ident: String,
-    pub value: Option<String>,
+pub enum Attribute {
+    Symbol(String),
+    Assignment(Value),
+}
+
+#[derive(Debug, Clone)]
+pub enum Value {
+    RelativePath(String),
+    QuotedString(String),
 }
