@@ -39,7 +39,7 @@ fn element(i: &str) -> IResult<&str, Element> {
 fn attribute(i: &str) -> IResult<&str, Attribute> {
 	let (input, (_, ident, _)) =
 		nom::sequence::tuple(
-			(multispace0, symbolic1, space1)
+			(multispace0, symbolic1, space0, opt(char('=')))
 		)(i)?;
 
 	return Ok((input,
