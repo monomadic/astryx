@@ -2,17 +2,12 @@ mod parse;
 mod models;
 
 const EXAMPLE: &str = r#"
-page path=./ title="hello"
-"#;
-
-const EEE: &str = r#"
-"hello"
-"hi"
-page centered title="hello" path=./index.html
+page path=./index.html title="hello"
+    row centered
 "#;
 
 fn main() {
-    let result = parse::run(EEE).unwrap();
-    println!("{}", EEE);
+    let result = parse::run(EXAMPLE).unwrap();
+    println!("{}", EXAMPLE);
     println!("{:?}", result);
 }

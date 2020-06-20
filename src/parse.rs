@@ -43,20 +43,6 @@ fn attribute(i: &str) -> IResult<&str, Attribute> {
     ))(i)
 }
 
-// fn attribute_symbol(i: &str) -> IResult<&str, Attribute> {
-// 	let (input, (_, ident, _)) =
-// 		nom::sequence::tuple(
-// 			(multispace0, symbolic1, space0)
-// 		)(i)?;
-
-// 	return Ok((input,
-// 		Attribute {
-// 			ident: String::from(ident),
-// 			value: None,
-// 		}
-//     ))
-// }
-
 fn attribute_assignment(i: &str) -> IResult<&str, Attribute> {
 	let (input, (_, ident, _, variable, _)) =
 		nom::sequence::tuple(
