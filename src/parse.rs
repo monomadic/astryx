@@ -17,13 +17,22 @@ pub fn run(i:&str) -> IResult<&str, Vec<Node>> {
 
 fn node(i: &str) -> IResult<&str, Node> {
     alt((
+        map(element, |e| Node::Element(e)),
         map(quoted_string, |s| Node::Text(String::from(s))),
-        map(trim(symbolic1), |s| Node::Text(String::from(s)))
     ))(i)
 }
 
-fn block(i: &str) -> IResult<&str, Node> {
+fn element(i: &str) -> IResult<&str, Element> {
+	let (input, (_, ident, _, attributes, _)) =
+	nom::sequence::tuple(
+		(multispace0, symbolic1, space0, nom::multi::many0(symbolic1), take_while_newline)
+	)(i)?;
 
+	return Ok((input,
+		Element {
+			ident: ident.into(),
+		}
+    ))
 }
 
 fn quoted_string(i: &str) -> IResult<&str, &str> {
@@ -41,7 +50,7 @@ where F: Fn(&'a str) -> IResult<&'a str, O1, (&str, nom::error::ErrorKind)>,
 }
 
 /// valid characters for an ident
-pub fn symbolic1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+fn symbolic1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
   T: InputTakeAtPosition,
   <T as InputTakeAtPosition>::Item: AsChar + Clone,
@@ -52,4 +61,9 @@ where
   },
     ErrorKind::AlphaNumeric
   )
+}
+
+// take until newline occurs (FIXME: include \)
+fn take_while_newline(i: &str) -> IResult<&str, &str> {
+    nom::bytes::complete::take_while(|c| c == '\n')(i)
 }
