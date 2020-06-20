@@ -15,11 +15,14 @@ pub struct Element {
 #[derive(Debug, Clone)]
 pub enum Attribute {
     Symbol(String),
-    Assignment(Value),
+    Assignment {
+        ident: String,
+        variable: Variable,
+    },
 }
 
 #[derive(Debug, Clone)]
-pub enum Value {
+pub enum Variable {
     RelativePath(String),
     QuotedString(String),
 }

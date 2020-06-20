@@ -39,34 +39,34 @@ fn element(i: &str) -> IResult<&str, Element> {
 fn attribute(i: &str) -> IResult<&str, Attribute> {
     alt((
         attribute_assignment,
-        attribute_symbol,
+        map(symbolic1, |s| Attribute::Symbol(String::from(s))),
     ))(i)
 }
 
-fn attribute_symbol(i: &str) -> IResult<&str, Attribute> {
-	let (input, (_, ident, _)) =
-		nom::sequence::tuple(
-			(multispace0, symbolic1, space0)
-		)(i)?;
+// fn attribute_symbol(i: &str) -> IResult<&str, Attribute> {
+// 	let (input, (_, ident, _)) =
+// 		nom::sequence::tuple(
+// 			(multispace0, symbolic1, space0)
+// 		)(i)?;
 
-	return Ok((input,
-		Attribute {
-			ident: String::from(ident),
-			value: None,
-		}
-    ))
-}
+// 	return Ok((input,
+// 		Attribute {
+// 			ident: String::from(ident),
+// 			value: None,
+// 		}
+//     ))
+// }
 
 fn attribute_assignment(i: &str) -> IResult<&str, Attribute> {
-	let (input, (_, ident, _, value, _)) =
+	let (input, (_, ident, _, variable, _)) =
 		nom::sequence::tuple(
-			(multispace0, symbolic1, char('='), quoted_string, space0)
+			(multispace0, symbolic1, char('='), variable, space0)
 		)(i)?;
 
 	return Ok((input,
-		Attribute {
+		Attribute::Assignment {
 			ident: String::from(ident),
-			value: Some(String::from(value)),
+			variable: variable,
 		}
     ))
 }
@@ -77,12 +77,52 @@ fn quoted_string(i: &str) -> IResult<&str, &str> {
     ))(i)
 }
 
+fn relative_path(i: &str) -> IResult<&str, &str> {
+	let (input, (_, _, path, _)) =
+		nom::sequence::tuple(
+			(char('.'), char('/'), path_chars, space0)
+		)(i)?;
+	
+	return Ok((input,
+		path
+	))
+}
+
+fn variable(i: &str) -> IResult<&str, Variable> {
+    alt((
+        // map(hash, JsonValue::Object),
+        // map(array, JsonValue::Array),
+        map(quoted_string,  |s| Variable::QuotedString(String::from(s))),
+        map(relative_path,  |s| Variable::RelativePath(String::from(s))),
+        // map(argument_idx,   |i| Property::ArgumentIndex(i.parse::<usize>().unwrap())),
+        // map(double,         |f| Property::Float(f)),
+        // map(digit1,         |i:&str| Property::Number(i.parse::<i64>().unwrap_or(0))),
+        // map(boolean,        |b| Property::Boolean(b)),
+        // map(dotted_symbol,  |s| Property::DottedSymbol(String::from(s))),
+        // map(symbol,         |s| Property::Symbol(String::from(s))),
+    ))(i)
+}
+
 /// trim whitespace before a string
 fn trim<'a, O1, F>(inner: F) -> impl Fn(&'a str) -> IResult<&'a str, O1, (&str, nom::error::ErrorKind)>
 where F: Fn(&'a str) -> IResult<&'a str, O1, (&str, nom::error::ErrorKind)>,
 {
 
     preceded(opt(one_of(" \t\n\r")), inner)
+}
+
+/// valid characters for a file path
+fn path_chars<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+where
+  T: InputTakeAtPosition,
+  <T as InputTakeAtPosition>::Item: AsChar + Clone,
+{
+  input.split_at_position1_complete(|item| {
+    let c = item.clone().as_char();
+    !(c == '-' || c == '/' || c == '.' || c == '_' || item.is_alphanum())
+  },
+    ErrorKind::AlphaNumeric
+  )
 }
 
 /// valid characters for an ident
