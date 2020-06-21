@@ -1,15 +1,8 @@
 use crate::models::*;
 
 pub fn print_nodes(nodes: Vec<Node>, indent: usize) {
-    // format!("\n{: >i$}.{} {:?}", "", k, v, i=indent+1)
-    // print!("{: >i$}", "", i=indent);
-    // print!("{: >i$}", "", i=indent);
-    // print!("{: >i$}", "", i=indent);
-    // print!("{: >i$}", "", i=indent);
-
-
+    print_indent(indent);
     for node in nodes {
-        // println!("printing with indent: {}", indent);
         match node {
             Node::Text(t) => println!("| {}", t),
             Node::Element(e) => print_element(e, indent),
@@ -25,7 +18,6 @@ pub fn print_indent(indent: usize) {
 }
 
 pub fn print_element(e: Element, indent: usize) {
-    print_indent(indent);
     print!("{}", e.ident);
     for attribute in e.attributes {
         print_attribute(attribute);

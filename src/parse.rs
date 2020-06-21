@@ -17,8 +17,8 @@ pub fn run(i:&str) -> IResult<&str, Vec<Node>> {
 
 fn node(i: &str) -> IResult<&str, Node> {
     alt((
+        map(piped_string, |s| Node::Text(String::from(s))),
         map(element, |e| Node::Element(e)),
-        map(quoted_string, |s| Node::Text(String::from(s))),
     ))(i)
 }
 
@@ -29,6 +29,9 @@ fn element(i: &str) -> IResult<&str, Element> {
 		)(i)?;
 
 	let mut children = Vec::new();
+
+	println!("compare: {} {} {}", line_indent(pre), line_indent(r), ident);
+
 	while line_indent(r) > line_indent(pre) {
 		let (rem, child) = node(r)?;
 		children.push(child);
@@ -71,6 +74,15 @@ fn quoted_string(i: &str) -> IResult<&str, &str> {
     ))(i)
 }
 
+fn piped_string(i: &str) -> IResult<&str, &str> {
+	let (r, (_, _, value, _)) =
+		nom::sequence::tuple(
+			(multispace0, tag("| "), symbolic1, take_while_newline)
+		)(i)?;
+
+	return Ok((r, value))
+}
+
 fn relative_path(i: &str) -> IResult<&str, &str> {
 	let (input, (_, _, path, _)) =
 		nom::sequence::tuple(
@@ -111,7 +123,6 @@ fn line_indent(i: &str) -> usize {
 fn trim<'a, O1, F>(inner: F) -> impl Fn(&'a str) -> IResult<&'a str, O1, (&str, nom::error::ErrorKind)>
 where F: Fn(&'a str) -> IResult<&'a str, O1, (&str, nom::error::ErrorKind)>,
 {
-
     preceded(opt(one_of(" \t\n\r")), inner)
 }
 
