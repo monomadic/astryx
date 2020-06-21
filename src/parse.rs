@@ -30,7 +30,7 @@ fn element(i: &str) -> IResult<&str, Element> {
 
 	let mut children = Vec::new();
 
-	println!("compare: {} {} {}", line_indent(pre), line_indent(r), ident);
+	// println!("compare: {} {} {}", line_indent(pre), line_indent(r), ident);
 
 	while line_indent(r) > line_indent(pre) {
 		let (rem, child) = node(r)?;

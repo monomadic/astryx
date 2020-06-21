@@ -31,7 +31,7 @@ fn main() {
     match parse::run(EXAMPLE) {
         Ok((r, nodes)) => {
             println!("r: {:?}", r);
-            println!("r: {:#?}", nodes);
+            // println!("r: {:#?}", nodes);
             print::print_nodes(nodes, 0);
         },
         Err(e) => {
