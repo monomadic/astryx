@@ -20,10 +20,7 @@ pub fn print_nodes(nodes: Vec<Node>, indent: usize) {
 pub fn print_indent(indent: usize) {
     let iter = std::iter::repeat(indent).take(indent);
     for i in iter {
-        print!("{: >i$}", "", i=indent);
-        print!("{: >i$}", "", i=indent);
-        print!("{: >i$}", "", i=indent);
-        print!("{: >i$}", "", i=indent);
+        print!("  ");
     }
 }
 

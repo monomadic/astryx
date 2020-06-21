@@ -2,21 +2,29 @@ mod parse;
 mod models;
 mod print;
 
-const EE: &str = r#"
+const EXAMPLE: &str = r#"
 page path=./index.html title="hello"
     row centered
 "#;
 
-const EXAMPLE: &str = r#"
-page path=./index.html title="hello"
-    row one
-    row two
+const EE: &str = r#"
+page
+  one
+  two
+  three
+    four
+  five
 
+gumby
+  princess
+  bumbum
 "#;
 
 fn main() {
-    let (r, nodes) = parse::run(EXAMPLE).unwrap();
-    println!("{}\n", EXAMPLE);
-    print::print_nodes(nodes, 0);
-    // println!("{:?}", result);
+    match parse::run(EXAMPLE) {
+        Ok((_, nodes)) => {
+            print::print_nodes(nodes, 0);
+        },
+        Err(e) => println!("error: {:?}", e),
+    }
 }

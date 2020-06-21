@@ -23,72 +23,26 @@ fn node(i: &str) -> IResult<&str, Node> {
 }
 
 fn element(i: &str) -> IResult<&str, Element> {
-	let (r, (pre, ident, _, attributes, _)) =
+	let (mut r, (pre, ident, _, attributes, _)) =
 		nom::sequence::tuple(
 			(multispace0, symbolic1, space0, nom::multi::many0(attribute), take_while_newline)
 		)(i)?;
 
-	// try to parse children
-	let (_, indentation) = indentation_level(pre)?;
-	let (_, next_line_indentation) = indentation_level(r)?;
-
-	println!("{:?} {} {:?}", (indentation, next_line_indentation), ident, attributes);
-	// take lines until a line has less indent than thi?
-
-	if next_line_indentation > indentation {
-		println!("indent found");
-		let (r, children) = nom::multi::many0(node)(r)?;
-		println!("found children: {:?}", children);
-
-		// let (n, child) = node(r)
-		// children.push(node(r)?)
-		// let (r, next_line_indentation) = indentation_level(r)?;
-
-		return Ok((r,
-			Element {
-				ident: ident.into(),
-				attributes: attributes,
-				children: children,
-			}
-		));
+	let mut children = Vec::new();
+	while line_indent(r) > line_indent(pre) {
+		let (rem, child) = node(r)?;
+		children.push(child);
+		r = rem;
 	}
 
 	Ok((r,
 		Element {
 			ident: ident.into(),
 			attributes: attributes,
-			children: Vec::new(),
+			children,
 		}
     ))
 }
-
-// fn element(i: &str) -> IResult<&str, Element> {
-// 	let (r, (pre, ident, _, attributes, _)) =
-// 		nom::sequence::tuple(
-// 			(multispace0, symbolic1, space0, nom::multi::many0(attribute), take_while_newline)
-// 		)(i)?;
-
-// 	// try to parse children
-// 	let (_, indentation) = indentation_level(pre)?;
-// 	let (_, next_line_indentation) = indentation_level(r)?;
-
-// 	println!("indent {:?}", (indentation, next_line_indentation));
-
-// 	// take lines until a line has less indent than thi?
-
-// 	if next_line_indentation > indentation {
-// 		println!("found child");
-
-// 	}
-
-// 	return Ok((r,
-// 		Element {
-// 			ident: ident.into(),
-// 			attributes: attributes,
-// 			children: Vec::new(),
-// 		}
-//     ))
-// }
 
 fn attribute(i: &str) -> IResult<&str, Attribute> {
     alt((
@@ -146,6 +100,11 @@ fn variable(i: &str) -> IResult<&str, Variable> {
 /// returns the position of the first non-whitespace character, or None if the line is entirely whitespace.
 fn indentation_level(i: &str) -> IResult<&str, usize> {
     nom::multi::many0_count(one_of(" \t"))(i)
+}
+
+fn line_indent(i: &str) -> usize {
+	let (_, indent) = indentation_level(i).unwrap_or(("",0));
+	indent
 }
 
 /// trim whitespace before a string
