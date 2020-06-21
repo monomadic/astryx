@@ -10,6 +10,7 @@ pub enum Node {
 pub struct Element {
     pub ident: String,
     pub attributes: Vec<Attribute>,
+    pub children: Vec<Node>,
 }
 
 #[derive(Debug, Clone)]

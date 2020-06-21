@@ -1,3 +1,4 @@
+https://jamescroft.website/
 
 css:
     .main-header { color: red; }
@@ -7,7 +8,7 @@ page \
     title="monomadic"
 
     row centered
-        column max-width=960px class="main-header"
+        column max-width="960px" class="main-header"
             image ./monomadic.svg
             | monomadic
 
