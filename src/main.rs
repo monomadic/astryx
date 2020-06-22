@@ -12,6 +12,15 @@ page
         column max-width="960px" class="main-header"
             image path=./monomadic.svg
             | monomadic
+
+            for post in ./posts
+              link href=post.href
+                  | post.title
+                
+              page post.path
+                  h1
+                      | ${ post.title }
+                      | ${ post.body }
 "#;
 
 const EE: &str = r#"
@@ -30,7 +39,7 @@ gumby
 fn main() {
     match parse::run(EXAMPLE) {
         Ok((r, nodes)) => {
-            println!("r: {:?}", r);
+            println!("r: {:?}\n\n", r);
             // println!("r: {:#?}", nodes);
             print::print_nodes(nodes, 0);
         },

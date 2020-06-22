@@ -17,9 +17,41 @@ pub fn run(i:&str) -> IResult<&str, Vec<Node>> {
 
 fn node(i: &str) -> IResult<&str, Node> {
     alt((
+        map(for_loop, |f| Node::ForLoop(f)),
         map(piped_string, |s| Node::Text(String::from(s))),
         map(element, |e| Node::Element(e)),
     ))(i)
+}
+
+fn for_loop(i: &str) -> IResult<&str, ForLoop> {
+  let (mut r, (pre, _, _, ident, _, _, _, variable, _)) =
+    nom::sequence::tuple(
+      (
+        multispace0,
+        tag("for"),
+        space1,
+        symbolic1,
+        space1,
+        tag("in"),
+        space1,
+        variable,
+        take_while_newline)
+    )(i)?;
+
+  let mut children = Vec::new();
+
+  while line_indent(r) > line_indent(pre) {
+    let (rem, child) = node(r)?;
+    children.push(child);
+    r = rem;
+  }
+
+  Ok((r,
+    ForLoop {
+      reference: ident.into(),
+      iterable: variable,
+    }
+  ))
 }
 
 fn element(i: &str) -> IResult<&str, Element> {
@@ -44,7 +76,7 @@ fn element(i: &str) -> IResult<&str, Element> {
 			attributes: attributes,
 			children,
 		}
-    ))
+  ))
 }
 
 fn attribute(i: &str) -> IResult<&str, Attribute> {
@@ -65,7 +97,7 @@ fn attribute_assignment(i: &str) -> IResult<&str, Attribute> {
 			ident: String::from(ident),
 			variable: variable,
 		}
-    ))
+  ))
 }
 
 fn quoted_string(i: &str) -> IResult<&str, &str> {

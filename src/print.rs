@@ -6,6 +6,7 @@ pub fn print_nodes(nodes: Vec<Node>, indent: usize) {
         match node {
             Node::Text(t) => println!("| {}", t),
             Node::Element(e) => print_element(e, indent),
+            Node::ForLoop(f) => println!("for {} in {}", f.reference, variable_to_string(f.iterable)),
         }
     }
 }

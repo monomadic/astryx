@@ -2,8 +2,15 @@
 
 #[derive(Debug, Clone)]
 pub enum Node {
+    ForLoop(ForLoop),
     Element(Element),
     Text(String),
+}
+
+#[derive(Debug, Clone)]
+pub struct ForLoop {
+    pub reference: String,
+    pub iterable: Variable, // todo: Function<Variable>
 }
 
 #[derive(Debug, Clone)]
