@@ -11,6 +11,7 @@ pub enum Node {
 pub struct ForLoop {
     pub reference: String,
     pub iterable: Variable, // todo: Function<Variable>
+    pub children: Vec<Node>,
 }
 
 #[derive(Debug, Clone)]
@@ -33,4 +34,5 @@ pub enum Attribute {
 pub enum Variable {
     RelativePath(String),
     QuotedString(String),
+    Reference(String),
 }

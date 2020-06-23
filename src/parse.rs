@@ -3,9 +3,9 @@ use crate::models::*;
 use nom::*;
 use nom::branch::alt;
 use nom::combinator::{ map, opt, value };
-use nom::character::complete::{ space0, space1, multispace0, alphanumeric1, one_of, char, digit1 };
+use nom::character::complete::{ newline, space0, space1, multispace0, alphanumeric1, one_of, char, digit1 };
 use nom::number::complete::{ double };
-use nom::bytes::complete::{ tag, is_not };
+use nom::bytes::complete::{ tag, is_not, take_until };
 use nom::sequence::preceded;
 use nom::sequence::delimited;
 use nom::error::*;
@@ -16,30 +16,37 @@ pub fn run(i:&str) -> IResult<&str, Vec<Node>> {
 }
 
 fn node(i: &str) -> IResult<&str, Node> {
-    alt((
-        map(for_loop, |f| Node::ForLoop(f)),
-        map(piped_string, |s| Node::Text(String::from(s))),
-        map(element, |e| Node::Element(e)),
-    ))(i)
+  // knock out blank lines
+  let (r, m) = nom::multi::many0(
+    nom::sequence::tuple((space0, newline)))(i)?;
+  println!("MMM: {:?}", (r));
+
+  alt((
+      map(for_loop, |f| Node::ForLoop(f)),
+      map(piped_string, |s| Node::Text(String::from(s))),
+      map(element, |e| Node::Element(e)),
+  ))(r)
 }
 
 fn for_loop(i: &str) -> IResult<&str, ForLoop> {
   let (mut r, (pre, _, _, ident, _, _, _, variable, _)) =
-    nom::sequence::tuple(
-      (
-        multispace0,
-        tag("for"),
-        space1,
-        symbolic1,
-        space1,
-        tag("in"),
-        space1,
-        variable,
-        take_while_newline)
-    )(i)?;
+    trim(nom::sequence::tuple((
+      multispace0,
+      tag("for"),
+      space1,
+      symbolic1,
+      space1,
+      tag("in"),
+      space1,
+      variable,
+      tag("\n")
+    )))(i)?;
+  
+  println!(">> {:?}", r);
 
   let mut children = Vec::new();
 
+  println!("compare: {} {} {:?}", line_indent(pre), line_indent(r), (pre, ident, &variable));
   while line_indent(r) > line_indent(pre) {
     let (rem, child) = node(r)?;
     children.push(child);
@@ -50,6 +57,7 @@ fn for_loop(i: &str) -> IResult<&str, ForLoop> {
     ForLoop {
       reference: ident.into(),
       iterable: variable,
+      children,
     }
   ))
 }
@@ -57,7 +65,7 @@ fn for_loop(i: &str) -> IResult<&str, ForLoop> {
 fn element(i: &str) -> IResult<&str, Element> {
 	let (mut r, (pre, ident, _, attributes, _)) =
 		nom::sequence::tuple(
-			(multispace0, symbolic1, space0, nom::multi::many0(attribute), take_while_newline)
+			(multispace0, symbolic1, space0, nom::multi::many0(attribute), char('\n'))
 		)(i)?;
 
 	let mut children = Vec::new();
@@ -109,17 +117,18 @@ fn quoted_string(i: &str) -> IResult<&str, &str> {
 fn piped_string(i: &str) -> IResult<&str, &str> {
 	let (r, (_, _, value, _)) =
 		nom::sequence::tuple(
-			(multispace0, tag("| "), symbolic1, take_while_newline)
+			(multispace0, tag("| "), is_not("\n"), newline)
 		)(i)?;
 
 	return Ok((r, value))
 }
 
 fn relative_path(i: &str) -> IResult<&str, &str> {
-	let (input, (_, _, path, _)) =
-		nom::sequence::tuple(
-			(char('.'), char('/'), path_chars, space0)
-		)(i)?;
+	let (input, (_, path)) =
+		nom::sequence::tuple((
+      tag("./"),
+      path_chars
+    ))(i)?;
 	
 	return Ok((input,
 		path
@@ -132,6 +141,7 @@ fn variable(i: &str) -> IResult<&str, Variable> {
         // map(array, JsonValue::Array),
         map(quoted_string,  |s| Variable::QuotedString(String::from(s))),
         map(relative_path,  |s| Variable::RelativePath(String::from(s))),
+        map(symbolic1,      |s| Variable::Reference(String::from(s))),
         // map(argument_idx,   |i| Property::ArgumentIndex(i.parse::<usize>().unwrap())),
         // map(double,         |f| Property::Float(f)),
         // map(digit1,         |i:&str| Property::Number(i.parse::<i64>().unwrap_or(0))),
@@ -143,7 +153,8 @@ fn variable(i: &str) -> IResult<&str, Variable> {
 
 /// returns the position of the first non-whitespace character, or None if the line is entirely whitespace.
 fn indentation_level(i: &str) -> IResult<&str, usize> {
-    nom::multi::many0_count(one_of(" \t"))(i)
+  // let (r, line) = take_until("\n")(i)?;
+  nom::multi::many0_count(one_of(" \t"))(i)
 }
 
 fn line_indent(i: &str) -> usize {
@@ -180,7 +191,7 @@ where
 {
   input.split_at_position1_complete(|item| {
     let c = item.clone().as_char();
-    !(c == '-' || c == '_' || item.is_alphanum())
+    !(c == '-' || c == '_' || c == '.' || item.is_alphanum())
   },
     ErrorKind::AlphaNumeric
   )
@@ -188,5 +199,50 @@ where
 
 // take until newline occurs (FIXME: include \)
 fn take_while_newline(i: &str) -> IResult<&str, &str> {
-    nom::bytes::complete::take_while(|c| c == '\n')(i)
+  nom::bytes::complete::take_while(|c| c == '\n')(i)
+}
+
+// fn take_until_newline(i: &str) -> IResult<&str, &str> {
+//   nom::bytes::complete::take_until(|c| c == '\n')(i)
+// }
+
+// take while blank lines
+// fn take_blank_lines(i: &str) -> &str {
+//   let (content, whitespace) = nom::multi::many0(
+//     nom::sequence::tuple((space0, newline)))(i).unwrap_or((i, ""));
+
+//   Ok(content)
+// }
+
+// tests
+
+#[test]
+fn check_element() {
+  let (r, res) = element("\npage path=./index.html title=\"monomadic\"\n").unwrap();
+  assert_eq!(res.ident, String::from("page"));
+  // assert_eq!(res.iterable, Variable::RelativePath(String::from("local")));
+  assert_eq!(res.attributes.len(), 2);
+  assert_eq!(res.children.len(), 0);
+  assert_eq!(r, "");
+}
+
+#[test]
+fn check_for_loop() {
+    let (r, res) = for_loop("for x in ./local\n").unwrap();
+    assert_eq!(res.reference, String::from("x"));
+    // assert_eq!(res.iterable, Variable::RelativePath(String::from("local")));
+    assert_eq!(res.children.len(), 0);
+    assert_eq!(r, "");
+
+    let (r, res) = for_loop("for x in ./local.txt\n\tnode\n\tanother\n").unwrap();
+    assert_eq!(res.reference, String::from("x"));
+    // assert_eq!(res.iterable, Variable::RelativePath(String::from("local")));
+    assert_eq!(res.children.len(), 2);
+    assert_eq!(r, "");
+
+    let (r, res) = for_loop("for post in ./posts\n\tlink href=post\n").unwrap();
+    assert_eq!(res.reference, String::from("post"));
+    // assert_eq!(res.iterable, Variable::RelativePath(String::from("local")));
+    assert_eq!(res.children.len(), 1);
+    assert_eq!(r, "");
 }

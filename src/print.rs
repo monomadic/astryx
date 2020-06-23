@@ -4,9 +4,9 @@ pub fn print_nodes(nodes: Vec<Node>, indent: usize) {
     for node in nodes {
         print_indent(indent);
         match node {
+            Node::ForLoop(f) => print_for_loop(f, indent),
             Node::Text(t) => println!("| {}", t),
             Node::Element(e) => print_element(e, indent),
-            Node::ForLoop(f) => println!("for {} in {}", f.reference, variable_to_string(f.iterable)),
         }
     }
 }
@@ -27,6 +27,11 @@ pub fn print_element(e: Element, indent: usize) {
     print_nodes(e.children, indent+1);
 }
 
+pub fn print_for_loop(f: ForLoop, indent: usize) {
+    println!("for {} in {}", f.reference, variable_to_string(f.iterable));
+    print_nodes(f.children, indent+1);
+}
+
 pub fn print_attribute(a: Attribute) {
     match a {
         Attribute::Symbol(s) => print!(" {}", s),
@@ -39,5 +44,6 @@ pub fn variable_to_string(v: Variable) -> String {
     match v {
         Variable::QuotedString(s) => format!("\"{}\"", s),
         Variable::RelativePath(s) => format!("./{}", s),
+        Variable::Reference(s) => s,
     }
 }
