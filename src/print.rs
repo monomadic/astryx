@@ -7,6 +7,7 @@ pub fn print_nodes(nodes: Vec<Node>, indent: usize) {
             Node::ForLoop(f) => print_for_loop(f, indent),
             Node::Text(t) => println!("| {}", t),
             Node::Element(e) => print_element(e, indent),
+            Node::CodeBlock(cb) => println!("{}:\n{}", cb.ident, cb.content),
         }
     }
 }

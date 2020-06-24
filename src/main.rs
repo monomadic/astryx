@@ -3,18 +3,18 @@ mod models;
 mod print;
 
 const EXAMPLE: &str = r#"
+css:
+    example { blah; }
+
 page path=./index.html title="monomadic"
 
     row centered
-    another centered
         column max-width="960px" class="main-header"
             image path=./monomadic.svg
             | monomadic
-
             for post in ./posts
                 link href=post
                     | post.title
-
                 page post.path
                     h1
                         | ${ post.title }

@@ -12,24 +12,57 @@ use nom::error::*;
 
 /// returns a nom combinator version of the parser
 pub fn run(i: &str) -> IResult<&str, Vec<Node>> {
-    nom::multi::many0(node)(i)
+  nom::multi::many0(node)(i)
 }
 
-fn blank_lines(i: &str) -> IResult<&str, Vec<(&str, char)>> {
-  nom::multi::many0(
-    nom::sequence::tuple((space0, newline)))(i)
-}
+// // preparse lines terminated in \ to not break
+// fn strip_terminators(i: &str) -> String {
+//   i.replace("\\n", "")
+// }
 
 fn node(i: &str) -> IResult<&str, Node> {
-  // knock out blank lines
-  let (r, m) = nom::multi::many0(
-    nom::sequence::tuple((space0, newline)))(i)?;
+  // knock out blank lines at start of doc
+  let (r, m) = blank_lines(i)?;
 
   alt((
-      map(for_loop, |f| Node::ForLoop(f)),
+      map(for_loop,     |f| Node::ForLoop(f)),
       map(piped_string, |s| Node::Text(String::from(s))),
-      map(element, |e| Node::Element(e)),
+      map(element,      |e| Node::Element(e)),
+      map(codeblock,    |cb| Node::CodeBlock(cb)),
   ))(r)
+}
+
+fn codeblock(i: &str) -> IResult<&str, CodeBlock> {
+  let (mut r, (pre, ident, _, _)) =
+    trim(nom::sequence::tuple((
+      multispace0,
+      symbolic1,
+      char(':'),
+      newline,
+    )))(i)?;
+
+    let mut children = Vec::new();
+
+    while line_indent(r) > line_indent(pre) {
+      // let (rem, ()) = nom::sequence::tuple((
+      //   symbolic1,
+      //   newline,
+      // ))(r)?;
+
+      let (rem, line) = take_until("\n")(r)?;
+
+      println!("LINE: {:?}", line);
+
+      children.push(line);
+      r = rem;
+    }
+
+    Ok((r,
+      CodeBlock {
+        ident: ident.into(),
+        content: children.join("\n"),
+      }
+    ))
 }
 
 fn for_loop(i: &str) -> IResult<&str, ForLoop> {
@@ -71,7 +104,7 @@ fn element(i: &str) -> IResult<&str, Element> {
 		nom::sequence::tuple((
       multispace0,
       symbolic1,
-      space0,
+      space1_with_early_terminators,
       nom::multi::many0(attribute),
       blank_lines
     ))(i)?;
@@ -105,7 +138,11 @@ fn attribute(i: &str) -> IResult<&str, Attribute> {
 fn attribute_assignment(i: &str) -> IResult<&str, Attribute> {
 	let (input, (_, ident, _, variable, _)) =
 		nom::sequence::tuple(
-			(multispace0, symbolic1, char('='), variable, space0)
+			(
+        space0_with_early_terminators,
+        symbolic1, char('='),
+        variable,
+        space0_with_early_terminators)
 		)(i)?;
 
 	return Ok((input,
@@ -177,7 +214,7 @@ where F: Fn(&'a str) -> IResult<&'a str, O1, (&str, nom::error::ErrorKind)>,
     preceded(opt(one_of(" \t\n\r")), inner)
 }
 
-/// valid characters for a file path
+/// match valid characters for file paths
 fn path_chars<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
   T: InputTakeAtPosition,
@@ -189,6 +226,29 @@ where
   },
     ErrorKind::AlphaNumeric
   )
+}
+
+/// match blank lines including early terminators (\)
+fn space0_with_early_terminators(i: &str) -> IResult<&str, Vec<(&str)>> {
+  nom::multi::many0(
+    alt((
+      map(one_of(" \t"), |_| " "),
+      map(tag("\\\n"), |_| " "),
+    )))(i)
+}
+
+/// match blank lines including early terminators (\)
+fn space1_with_early_terminators(i: &str) -> IResult<&str, Vec<(&str)>> {
+  nom::multi::many1(
+    alt((
+      map(one_of(" \t"), |_| " "),
+      map(tag("\\\n"), |_| " "),
+    )))(i)
+}
+
+fn blank_lines(i: &str) -> IResult<&str, Vec<(&str, char)>> {
+  nom::multi::many0(
+  nom::sequence::tuple((space0, newline)))(i)
 }
 
 /// valid characters for an ident

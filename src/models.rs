@@ -1,10 +1,15 @@
-
-
 #[derive(Debug, Clone)]
 pub enum Node {
     ForLoop(ForLoop),
     Element(Element),
     Text(String),
+    CodeBlock(CodeBlock),
+}
+
+#[derive(Debug, Clone)]
+pub struct CodeBlock {
+    pub ident: String,
+    pub content: String,
 }
 
 #[derive(Debug, Clone)]
