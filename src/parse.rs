@@ -11,15 +11,19 @@ use nom::sequence::delimited;
 use nom::error::*;
 
 /// returns a nom combinator version of the parser
-pub fn run(i:&str) -> IResult<&str, Vec<Node>> {
+pub fn run(i: &str) -> IResult<&str, Vec<Node>> {
     nom::multi::many0(node)(i)
+}
+
+fn blank_lines(i: &str) -> IResult<&str, Vec<(&str, char)>> {
+  nom::multi::many0(
+    nom::sequence::tuple((space0, newline)))(i)
 }
 
 fn node(i: &str) -> IResult<&str, Node> {
   // knock out blank lines
   let (r, m) = nom::multi::many0(
     nom::sequence::tuple((space0, newline)))(i)?;
-  println!("MMM: {:?}", (r));
 
   alt((
       map(for_loop, |f| Node::ForLoop(f)),
@@ -39,7 +43,7 @@ fn for_loop(i: &str) -> IResult<&str, ForLoop> {
       tag("in"),
       space1,
       variable,
-      tag("\n")
+      blank_lines
     )))(i)?;
   
   println!(">> {:?}", r);
@@ -64,13 +68,17 @@ fn for_loop(i: &str) -> IResult<&str, ForLoop> {
 
 fn element(i: &str) -> IResult<&str, Element> {
 	let (mut r, (pre, ident, _, attributes, _)) =
-		nom::sequence::tuple(
-			(multispace0, symbolic1, space0, nom::multi::many0(attribute), char('\n'))
-		)(i)?;
+		nom::sequence::tuple((
+      multispace0,
+      symbolic1,
+      space0,
+      nom::multi::many0(attribute),
+      blank_lines
+    ))(i)?;
 
 	let mut children = Vec::new();
 
-	// println!("compare: {} {} {}", line_indent(pre), line_indent(r), ident);
+	println!("compare: {} {} {}", line_indent(pre), line_indent(r), ident);
 
 	while line_indent(r) > line_indent(pre) {
 		let (rem, child) = node(r)?;
@@ -116,9 +124,9 @@ fn quoted_string(i: &str) -> IResult<&str, &str> {
 
 fn piped_string(i: &str) -> IResult<&str, &str> {
 	let (r, (_, _, value, _)) =
-		nom::sequence::tuple(
-			(multispace0, tag("| "), is_not("\n"), newline)
-		)(i)?;
+		nom::sequence::tuple((
+      multispace0, tag("| "), is_not("\n"), blank_lines
+    ))(i)?;
 
 	return Ok((r, value))
 }
@@ -201,18 +209,6 @@ where
 fn take_while_newline(i: &str) -> IResult<&str, &str> {
   nom::bytes::complete::take_while(|c| c == '\n')(i)
 }
-
-// fn take_until_newline(i: &str) -> IResult<&str, &str> {
-//   nom::bytes::complete::take_until(|c| c == '\n')(i)
-// }
-
-// take while blank lines
-// fn take_blank_lines(i: &str) -> &str {
-//   let (content, whitespace) = nom::multi::many0(
-//     nom::sequence::tuple((space0, newline)))(i).unwrap_or((i, ""));
-
-//   Ok(content)
-// }
 
 // tests
 
