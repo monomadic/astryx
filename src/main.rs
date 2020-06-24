@@ -6,7 +6,9 @@ const EXAMPLE: &str = r#"
 css:
     example { blah; }
 
-page path=./index.html title="monomadic"
+page \
+    path=./index.html \
+    title="monomadic"
 
     row centered
         column max-width="960px" class="main-header"
@@ -25,7 +27,7 @@ fn main() {
     match parse::run(EXAMPLE) {
         Ok((r, nodes)) => {
             println!("r: {:?}\n\n", r);
-            // println!("r: {:#?}", nodes);
+            println!("r: {:#?}", nodes);
             print::print_nodes(nodes, 0);
         },
         Err(e) => {

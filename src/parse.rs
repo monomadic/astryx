@@ -27,8 +27,8 @@ fn node(i: &str) -> IResult<&str, Node> {
   alt((
       map(for_loop,     |f| Node::ForLoop(f)),
       map(piped_string, |s| Node::Text(String::from(s))),
-      map(element,      |e| Node::Element(e)),
       map(codeblock,    |cb| Node::CodeBlock(cb)),
+      map(element,      |e| Node::Element(e)),
   ))(r)
 }
 
@@ -66,25 +66,26 @@ fn codeblock(i: &str) -> IResult<&str, CodeBlock> {
 }
 
 fn for_loop(i: &str) -> IResult<&str, ForLoop> {
-  let (mut r, (pre, _, _, ident, _, _, _, variable, _)) =
+  let (mut r, (pre, _, _, ident, _, _, _, relative_path, _)) =
     trim(nom::sequence::tuple((
       multispace0,
       tag("for"),
       space1,
-      symbolic1,
-      space1,
+      alphanumeric1,
+      space0,
       tag("in"),
       space1,
-      variable,
+      relative_path,
       blank_lines
     )))(i)?;
   
-  println!(">> {:?}", r);
+  println!(">> {:?}", (pre, ident, relative_path));
 
   let mut children = Vec::new();
 
-  println!("compare: {} {} {:?}", line_indent(pre), line_indent(r), (pre, ident, &variable));
+  // println!("compare: {} {} {:?}", line_indent(pre), line_indent(r), (pre, ident, &variable));
   while line_indent(r) > line_indent(pre) {
+    println!(">>> {:?}", r);
     let (rem, child) = node(r)?;
     children.push(child);
     r = rem;
@@ -93,7 +94,7 @@ fn for_loop(i: &str) -> IResult<&str, ForLoop> {
   Ok((r,
     ForLoop {
       reference: ident.into(),
-      iterable: variable,
+      iterable: Variable::RelativePath(relative_path.into()),
       children,
     }
   ))
@@ -104,14 +105,14 @@ fn element(i: &str) -> IResult<&str, Element> {
 		nom::sequence::tuple((
       multispace0,
       symbolic1,
-      space1_with_early_terminators,
+      space0_with_early_terminators,
       nom::multi::many0(attribute),
       blank_lines
     ))(i)?;
 
 	let mut children = Vec::new();
 
-	println!("compare: {} {} {}", line_indent(pre), line_indent(r), ident);
+	// println!("compare: {} {} {}", line_indent(pre), line_indent(r), ident);
 
 	while line_indent(r) > line_indent(pre) {
 		let (rem, child) = node(r)?;
@@ -248,7 +249,32 @@ fn space1_with_early_terminators(i: &str) -> IResult<&str, Vec<(&str)>> {
 
 fn blank_lines(i: &str) -> IResult<&str, Vec<(&str, char)>> {
   nom::multi::many0(
-  nom::sequence::tuple((space0, newline)))(i)
+    nom::sequence::tuple(
+      (space0, newline)
+    ))(i)
+}
+
+#[test]
+fn check_blank_lines() {
+  let (r, i) = blank_lines("").unwrap();
+  assert_eq!(r, "");
+  assert_eq!(i, vec![]);
+
+  let (r, i) = blank_lines("  a\n").unwrap();
+  assert_eq!(r, "  a\n");
+  assert_eq!(i, vec![]);
+
+  let (r, i) = blank_lines("\n").unwrap();
+  assert_eq!(r, "");
+  assert_eq!(i, vec![("", '\n')]);
+
+  let (r, i) = blank_lines("\n a").unwrap();
+  assert_eq!(r, " a");
+  assert_eq!(i, vec![("", '\n')]);
+
+  let (r, i) = blank_lines("\n   link").unwrap();
+  assert_eq!(r, "   link");
+  assert_eq!(i, vec![("", '\n')]);
 }
 
 /// valid characters for an ident
@@ -290,7 +316,7 @@ fn check_for_loop() {
     assert_eq!(res.children.len(), 0);
     assert_eq!(r, "");
 
-    let (r, res) = for_loop("for x in ./local.txt\n\tnode\n\tanother\n").unwrap();
+    let (r, res) = for_loop("for post in ./posts\n\tnode\n\tanother\n").unwrap();
     assert_eq!(res.reference, String::from("x"));
     // assert_eq!(res.iterable, Variable::RelativePath(String::from("local")));
     assert_eq!(res.children.len(), 2);
