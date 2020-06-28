@@ -1,11 +1,13 @@
-mod parse;
+use interpreter::State;
+
+mod error;
+mod functions;
+mod interpreter;
 mod models;
+mod parse;
 mod print;
 
-const EXAMPLE: &str = r#"
-css:
-    example { blah; }
-
+const TARGET_EXAMPLE: &str = r#"
 page \
     path=./index.html \
     title="monomadic"
@@ -23,12 +25,16 @@ page \
                         | ${ post.body }
 "#;
 
+// const EXAMPLE: &str = r#"
+// page path=./index.html
+// "#;
+
 fn main() {
-    match parse::run(EXAMPLE) {
-        Ok((r, nodes)) => {
-            println!("r: {:?}\n\n", r);
-            println!("r: {:#?}", nodes);
-            print::print_nodes(nodes, 0);
+    match parse::run(TARGET_EXAMPLE) {
+        Ok((_, nodes)) => {
+            // interpret syntax
+            let r = interpreter::run(&nodes, &mut State::new()).unwrap();
+            // print::print_nodes(r, 0);
         },
         Err(e) => {
             println!("error: {:?}", e);

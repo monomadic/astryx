@@ -1,18 +1,19 @@
 use crate::models::*;
 
-use nom::*;
 use nom::branch::alt;
-use nom::combinator::{ map, opt, value };
-use nom::character::complete::{ newline, space0, space1, multispace0, alphanumeric1, one_of, char, digit1 };
-use nom::number::complete::{ double };
-use nom::bytes::complete::{ tag, is_not, take_until };
-use nom::sequence::preceded;
-use nom::sequence::delimited;
+use nom::bytes::complete::{is_not, tag, take_until};
 use nom::error::*;
+use nom::sequence::delimited;
+use nom::sequence::preceded;
+use nom::*;
+use nom::{
+    character::complete::{alphanumeric1, char, multispace0, newline, one_of, space0, space1},
+    combinator::{map, opt},
+};
 
 /// returns a nom combinator version of the parser
 pub fn run(i: &str) -> IResult<&str, Vec<Node>> {
-  nom::multi::many0(node)(i)
+    nom::multi::many0(node)(i)
 }
 
 // // preparse lines terminated in \ to not break
@@ -21,112 +22,99 @@ pub fn run(i: &str) -> IResult<&str, Vec<Node>> {
 // }
 
 fn node(i: &str) -> IResult<&str, Node> {
-  // knock out blank lines at start of doc
-  let (r, m) = blank_lines(i)?;
+    // knock out blank lines at start of doc
+    let (r, _) = blank_lines(i)?;
 
-  alt((
-      map(for_loop,     |f| Node::ForLoop(f)),
-      map(piped_string, |s| Node::Text(String::from(s))),
-      map(codeblock,    |cb| Node::CodeBlock(cb)),
-      map(element,      |e| Node::Element(e)),
-  ))(r)
+    alt((
+        map(for_loop, |f| Node::ForLoop(f)),
+        map(piped_string, |s| Node::Text(String::from(s))),
+        map(codeblock, |cb| Node::CodeBlock(cb)),
+        map(element, |e| Node::Element(e)),
+    ))(r)
 }
 
 fn codeblock(i: &str) -> IResult<&str, CodeBlock> {
-  let (mut r, (pre, ident, _, _)) =
-    trim(nom::sequence::tuple((
-      multispace0,
-      symbolic1,
-      char(':'),
-      newline,
+    let (mut r, (pre, ident, _, _)) = trim(nom::sequence::tuple((
+        multispace0,
+        symbolic1,
+        char(':'),
+        newline,
     )))(i)?;
 
     let mut children = Vec::new();
 
     while line_indent(r) > line_indent(pre) {
-      // let (rem, ()) = nom::sequence::tuple((
-      //   symbolic1,
-      //   newline,
-      // ))(r)?;
-
-      let (rem, line) = take_until("\n")(r)?;
-
-      println!("LINE: {:?}", line);
-
-      children.push(line);
-      r = rem;
+        let (rem, line) = take_until("\n")(r)?;
+        println!("LINE: {:?}", line);
+        children.push(line);
+        r = rem;
     }
 
-    Ok((r,
-      CodeBlock {
-        ident: ident.into(),
-        content: children.join("\n"),
-      }
+    Ok((
+        r,
+        CodeBlock {
+            ident: ident.into(),
+            content: children.join("\n"),
+        },
     ))
 }
 
 fn for_loop(i: &str) -> IResult<&str, ForLoop> {
-  let (mut r, (pre, _, _, ident, _, _, _, relative_path, _)) =
-    trim(nom::sequence::tuple((
-      multispace0,
-      tag("for"),
-      space1,
-      alphanumeric1,
-      space0,
-      tag("in"),
-      space1,
-      relative_path,
-      blank_lines
+    let (mut r, (pre, _, _, ident, _, _, _, relative_path, _)) = trim(nom::sequence::tuple((
+        multispace0,
+        tag("for"),
+        space1,
+        alphanumeric1,
+        space0,
+        tag("in"),
+        space1,
+        relative_path,
+        blank_lines,
     )))(i)?;
-  
-  println!(">> {:?}", (pre, ident, relative_path));
 
-  let mut children = Vec::new();
+    let mut children = Vec::new();
 
-  // println!("compare: {} {} {:?}", line_indent(pre), line_indent(r), (pre, ident, &variable));
-  while line_indent(r) > line_indent(pre) {
-    println!(">>> {:?}", r);
-    let (rem, child) = node(r)?;
-    children.push(child);
-    r = rem;
-  }
-
-  Ok((r,
-    ForLoop {
-      reference: ident.into(),
-      iterable: Variable::RelativePath(relative_path.into()),
-      children,
+    while line_indent(r) > line_indent(pre) {
+        let (rem, child) = node(r)?;
+        children.push(child);
+        r = rem;
     }
-  ))
+
+    Ok((
+        r,
+        ForLoop {
+            reference: ident.into(),
+            iterable: Variable::RelativePath(relative_path.into()),
+            children,
+        },
+    ))
 }
 
 fn element(i: &str) -> IResult<&str, Element> {
-	let (mut r, (pre, ident, _, attributes, _)) =
-		nom::sequence::tuple((
-      multispace0,
-      symbolic1,
-      space0_with_early_terminators,
-      nom::multi::many0(attribute),
-      blank_lines
+    let (mut r, (pre, ident, _, attributes, _)) = nom::sequence::tuple((
+        multispace0,
+        symbolic1,
+        space0_with_early_terminators,
+        nom::multi::many0(attribute),
+        blank_lines,
     ))(i)?;
 
-	let mut children = Vec::new();
+    let mut children = Vec::new();
 
-	// println!("compare: {} {} {}", line_indent(pre), line_indent(r), ident);
+    while line_indent(r) > line_indent(pre) {
+        let (rem, child) = node(r)?;
+        children.push(child);
+        r = rem;
+    }
 
-	while line_indent(r) > line_indent(pre) {
-		let (rem, child) = node(r)?;
-		children.push(child);
-		r = rem;
-	}
-
-	Ok((r,
-		Element {
-			ident: ident.into(),
-			attributes: attributes,
-			children,
-		}
-  ))
+    Ok((
+        r,
+        Element {
+            ident: ident.into(),
+            attributes: attributes,
+            children,
+        },
+    ))
 }
 
 fn attribute(i: &str) -> IResult<&str, Attribute> {
@@ -137,57 +125,47 @@ fn attribute(i: &str) -> IResult<&str, Attribute> {
 }
 
 fn attribute_assignment(i: &str) -> IResult<&str, Attribute> {
-	let (input, (_, ident, _, variable, _)) =
-		nom::sequence::tuple(
-			(
+    let (input, (_, ident, _, variable, _)) = nom::sequence::tuple((
         space0_with_early_terminators,
-        symbolic1, char('='),
+        symbolic1,
+        char('='),
         variable,
-        space0_with_early_terminators)
-		)(i)?;
+        space0_with_early_terminators,
+    ))(i)?;
 
-	return Ok((input,
-		Attribute::Assignment {
-			ident: String::from(ident),
-			variable: variable,
-		}
-  ))
+    return Ok((
+        input,
+        Attribute::Assignment {
+            ident: String::from(ident),
+            variable: variable,
+        },
+    ));
 }
 
 fn quoted_string(i: &str) -> IResult<&str, &str> {
-    trim(delimited(
-        char('\"'), is_not("\""), char('\"')
-    ))(i)
+    trim(delimited(char('\"'), is_not("\""), char('\"')))(i)
 }
 
 fn piped_string(i: &str) -> IResult<&str, &str> {
-	let (r, (_, _, value, _)) =
-		nom::sequence::tuple((
-      multispace0, tag("| "), is_not("\n"), blank_lines
-    ))(i)?;
+    let (r, (_, _, value, _)) =
+        nom::sequence::tuple((multispace0, tag("| "), is_not("\n"), blank_lines))(i)?;
 
-	return Ok((r, value))
+    return Ok((r, value));
 }
 
 fn relative_path(i: &str) -> IResult<&str, &str> {
-	let (input, (_, path)) =
-		nom::sequence::tuple((
-      tag("./"),
-      path_chars
-    ))(i)?;
-	
-	return Ok((input,
-		path
-	))
+    let (input, (_, path)) = nom::sequence::tuple((tag("./"), path_chars))(i)?;
+
+    return Ok((input, path));
 }
 
 fn variable(i: &str) -> IResult<&str, Variable> {
     alt((
         // map(hash, JsonValue::Object),
         // map(array, JsonValue::Array),
-        map(quoted_string,  |s| Variable::QuotedString(String::from(s))),
-        map(relative_path,  |s| Variable::RelativePath(String::from(s))),
-        map(symbolic1,      |s| Variable::Reference(String::from(s))),
+        map(quoted_string, |s| Variable::QuotedString(String::from(s))),
+        map(relative_path, |s| Variable::RelativePath(String::from(s))),
+        map(symbolic1, |s| Variable::Reference(String::from(s))),
         // map(argument_idx,   |i| Property::ArgumentIndex(i.parse::<usize>().unwrap())),
         // map(double,         |f| Property::Float(f)),
         // map(digit1,         |i:&str| Property::Number(i.parse::<i64>().unwrap_or(0))),
@@ -197,20 +175,23 @@ fn variable(i: &str) -> IResult<&str, Variable> {
     ))(i)
 }
 
-/// returns the position of the first non-whitespace character, or None if the line is entirely whitespace.
+/// returns the position of the first non-whitespace character,
+/// or None if the line is entirely whitespace.
 fn indentation_level(i: &str) -> IResult<&str, usize> {
-  // let (r, line) = take_until("\n")(i)?;
   nom::multi::many0_count(one_of(" \t"))(i)
 }
 
 fn line_indent(i: &str) -> usize {
-	let (_, indent) = indentation_level(i).unwrap_or(("",0));
-	indent
+    let (_, indent) = indentation_level(i).unwrap_or(("", 0));
+    indent
 }
 
 /// trim whitespace before a string
-fn trim<'a, O1, F>(inner: F) -> impl Fn(&'a str) -> IResult<&'a str, O1, (&str, nom::error::ErrorKind)>
-where F: Fn(&'a str) -> IResult<&'a str, O1, (&str, nom::error::ErrorKind)>,
+fn trim<'a, O1, F>(
+    inner: F,
+) -> impl Fn(&'a str) -> IResult<&'a str, O1, (&str, nom::error::ErrorKind)>
+where
+    F: Fn(&'a str) -> IResult<&'a str, O1, (&str, nom::error::ErrorKind)>,
 {
     preceded(opt(one_of(" \t\n\r")), inner)
 }
@@ -218,98 +199,90 @@ where F: Fn(&'a str) -> IResult<&'a str, O1, (&str, nom::error::ErrorKind)>,
 /// match valid characters for file paths
 fn path_chars<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
-  T: InputTakeAtPosition,
-  <T as InputTakeAtPosition>::Item: AsChar + Clone,
+    T: InputTakeAtPosition,
+    <T as InputTakeAtPosition>::Item: AsChar + Clone,
 {
-  input.split_at_position1_complete(|item| {
-    let c = item.clone().as_char();
-    !(c == '-' || c == '/' || c == '.' || c == '_' || item.is_alphanum())
-  },
-    ErrorKind::AlphaNumeric
-  )
+    input.split_at_position1_complete(
+        |item| {
+            let c = item.clone().as_char();
+            !(c == '-' || c == '/' || c == '.' || c == '_' || item.is_alphanum())
+        },
+        ErrorKind::AlphaNumeric,
+    )
 }
 
 /// match blank lines including early terminators (\)
-fn space0_with_early_terminators(i: &str) -> IResult<&str, Vec<(&str)>> {
-  nom::multi::many0(
-    alt((
-      map(one_of(" \t"), |_| " "),
-      map(tag("\\\n"), |_| " "),
+fn space0_with_early_terminators(i: &str) -> IResult<&str, Vec<&str>> {
+    nom::multi::many0(alt((
+        map(one_of(" \t"), |_| " "),
+        map(tag("\\\n"), |_| " "),
     )))(i)
 }
 
 /// match blank lines including early terminators (\)
-fn space1_with_early_terminators(i: &str) -> IResult<&str, Vec<(&str)>> {
-  nom::multi::many1(
-    alt((
-      map(one_of(" \t"), |_| " "),
-      map(tag("\\\n"), |_| " "),
-    )))(i)
-}
+// fn space1_with_early_terminators(i: &str) -> IResult<&str, Vec<&str>> {
+//     nom::multi::many1(alt((
+//         map(one_of(" \t"), |_| " "),
+//         map(tag("\\\n"), |_| " "),
+//     )))(i)
+// }
 
 fn blank_lines(i: &str) -> IResult<&str, Vec<(&str, char)>> {
-  nom::multi::many0(
-    nom::sequence::tuple(
-      (space0, newline)
-    ))(i)
+    nom::multi::many0(nom::sequence::tuple((space0, newline)))(i)
 }
 
 #[test]
 fn check_blank_lines() {
-  let (r, i) = blank_lines("").unwrap();
-  assert_eq!(r, "");
-  assert_eq!(i, vec![]);
+    let (r, i) = blank_lines("").unwrap();
+    assert_eq!(r, "");
+    assert_eq!(i, vec![]);
 
-  let (r, i) = blank_lines("  a\n").unwrap();
-  assert_eq!(r, "  a\n");
-  assert_eq!(i, vec![]);
+    let (r, i) = blank_lines("  a\n").unwrap();
+    assert_eq!(r, "  a\n");
+    assert_eq!(i, vec![]);
 
-  let (r, i) = blank_lines("\n").unwrap();
-  assert_eq!(r, "");
-  assert_eq!(i, vec![("", '\n')]);
+    let (r, i) = blank_lines("\n").unwrap();
+    assert_eq!(r, "");
+    assert_eq!(i, vec![("", '\n')]);
 
-  let (r, i) = blank_lines("\n a").unwrap();
-  assert_eq!(r, " a");
-  assert_eq!(i, vec![("", '\n')]);
+    let (r, i) = blank_lines("\n a").unwrap();
+    assert_eq!(r, " a");
+    assert_eq!(i, vec![("", '\n')]);
 
-  let (r, i) = blank_lines("\n   link").unwrap();
-  assert_eq!(r, "   link");
-  assert_eq!(i, vec![("", '\n')]);
+    let (r, i) = blank_lines("\n   link").unwrap();
+    assert_eq!(r, "   link");
+    assert_eq!(i, vec![("", '\n')]);
 }
 
 /// valid characters for an ident
 fn symbolic1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
-  T: InputTakeAtPosition,
-  <T as InputTakeAtPosition>::Item: AsChar + Clone,
+    T: InputTakeAtPosition,
+    <T as InputTakeAtPosition>::Item: AsChar + Clone,
 {
-  input.split_at_position1_complete(|item| {
-    let c = item.clone().as_char();
-    !(c == '-' || c == '_' || c == '.' || item.is_alphanum())
-  },
-    ErrorKind::AlphaNumeric
-  )
-}
-
-// take until newline occurs (FIXME: include \)
-fn take_while_newline(i: &str) -> IResult<&str, &str> {
-  nom::bytes::complete::take_while(|c| c == '\n')(i)
+    input.split_at_position1_complete(
+        |item| {
+            let c = item.clone().as_char();
+            !(c == '-' || c == '_' || c == '.' || item.is_alphanum())
+        },
+        ErrorKind::AlphaNumeric,
+    )
 }
 
 // tests
 
 #[test]
 fn check_element() {
-  let (r, res) = element("\npage path=./index.html title=\"monomadic\"\n").unwrap();
-  assert_eq!(res.ident, String::from("page"));
-  // assert_eq!(res.iterable, Variable::RelativePath(String::from("local")));
-  assert_eq!(res.attributes.len(), 2);
-  assert_eq!(res.children.len(), 0);
-  assert_eq!(r, "");
+    let (r, res) = element("\npage path=./index.html title=\"monomadic\"\n").unwrap();
+    assert_eq!(res.ident, String::from("page"));
+    // assert_eq!(res.iterable, Variable::RelativePath(String::from("local")));
+    assert_eq!(res.attributes.len(), 2);
+    assert_eq!(res.children.len(), 0);
+    assert_eq!(r, "");
 }
 
 #[test]
-fn check_for_loop() {
+pub(crate) fn check_for_loop() {
     let (r, res) = for_loop("for x in ./local\n").unwrap();
     assert_eq!(res.reference, String::from("x"));
     // assert_eq!(res.iterable, Variable::RelativePath(String::from("local")));

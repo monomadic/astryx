@@ -1,3 +1,5 @@
+#![allow(unused_code)]
+
 use crate::models::*;
 
 pub fn print_nodes(nodes: Vec<Node>, indent: usize) {
@@ -25,19 +27,20 @@ pub fn print_element(e: Element, indent: usize) {
         print_attribute(attribute);
     }
     print!("\n");
-    print_nodes(e.children, indent+1);
+    print_nodes(e.children, indent + 1);
 }
 
 pub fn print_for_loop(f: ForLoop, indent: usize) {
     println!("for {} in {}", f.reference, variable_to_string(f.iterable));
-    print_nodes(f.children, indent+1);
+    print_nodes(f.children, indent + 1);
 }
 
 pub fn print_attribute(a: Attribute) {
     match a {
         Attribute::Symbol(s) => print!(" {}", s),
-        Attribute::Assignment {ident, variable} =>
-            print!(" {}={}", ident, variable_to_string(variable)),
+        Attribute::Assignment { ident, variable } => {
+            print!(" {}={}", ident, variable_to_string(variable))
+        }
     }
 }
 
