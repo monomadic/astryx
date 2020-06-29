@@ -1,7 +1,6 @@
 use interpreter::State;
 
 mod error;
-mod functions;
 mod interpreter;
 mod models;
 mod parse;
@@ -25,16 +24,12 @@ page \
                         | ${ post.body }
 "#;
 
-// const EXAMPLE: &str = r#"
-// page path=./index.html
-// "#;
-
 fn main() {
     match parse::run(TARGET_EXAMPLE) {
         Ok((_, nodes)) => {
-            // interpret syntax
-            let r = interpreter::run(&nodes, &mut State::new()).unwrap();
-            // print::print_nodes(r, 0);
+            let state = &mut State::new();
+            let _ = interpreter::run(&nodes, state).unwrap();
+            println!("{:?}", state.page_buffers);
         },
         Err(e) => {
             println!("error: {:?}", e);

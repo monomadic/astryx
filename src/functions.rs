@@ -5,7 +5,7 @@ pub struct Function {
     pub description: String,
     // pub extends: String, // ident of another function (this should be included in the instantiation)
     pub attributes: Vec<FunctionAttribute>,
-    pub execute: fn() -> ParseResult<()>,
+    // pub execute: fn() -> ParseResult<()>,
 }
 
 #[derive(Debug)]

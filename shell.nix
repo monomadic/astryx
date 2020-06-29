@@ -6,5 +6,6 @@ pkgs.mkShell {
     pkgconfig
     rustc
     rustfmt
+    python36
   ];
 }

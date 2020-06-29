@@ -1,5 +1,5 @@
 use crate::error::*;
-use crate::functions::*;
+// use crate::functions::*;
 use crate::models::*;
 
 #[derive(Debug, Clone)]
@@ -23,9 +23,9 @@ pub struct Site {
 
 #[derive(Debug, Clone)]
 pub struct State {
-    // functions: Vec<Function>,
+    pub page_buffers: HashMap<String, String>,
     variables_in_scope: Vec<Variable>,
-    page_buffers: HashMap<String, String>,
+    current_page_buffer: Option<String>,
 }
 
 impl State {
@@ -33,60 +33,111 @@ impl State {
         State {
             variables_in_scope: Vec::new(),
             page_buffers: HashMap::new(),
+            current_page_buffer: None, // TODO should be current_page, it's not the buffer.
         }
+    }
+
+    pub fn get_current_page_buffer(&mut self) -> ParseResult<&mut String> {
+        if let Some(current_page) = self.current_page_buffer.clone() {
+            if let Some(current_page_buffer) = self.page_buffers.get_mut(&current_page) {
+                return Ok(current_page_buffer);
+            }
+        }
+        // TODO return error
+        panic!("oop");
+    }
+
+    // TODO extract this out into a multibuffer design pattern
+    pub fn create_buffer(&mut self, key: String) -> ParseResult<()> {
+        self.page_buffers.insert(key.clone(), String::new()); // FIXME check for collisions!
+        self.current_page_buffer = Some(key);
+        Ok(())
+    }
+
+    pub fn write_to_current_buffer(&mut self, string: &str) -> ParseResult<()> {
+        Ok(self.get_current_page_buffer()?.push_str(string))
     }
 }
 
+/// run the interpreter over a series of nodes
 pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
-    // let mut functions = load_stdlib();
-    // let mut site: Site = Site {
-    //     pages: HashMap::new(),
-    // };
-
     for node in nodes {
         match node {
             Node::Element(e) => {
-                println!("{}", e.ident);
+                // println!("{}", e.ident);
                 match e.ident.as_str() {
                     "page" => {
-                        // let mut buffer: Vec<u8> = Vec::new();
-                        //let mut buffer = state.page_buffers.get_mut(&e.ident).unwrap();
-                        write_page_buffer(String::from("index.html"), state, &e.children)?;
-                    },
-                    _ => (),
+                        let path = get_required_path("path", &e.attributes)?;
+                        write_page_buffer(path, state, &e.children)?;
+                    }
+                    "row" | "column" => {
+                        state.write_to_current_buffer(&format!("<div class=\"{}\">", e.ident))?;
+                        run(&e.children, state)?;
+                        state.write_to_current_buffer("</div>")?;
+                    }
+                    "image" | "img" => {
+                        state.write_to_current_buffer(&format!("<img />"))?;
+                    }
+                    _ => {
+                        // panic!("");
+                    }
                 }
-            },
-            _ => println!("ERROR: unsupported function: {:?}", node),
+            }
+            Node::Text(t) => {
+                state.write_to_current_buffer(&t)?;
+            }
+            // _ => panic!("ERROR: unsupported function: {:?}", node),
+            _ => (),
         }
     }
-
-    println!("--{:?}", state);
-
-    // extract_pages
 
     Ok(())
 }
 
-// use std::{path::PathBuf, io::Write, collections::HashMap};
-// pub fn write_page_buffer<W: Write>(nodes: &Vec<Node>, writer: &mut W) -> ParseResult<()> {
-//     Ok(())
-// }
+pub fn get_required_variable(i: &str, attributes: &Vec<Attribute>) -> ParseResult<Variable> {
+    for attribute in attributes {
+        if let Attribute::Assignment { ident, variable } = attribute {
+            if ident.eq(i) {
+                return Ok(variable.clone());
+            }
+        }
+    }
+    panic!("attribute missing");
+}
 
-// use std::{path::PathBuf, io::Write, collections::HashMap};
-// fn write_page_buffer<W: Write>(buffer: &mut W, state: &mut State, nodes: &Vec<Node>) -> ParseResult<()> {
-//     buffer.write(&format!("</{}>", "self.ident").as_bytes())?;
-//     Ok(())
-// }
+pub fn get_required_path(i: &str, attributes: &Vec<Attribute>) -> ParseResult<String> {
+    match get_required_variable(i, attributes)? {
+        Variable::RelativePath(s) => {
+            return Ok(s.clone());
+        }
+        _ => {
+            // TODO return Err 'wrong type'.
+            panic!(format!("wrong type: {:?}", i));
+        }
+    }
+}
 
-use std::{path::PathBuf, collections::HashMap};
+/// returns a specific string from an attributes array or throws an error.
+pub fn get_required_string(i: &str, attributes: &Vec<Attribute>) -> ParseResult<String> {
+    match get_required_variable(i, attributes)? {
+        Variable::QuotedString(s) => {
+            return Ok(s.clone());
+        }
+        _ => {
+            // TODO return Err 'wrong type'.
+            panic!(format!("wrong type: {:?}", i));
+        }
+    }
+}
+
+use std::{collections::HashMap, path::PathBuf};
 fn write_page_buffer(page: String, state: &mut State, nodes: &Vec<Node>) -> ParseResult<()> {
+    state.create_buffer(page)?;
+    state.write_to_current_buffer("<html>")?;
+    run(nodes, state)?;
+    state.write_to_current_buffer("</html>")
+}
 
-    // buffer.write(&format!("</{}>", "self.ident").as_bytes())?;
-
-    // state.page_buffers.get_mut(page).unwrap();
-    println!("writing to {}", page);
-    // state.page_buffers.get(page).unwrap();
-    state.page_buffers.insert(page, String::from("<html>"));
-
-    Ok(())
+fn write_html_tag(ident: String, state: &mut State, nodes: &Vec<Node>) -> ParseResult<()> {
+    Err(CassetteError::ParseError("hi".into()))
 }
