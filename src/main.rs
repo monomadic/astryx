@@ -30,9 +30,9 @@ fn main() {
             let state = &mut State::new();
             let _ = interpreter::run(&nodes, state).unwrap();
             println!("{:?}", state.page_buffers);
-        },
+        }
         Err(e) => {
             println!("error: {:?}", e);
-        },
+        }
     }
 }

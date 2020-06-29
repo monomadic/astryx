@@ -1,5 +1,6 @@
+use std::collections::HashMap;
+
 use crate::error::*;
-// use crate::functions::*;
 use crate::models::*;
 
 #[derive(Debug, Clone)]
@@ -7,12 +8,6 @@ pub struct Site {
     // pub styles: HashMap<String, Style>,
     pub pages: HashMap<String, String>,
 }
-
-// #[derive(Debug, Clone)]
-// pub struct HTMLFile {
-//     path: PathBuf,
-//     content: String,
-// }
 
 // #[derive(Debug, Clone)]
 // pub enum Style {
@@ -134,7 +129,6 @@ pub fn get_required_string(i: &str, attributes: &Vec<Attribute>) -> ParseResult<
     }
 }
 
-use std::{collections::HashMap, path::PathBuf};
 fn write_page_buffer(page: String, state: &mut State, nodes: &Vec<Node>) -> ParseResult<()> {
     state.create_buffer(page)?;
     state.write_to_current_buffer("<html>")?;

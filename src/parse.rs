@@ -178,7 +178,7 @@ fn variable(i: &str) -> IResult<&str, Variable> {
 /// returns the position of the first non-whitespace character,
 /// or None if the line is entirely whitespace.
 fn indentation_level(i: &str) -> IResult<&str, usize> {
-  nom::multi::many0_count(one_of(" \t"))(i)
+    nom::multi::many0_count(one_of(" \t"))(i)
 }
 
 fn line_indent(i: &str) -> usize {
