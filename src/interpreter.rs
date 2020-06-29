@@ -68,7 +68,11 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
                 match e.ident.as_str() {
                     "page" => {
                         let path = get_required_path("path", &e.attributes)?;
-                        write_page_buffer(path, state, &e.children)?;
+
+                        state.create_buffer(path)?;
+                        state.write_to_current_buffer("<html>")?;
+                        run(&e.children, state)?;
+                        state.write_to_current_buffer("</html>")?;
                     }
                     "row" | "column" => {
                         state.write_to_current_buffer(&format!("<div class=\"{}\">", e.ident))?;
