@@ -19,14 +19,14 @@ pub struct Site {
 #[derive(Debug, Clone)]
 pub struct State {
     pub page_buffers: HashMap<String, String>,
-    variables_in_scope: Vec<Variable>,
+    variables_in_scope: HashMap<String, Variable>,
     current_page_buffer: Option<String>,
 }
 
 impl State {
     pub fn new() -> Self {
         State {
-            variables_in_scope: Vec::new(),
+            variables_in_scope: HashMap::new(),
             page_buffers: HashMap::new(),
             current_page_buffer: None, // TODO should be current_page, it's not the buffer.
         }
