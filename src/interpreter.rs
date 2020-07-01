@@ -60,9 +60,11 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
         match node {
             Node::Element(e) => {
                 // println!("{}", e.ident);
+                let arguments = collect_named_attributes(&e.attributes)?;
+
                 match e.ident.as_str() {
                     "page" => {
-                        let path = get_required_path("path", &e.attributes)?;
+                        let path = get_required_path("path", &arguments)?;
 
                         state.create_buffer(path)?;
                         state.write_to_current_buffer("<html>")?;
@@ -93,31 +95,44 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
     Ok(())
 }
 
-pub fn get_required_variable(i: &str, attributes: &Vec<Attribute>) -> ParseResult<Variable> {
+pub fn collect_named_attributes(
+    attributes: &Vec<Attribute>,
+) -> ParseResult<HashMap<&String, &Variable>> {
+    let mut named_attributes: HashMap<&String, &Variable> = HashMap::new();
+
     for attribute in attributes {
-        if let Attribute::Assignment { ident, variable } = attribute {
-            if ident.eq(i) {
-                return Ok(variable.clone());
+        match attribute {
+            Attribute::Assignment { ident, variable } => {
+                let _ = named_attributes
+                .insert(ident, variable);
+
+                    // .ok_or(CassetteError::ParseError(format!(
+                    //     "duplicate assignment: {}",
+                    //     ident
+                    // )))?;
             }
+            _ => (),
         }
     }
-    panic!("attribute missing");
+    Ok(named_attributes)
 }
 
-pub fn get_required_path(i: &str, attributes: &Vec<Attribute>) -> ParseResult<String> {
-    match get_required_variable(i, attributes)? {
-        Variable::RelativePath(s) => {
-            return Ok(s.clone());
-        }
-        _ => {
-            // TODO return Err 'wrong type'.
-            panic!(format!("wrong type: {:?}", i));
-        }
+pub fn get_required_variable(i: &str, attributes: &HashMap<&String, &Variable>) -> ParseResult<Variable> {
+    attributes
+        .get(&String::from(i.clone()))
+        .map(|v|v.clone().clone())
+        .ok_or(CassetteError::ParseError("".into()))
+}
+
+pub fn get_required_path(i: &str, attributes: &HashMap<&String, &Variable>) -> ParseResult<String> {
+    if let Variable::RelativePath(p) = get_required_variable(i, attributes)? {
+        return Ok(p);
     }
+    panic!(format!("wrong type: {:?}", i));
 }
 
 /// returns a specific string from an attributes array or throws an error.
-pub fn get_required_string(i: &str, attributes: &Vec<Attribute>) -> ParseResult<String> {
+pub fn get_required_string(i: &str, attributes: &HashMap<&String, &Variable>) -> ParseResult<String> {
     match get_required_variable(i, attributes)? {
         Variable::QuotedString(s) => {
             return Ok(s.clone());
