@@ -54,6 +54,10 @@ impl State {
     }
 }
 
+pub fn html_tag(ident: &str, attributes: Vec<(&str, String)>) -> String {
+    format!("<{}>", ident)
+}
+
 /// run the interpreter over a series of nodes
 pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
     for node in nodes {
@@ -67,7 +71,7 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
                         let path = get_required_path("path", &arguments)?;
 
                         state.create_buffer(path)?;
-                        state.write_to_current_buffer("<html>")?;
+                        state.write_to_current_buffer(&html_tag("html", vec![]))?;
                         run(&e.children, state)?;
                         state.write_to_current_buffer("</html>")?;
                     }
@@ -76,8 +80,10 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
                         run(&e.children, state)?;
                         state.write_to_current_buffer("</div>")?;
                     }
-                    "image" | "img" => {
-                        state.write_to_current_buffer(&format!("<img />"))?;
+                    "image" | "img" | "i" => {
+                        let path = get_required_path("path", &arguments)?;
+
+                        state.write_to_current_buffer(&html_tag("img", vec![("src", path)]))?;
                     }
                     _ => {
                         // panic!("");
@@ -86,6 +92,9 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
             }
             Node::Text(t) => {
                 state.write_to_current_buffer(&t)?;
+            },
+            Node::ForLoop(f) => {
+                run(&f.children, state)?;
             }
             // _ => panic!("ERROR: unsupported function: {:?}", node),
             _ => (),
@@ -121,14 +130,16 @@ pub fn get_required_variable(i: &str, attributes: &HashMap<&String, &Variable>) 
     attributes
         .get(&String::from(i.clone()))
         .map(|v|v.clone().clone())
-        .ok_or(CassetteError::ParseError("".into()))
+        .ok_or(CassetteError::ParseError(format!("could not find variable: {}", i)))
 }
 
 pub fn get_required_path(i: &str, attributes: &HashMap<&String, &Variable>) -> ParseResult<String> {
-    if let Variable::RelativePath(p) = get_required_variable(i, attributes)? {
-        return Ok(p);
+    // TODO: better path parsing, return PathBuf
+    match get_required_variable(i, attributes)? {
+        Variable::RelativePath(p) => Ok(p),
+        Variable::Reference(p) => Ok(p),
+        Variable::QuotedString(p) => Ok(p)
     }
-    panic!(format!("wrong type: {:?}", i));
 }
 
 /// returns a specific string from an attributes array or throws an error.
@@ -144,13 +155,13 @@ pub fn get_required_string(i: &str, attributes: &HashMap<&String, &Variable>) ->
     }
 }
 
-fn write_page_buffer(page: String, state: &mut State, nodes: &Vec<Node>) -> ParseResult<()> {
-    state.create_buffer(page)?;
-    state.write_to_current_buffer("<html>")?;
-    run(nodes, state)?;
-    state.write_to_current_buffer("</html>")
-}
+// fn write_page_buffer(page: String, state: &mut State, nodes: &Vec<Node>) -> ParseResult<()> {
+//     state.create_buffer(page)?;
+//     state.write_to_current_buffer("<html>")?;
+//     run(nodes, state)?;
+//     state.write_to_current_buffer("</html>")
+// }
 
-fn write_html_tag(ident: String, state: &mut State, nodes: &Vec<Node>) -> ParseResult<()> {
-    Err(CassetteError::ParseError("hi".into()))
-}
+// fn write_html_tag(ident: String, state: &mut State, nodes: &Vec<Node>) -> ParseResult<()> {
+//     Err(CassetteError::ParseError("hi".into()))
+// }
