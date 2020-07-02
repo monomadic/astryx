@@ -21,10 +21,9 @@ page \
                     | post.title
 
                 page path=post.path
-                    | a page
                     h1
                         | ${ post.title }
-                        | ${ post.body }
+                    | ${ post.body }
 "#;
 
 fn main() {

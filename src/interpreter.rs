@@ -54,7 +54,7 @@ impl State {
     }
 }
 
-pub fn html_tag(ident: &str, attributes: Vec<(&str, String)>) -> String {
+pub fn html_tag(ident: &str, _attributes: Vec<(&str, String)>) -> String {
     format!("<{}>", ident)
 }
 
@@ -73,10 +73,14 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
                         let path = get_required_path("path", &arguments)?;
 
                         state.create_buffer(path)?;
-                        state.write_to_current_buffer(&html_tag("html", vec![]))?;
+                        state.write_to_current_buffer("<html><head>")?;
+                        if let Some(title) = get_optional_variable("title", &arguments) {
+                            state.write_to_current_buffer(&format!("<title>{}</title>", title))?;
+                        };
+                        state.write_to_current_buffer("<body>")?;
                         run(&e.children, state)?;
-                        state.write_to_current_buffer("</html>")?;
-                        
+                        state.write_to_current_buffer("</body></html>")?;
+
                         // surrender page buffer after use to previous page buffer
                         state.current_page_buffer = current_page;
                     }
@@ -129,6 +133,12 @@ pub fn collect_named_attributes(
         }
     }
     Ok(named_attributes)
+}
+
+pub fn get_optional_variable(i: &str, attributes: &HashMap<&String, &Variable>) -> Option<Variable> {
+    attributes
+        .get(&String::from(i.clone()))
+        .map(|v|v.clone().clone())
 }
 
 pub fn get_required_variable(i: &str, attributes: &HashMap<&String, &Variable>) -> ParseResult<Variable> {
