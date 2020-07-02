@@ -21,6 +21,7 @@ page \
                     | post.title
 
                 page path=post.path
+                    | a page
                     h1
                         | ${ post.title }
                         | ${ post.body }
@@ -31,7 +32,7 @@ fn main() {
         Ok((_, nodes)) => {
             let state = &mut State::new();
             let _ = interpreter::run(&nodes, state).unwrap();
-            println!("{:?}", state.page_buffers);
+            println!("{:#?}", state.page_buffers);
         }
         Err(e) => {
             println!("error: {:?}", e);

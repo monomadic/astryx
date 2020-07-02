@@ -68,12 +68,17 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
 
                 match e.ident.as_str() {
                     "page" => {
+                        // keep note of current page
+                        let current_page = state.current_page_buffer.clone();
                         let path = get_required_path("path", &arguments)?;
 
                         state.create_buffer(path)?;
                         state.write_to_current_buffer(&html_tag("html", vec![]))?;
                         run(&e.children, state)?;
                         state.write_to_current_buffer("</html>")?;
+                        
+                        // surrender page buffer after use to previous page buffer
+                        state.current_page_buffer = current_page;
                     }
                     "row" | "column" => {
                         state.write_to_current_buffer(&format!("<div class=\"{}\">", e.ident))?;
