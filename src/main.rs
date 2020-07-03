@@ -5,6 +5,7 @@ mod interpreter;
 mod models;
 mod parse;
 mod print;
+mod filesystem;
 
 const TARGET_EXAMPLE: &str = r#"
 page \
@@ -16,7 +17,7 @@ page \
             image path=./monomadic.svg
             | monomadic
 
-            for post in ./posts
+            for post in ./examples/posts/*.md
                 link href=post
                     | post.title
 
@@ -30,6 +31,9 @@ fn main() {
     match parse::run(TARGET_EXAMPLE) {
         Ok((_, nodes)) => {
             let state = &mut State::new();
+            // println!("{:?}", nodes);
+            print::print_nodes(nodes.clone(), 0);
+
             let _ = interpreter::run(&nodes, state).unwrap();
             println!("{:#?}", state.page_buffers);
         }

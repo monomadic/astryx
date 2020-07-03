@@ -205,7 +205,7 @@ where
     input.split_at_position1_complete(
         |item| {
             let c = item.clone().as_char();
-            !(c == '-' || c == '/' || c == '.' || c == '_' || item.is_alphanum())
+            !(c == '-' || c == '/' || c == '.' || c == '_' || c == '*' || item.is_alphanum())
         },
         ErrorKind::AlphaNumeric,
     )

@@ -5,6 +5,7 @@ authors = ["monomadic <deathdisco@protonmail.com>"]
 edition = "2018"
 
 [dependencies]
+glob = "*"
 
 [dependencies.nom]
 version = "5.1.1"

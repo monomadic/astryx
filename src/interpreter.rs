@@ -105,7 +105,12 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
             Node::ForLoop(f) => {
                 // FIXME: don't just bypass the iterator and run its children
                 // FIXME: give a variable which can be interpolated
-                run(&f.children, state)?;
+                if let Variable::RelativePath(p) = &f.iterable {
+                    let files = crate::filesystem::read_content_metadata(&p)?;
+                    for file in files {
+                        // run(&f.children, state)?;
+                    }
+                }
             }
             Node::CodeBlock(_) => {}
         }
@@ -169,10 +174,6 @@ pub fn get_required_string(i: &str, attributes: &HashMap<&String, &Variable>) ->
             panic!(format!("wrong type: {:?}", i));
         }
     }
-}
-
-pub fn glob_metadata_from_path(p: std::path::PathBuf) -> ParseResult<Vec<Metadata>> {
-    Ok(Vec::new())
 }
 
 // fn write_page_buffer(page: String, state: &mut State, nodes: &Vec<Node>) -> ParseResult<()> {
