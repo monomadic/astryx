@@ -1,3 +1,5 @@
+use std::{path::PathBuf, collections::HashMap};
+
 #[derive(Debug, Clone)]
 pub enum Node {
     ForLoop(ForLoop),
@@ -15,7 +17,7 @@ pub struct CodeBlock {
 #[derive(Debug, Clone)]
 pub struct ForLoop {
     pub reference: String,
-    pub iterable: Variable, // todo: Function<Variable>
+    pub iterable: Variable, // todo: Vec<Metadata>
     pub children: Vec<Node>,
 }
 
@@ -47,4 +49,13 @@ impl std::fmt::Display for Variable {
             }
         }
     }
+}
+
+#[derive(Debug, Clone)]
+pub struct Metadata {
+    path: PathBuf,
+    filename: String,
+    // created_at: Date
+    variables: HashMap<String, String>,
+    body: String
 }

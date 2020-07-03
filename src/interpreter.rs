@@ -171,6 +171,10 @@ pub fn get_required_string(i: &str, attributes: &HashMap<&String, &Variable>) ->
     }
 }
 
+pub fn glob_metadata_from_path(p: std::path::PathBuf) -> ParseResult<Vec<Metadata>> {
+    Ok(Vec::new())
+}
+
 // fn write_page_buffer(page: String, state: &mut State, nodes: &Vec<Node>) -> ParseResult<()> {
 //     state.create_buffer(page)?;
 //     state.write_to_current_buffer("<html>")?;
