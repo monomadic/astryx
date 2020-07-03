@@ -103,10 +103,11 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
                 state.write_to_current_buffer(&t)?;
             },
             Node::ForLoop(f) => {
+                // FIXME: don't just bypass the iterator and run its children
+                // FIXME: give a variable which can be interpolated
                 run(&f.children, state)?;
             }
-            // _ => panic!("ERROR: unsupported function: {:?}", node),
-            _ => (),
+            Node::CodeBlock(_) => {}
         }
     }
 
