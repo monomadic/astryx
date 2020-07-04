@@ -18,6 +18,7 @@
 
 use crate::error::*;
 use crate::models::*;
+use std::{collections::HashMap, path::PathBuf};
 
 pub(crate) fn read_content_metadata(pattern: &str) -> ParseResult<Vec<Metadata>> {
     use glob::glob_with;
@@ -29,8 +30,16 @@ pub(crate) fn read_content_metadata(pattern: &str) -> ParseResult<Vec<Metadata>>
         require_literal_leading_dot: false,
     };
 
-    for entry in glob_with(pattern, options).unwrap() {
-        println!("---{:?}", entry);
-    }
-    Ok(Vec::new())
+    let mut files = Vec::new();
+
+    // for file in glob::glob_with(pattern, options).unwrap() {
+    //     let path = file.map_err(|_| CassetteError::ParseError("file not found".into()))?;
+    //     files.push(Metadata {
+    //         filename: "".into(),
+    //         body: "body".into(),
+    //         variables: HashMap::new(),
+    //     });
+    // };
+
+    Ok(files)
 }

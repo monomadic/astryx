@@ -83,8 +83,8 @@ fn for_loop(i: &str) -> IResult<&str, ForLoop> {
     Ok((
         r,
         ForLoop {
-            reference: ident.into(),
-            iterable: Variable::RelativePath(relative_path.into()),
+            index: ident.into(),
+            iterable: relative_path.into(),
             children,
         },
     ))
@@ -284,19 +284,19 @@ fn check_element() {
 #[test]
 pub(crate) fn check_for_loop() {
     let (r, res) = for_loop("for x in ./local\n").unwrap();
-    assert_eq!(res.reference, String::from("x"));
+    assert_eq!(res.index, String::from("x"));
     // assert_eq!(res.iterable, Variable::RelativePath(String::from("local")));
     assert_eq!(res.children.len(), 0);
     assert_eq!(r, "");
 
     let (r, res) = for_loop("for post in ./posts\n\tnode\n\tanother\n").unwrap();
-    assert_eq!(res.reference, String::from("x"));
+    assert_eq!(res.index, String::from("x"));
     // assert_eq!(res.iterable, Variable::RelativePath(String::from("local")));
     assert_eq!(res.children.len(), 2);
     assert_eq!(r, "");
 
     let (r, res) = for_loop("for post in ./posts\n\tlink href=post\n").unwrap();
-    assert_eq!(res.reference, String::from("post"));
+    assert_eq!(res.index, String::from("post"));
     // assert_eq!(res.iterable, Variable::RelativePath(String::from("local")));
     assert_eq!(res.children.len(), 1);
     assert_eq!(r, "");

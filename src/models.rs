@@ -1,4 +1,5 @@
 use std::{path::PathBuf, collections::HashMap};
+use crate::error::ParseResult;
 
 #[derive(Debug, Clone)]
 pub enum Node {
@@ -16,8 +17,8 @@ pub struct CodeBlock {
 
 #[derive(Debug, Clone)]
 pub struct ForLoop {
-    pub reference: String,
-    pub iterable: Variable, // todo: Vec<Metadata>
+    pub index: String,
+    pub iterable: String,
     pub children: Vec<Node>,
 }
 
@@ -41,6 +42,12 @@ pub enum Variable {
     Reference(String),
 }
 
+impl Variable {
+    pub fn get_required_path(&self, k: &str) -> ParseResult<PathBuf> {
+        panic!("");
+    }
+}
+
 impl std::fmt::Display for Variable {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -53,9 +60,8 @@ impl std::fmt::Display for Variable {
 
 #[derive(Debug, Clone)]
 pub struct Metadata {
-    path: PathBuf,
-    filename: String,
+    pub filename: String,
     // created_at: Date
-    variables: HashMap<String, String>,
-    body: String
+    pub variables: HashMap<String, String>,
+    pub body: String
 }

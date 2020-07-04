@@ -103,14 +103,18 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
                 state.write_to_current_buffer(&t)?;
             },
             Node::ForLoop(f) => {
-                // FIXME: don't just bypass the iterator and run its children
+                // FIXME: throw errors in error conditions, don't just fall through
                 // FIXME: give a variable which can be interpolated
-                if let Variable::RelativePath(p) = &f.iterable {
-                    let files = crate::filesystem::read_content_metadata(&p)?;
-                    for file in files {
-                        // state.variables_in_scope.get_mut(f.iterable) = file;
-                        run(&f.children, state)?;
-                    }
+
+                let files = crate::filesystem::read_content_metadata(&f.iterable)?;
+                for file in files {
+                    // state.variables_in_scope.get_mut(f.iterable) = file;
+                    // make a copy of the state
+                    // inject new copy of state with child variables
+                    let mut new_state = state.clone();
+                    new_state.variables_in_scope.insert(f.iterable.clone(), Variable::QuotedString("hello".into()));
+                    run(&f.children, state)?;
+                    // restore state copy
                 }
             }
             Node::CodeBlock(_) => {}

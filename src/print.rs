@@ -31,7 +31,7 @@ pub fn print_element(e: Element, indent: usize) {
 }
 
 pub fn print_for_loop(f: ForLoop, indent: usize) {
-    println!("for {} in {}", f.reference, variable_to_string(f.iterable));
+    println!("for {} in {}", f.index, f.iterable);
     print_nodes(f.children, indent + 1);
 }
 
