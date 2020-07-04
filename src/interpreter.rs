@@ -108,7 +108,8 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
                 if let Variable::RelativePath(p) = &f.iterable {
                     let files = crate::filesystem::read_content_metadata(&p)?;
                     for file in files {
-                        // run(&f.children, state)?;
+                        // state.variables_in_scope.get_mut(f.iterable) = file;
+                        run(&f.children, state)?;
                     }
                 }
             }
