@@ -1,8 +1,4 @@
-<p align="center">
-
-![](./assets/logo-v2.svg)
-
-</p>
+<p align="center"><img src="/monomadic/astryx/blob/master/assets/logo.svg" /></p>
 
 [![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Minimum rustc version](https://img.shields.io/badge/rustc-1.42.0+-green.svg)](#rust-version-requirements)
