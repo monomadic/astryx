@@ -1,5 +1,7 @@
 <p align="center">
+
 ![](./assets/logo-v2.svg)
+
 </p>
 
 [![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
