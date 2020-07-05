@@ -21,8 +21,6 @@ use crate::models::*;
 use std::{collections::HashMap, path::PathBuf};
 
 pub(crate) fn read_content_metadata(pattern: &str) -> ParseResult<Vec<Metadata>> {
-    use glob::glob_with;
-    // use glob::MatchOptions;
 
     let options = glob::MatchOptions {
         case_sensitive: false,
@@ -32,14 +30,14 @@ pub(crate) fn read_content_metadata(pattern: &str) -> ParseResult<Vec<Metadata>>
 
     let mut files = Vec::new();
 
-    // for file in glob::glob_with(pattern, options).unwrap() {
-    //     let path = file.map_err(|_| CassetteError::ParseError("file not found".into()))?;
-    //     files.push(Metadata {
-    //         filename: "".into(),
-    //         body: "body".into(),
-    //         variables: HashMap::new(),
-    //     });
-    // };
+    for file in glob::glob_with(&format!("./{}", pattern), options).unwrap() {
+        // let path = file.map_err(|_| CassetteError::ParseError("file not found".into()))?;
+        files.push(Metadata {
+            body: "body".into(),
+            filename: format!("{:?}", file.unwrap()),
+            variables: HashMap::new(),
+        });
+    };
 
     Ok(files)
 }

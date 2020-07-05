@@ -60,8 +60,8 @@ impl std::fmt::Display for Variable {
 
 #[derive(Debug, Clone)]
 pub struct Metadata {
-    pub filename: String,
     // created_at: Date
+    pub body: String,
+    pub filename: String,
     pub variables: HashMap<String, String>,
-    pub body: String
 }

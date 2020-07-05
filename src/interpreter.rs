@@ -32,6 +32,17 @@ impl State {
         }
     }
 
+    pub fn get_required_variable(&self, i: &str) -> ParseResult<&Variable> {
+        self.variables_in_scope
+            .get(i)
+            .ok_or(CassetteError::ParseError(
+                format!(
+                    "variable not found: {}\nvariables in scope: {:?}",
+                    i, self.variables_in_scope
+                ),
+            ))
+    }
+
     pub fn get_current_page_buffer(&mut self) -> ParseResult<&mut String> {
         if let Some(current_page) = self.current_page_buffer.clone() {
             if let Some(current_page_buffer) = self.page_buffers.get_mut(&current_page) {
@@ -70,7 +81,10 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
                     "page" => {
                         // keep note of current page
                         let current_page = state.current_page_buffer.clone();
-                        let path = get_required_path("path", &arguments)?;
+                        let path = stringify_variable(
+                            &get_required_argument("path", &arguments)?,
+                            state
+                        )?;
 
                         state.create_buffer(path)?;
                         state.write_to_current_buffer("<html><head>")?;
@@ -83,6 +97,7 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
 
                         // surrender page buffer after use to previous page buffer
                         state.current_page_buffer = current_page;
+                        println!("{:?}", state.page_buffers);
                     }
                     "row" | "column" => {
                         state.write_to_current_buffer(&format!("<div class=\"{}\">", e.ident))?;
@@ -90,7 +105,7 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
                         state.write_to_current_buffer("</div>")?;
                     }
                     "image" | "img" | "i" => {
-                        let path = get_required_path("path", &arguments)?;
+                        let path = stringify_variable(&get_required_argument("path", &arguments)?, state)?;
 
                         state.write_to_current_buffer(&html_tag("img", vec![("src", path)]))?;
                     }
@@ -101,7 +116,7 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
             }
             Node::Text(t) => {
                 state.write_to_current_buffer(&t)?;
-            },
+            }
             Node::ForLoop(f) => {
                 // FIXME: throw errors in error conditions, don't just fall through
                 // FIXME: give a variable which can be interpolated
@@ -112,8 +127,10 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
                     // make a copy of the state
                     // inject new copy of state with child variables
                     let mut new_state = state.clone();
-                    new_state.variables_in_scope.insert(f.iterable.clone(), Variable::QuotedString("hello".into()));
-                    run(&f.children, state)?;
+                    new_state
+                        .variables_in_scope
+                        .insert("post.path".into(), Variable::QuotedString("hello".into()));
+                    run(&f.children, &mut new_state)?;
                     // restore state copy
                 }
             }
@@ -132,13 +149,12 @@ pub fn collect_named_attributes(
     for attribute in attributes {
         match attribute {
             Attribute::Assignment { ident, variable } => {
-                let _ = named_attributes
-                .insert(ident, variable);
+                let _ = named_attributes.insert(ident, variable);
 
-                    // .ok_or(CassetteError::ParseError(format!(
-                    //     "duplicate assignment: {}",
-                    //     ident
-                    // )))?;
+                // .ok_or(CassetteError::ParseError(format!(
+                //     "duplicate assignment: {}",
+                //     ident
+                // )))?;
             }
             _ => (),
         }
@@ -146,30 +162,64 @@ pub fn collect_named_attributes(
     Ok(named_attributes)
 }
 
-pub fn get_optional_variable(i: &str, attributes: &HashMap<&String, &Variable>) -> Option<Variable> {
+pub fn get_optional_variable(
+    i: &str,
+    attributes: &HashMap<&String, &Variable>,
+) -> Option<Variable> {
     attributes
         .get(&String::from(i.clone()))
-        .map(|v|v.clone().clone())
+        .map(|v| v.clone().clone())
 }
 
-pub fn get_required_variable(i: &str, attributes: &HashMap<&String, &Variable>) -> ParseResult<Variable> {
+pub fn get_required_variable(
+    i: &str,
+    attributes: &HashMap<&String, &Variable>,
+) -> ParseResult<Variable> {
     attributes
         .get(&String::from(i.clone()))
-        .map(|v|v.clone().clone())
-        .ok_or(CassetteError::ParseError(format!("could not find variable: {}", i)))
+        .map(|v| v.clone().clone())
+        .ok_or(CassetteError::ParseError(format!(
+            "could not find variable: {}",
+            i
+        )))
 }
 
-pub fn get_required_path(i: &str, attributes: &HashMap<&String, &Variable>) -> ParseResult<String> {
-    // TODO: better path parsing, return PathBuf
-    match get_required_variable(i, attributes)? {
-        Variable::RelativePath(p) => Ok(p),
-        Variable::Reference(p) => Ok(p),
-        Variable::QuotedString(p) => Ok(p)
+pub fn get_required_argument(
+    i: &str,
+    arguments: &HashMap<&String, &Variable>,
+) -> ParseResult<Variable> {
+    arguments
+        .get(&i.to_string())
+        .map(|v| v.clone().clone())
+        .ok_or(
+            CassetteError::ParseError(
+                format!("argument not found: {}. arguments: {:?}", i, arguments))
+        )
+
+    // stringify_variable(&get_required_variable(i, arguments)?, state)
+}
+
+pub fn stringify_variable(variable: &Variable, state: &State) -> ParseResult<String> {
+    match variable {
+        Variable::RelativePath(p) => Ok(p.clone()),
+        Variable::Reference(p) => {
+            // resolve the reference
+            state
+                .variables_in_scope
+                .get(p)
+                .ok_or(
+                    CassetteError::ParseError(format!("reference_not_found: {} {:?}", &p, &state.variables_in_scope)))
+                .and_then(|v| stringify_variable(v, state))
+        }
+        Variable::QuotedString(p) => Ok(p.clone()),
     }
 }
 
 /// returns a specific string from an attributes array or throws an error.
-pub fn get_required_string(i: &str, attributes: &HashMap<&String, &Variable>) -> ParseResult<String> {
+pub fn get_required_string(
+    i: &str,
+    attributes: &HashMap<&String, &Variable>,
+) -> ParseResult<String> {
     match get_required_variable(i, attributes)? {
         Variable::QuotedString(s) => {
             return Ok(s.clone());
