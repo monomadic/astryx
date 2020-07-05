@@ -35,7 +35,7 @@ impl State {
     pub fn get_required_variable(&self, i: &str) -> ParseResult<&Variable> {
         self.variables_in_scope
             .get(i)
-            .ok_or(CassetteError::ParseError(
+            .ok_or(AstryxError::ParseError(
                 format!(
                     "variable not found: {}\nvariables in scope: {:?}",
                     i, self.variables_in_scope
@@ -180,7 +180,7 @@ pub fn get_required_variable(
     attributes
         .get(&String::from(i.clone()))
         .map(|v| v.clone().clone())
-        .ok_or(CassetteError::ParseError(format!(
+        .ok_or(AstryxError::ParseError(format!(
             "could not find variable: {}",
             i
         )))
@@ -194,7 +194,7 @@ pub fn get_required_argument(
         .get(&i.to_string())
         .map(|v| v.clone().clone())
         .ok_or(
-            CassetteError::ParseError(
+            AstryxError::ParseError(
                 format!("argument not found: {}. arguments: {:?}", i, arguments))
         )
 
@@ -210,7 +210,7 @@ pub fn stringify_variable(variable: &Variable, state: &State) -> ParseResult<Str
                 .variables_in_scope
                 .get(p)
                 .ok_or(
-                    CassetteError::ParseError(format!("reference_not_found: {} {:?}", &p, &state.variables_in_scope)))
+                    AstryxError::ParseError(format!("reference_not_found: {} {:?}", &p, &state.variables_in_scope)))
                 .and_then(|v| stringify_variable(v, state))
         }
         Variable::QuotedString(p) => Ok(p.clone()),

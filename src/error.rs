@@ -1,8 +1,8 @@
 // TODO this should be GizmoResult or something
-pub type ParseResult<T> = Result<T, CassetteError>;
+pub type ParseResult<T> = Result<T, AstryxError>;
 
 #[derive(Debug, Clone)]
-pub enum CassetteError {
+pub enum AstryxError {
     ParseError(String),
 }
 
