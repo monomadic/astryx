@@ -12,7 +12,7 @@ css:
     body { background: red; }
 
 page \
-    path=./index.html \
+    path="/" \
     title="monomadic"
 
     row centered
@@ -21,10 +21,10 @@ page \
             | monomadic
 
             for post in ./examples/posts/*.md
-                link href=post
+                link href=post.route
                     | post.title
 
-                page path=post.path
+                page path=post.route
                     h1
                         | ${ post.title }
                     | ${ post.body }

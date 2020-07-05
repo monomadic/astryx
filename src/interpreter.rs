@@ -128,7 +128,7 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
 
                     new_state
                         .variables_in_scope
-                        .insert("post.path".into(), Variable::QuotedString("hello".into()));
+                        .insert("post.route".into(), Variable::QuotedString("/hello".into()));
 
                     run(&f.children, &mut new_state)?;
                     state.page_buffers = new_state.page_buffers; // kind of a dirty hack
