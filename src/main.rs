@@ -8,6 +8,9 @@ mod print;
 mod filesystem;
 
 const TARGET_EXAMPLE: &str = r#"
+css:
+    body { background: red; }
+
 page \
     path=./index.html \
     title="monomadic"

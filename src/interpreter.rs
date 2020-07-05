@@ -123,18 +123,20 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
 
                 let files = crate::filesystem::read_content_metadata(&f.iterable)?;
                 for file in files {
-                    // state.variables_in_scope.get_mut(f.iterable) = file;
-                    // make a copy of the state
-                    // inject new copy of state with child variables
+                    // create a new local state to pass down the tree
                     let mut new_state = state.clone();
+
                     new_state
                         .variables_in_scope
                         .insert("post.path".into(), Variable::QuotedString("hello".into()));
+
                     run(&f.children, &mut new_state)?;
-                    // restore state copy
+                    state.page_buffers = new_state.page_buffers; // kind of a dirty hack
                 }
             }
-            Node::CodeBlock(_) => {}
+            Node::CodeBlock(cb) => {
+                state.page_buffers.insert(cb.ident.clone(), cb.content.clone());
+            }
         }
     }
 
