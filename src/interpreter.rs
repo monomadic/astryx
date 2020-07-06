@@ -74,7 +74,6 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
     for node in nodes {
         match node {
             Node::Element(e) => {
-                // println!("{}", e.ident);
                 let arguments = collect_named_attributes(&e.attributes)?;
 
                 match e.ident.as_str() {
@@ -97,7 +96,6 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
 
                         // surrender page buffer after use to previous page buffer
                         state.current_page_buffer = current_page;
-                        println!("{:?}", state.page_buffers);
                     }
                     "row" | "column" => {
                         state.write_to_current_buffer(&format!("<div class=\"{}\">", e.ident))?;
@@ -126,6 +124,7 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
                     // create a new local state to pass down the tree
                     let mut new_state = state.clone();
 
+                    // FIXME temp variable used here.
                     new_state
                         .variables_in_scope
                         .insert("post.route".into(), Variable::QuotedString("/hello".into()));

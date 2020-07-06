@@ -1,11 +1,12 @@
 use interpreter::State;
 
 mod error;
+mod filesystem;
+mod interpolation;
 mod interpreter;
 mod models;
 mod parse;
 mod print;
-mod filesystem;
 
 const TARGET_EXAMPLE: &str = r#"
 css:
@@ -34,7 +35,6 @@ fn main() {
     match parse::run(TARGET_EXAMPLE) {
         Ok((_, nodes)) => {
             let state = &mut State::new();
-            // println!("{:?}", nodes);
             print::print_nodes(nodes.clone(), 0);
 
             let _ = interpreter::run(&nodes, state).unwrap();
