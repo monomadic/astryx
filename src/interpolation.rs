@@ -9,10 +9,6 @@ use nom::combinator::map;
 
 pub fn interpolate(i: &str, locals: &HashMap<String, Variable>) -> ParseResult<String> {
     let (r, nodes) = run(i).expect("interpolation failed");
-    // TODO: fail if r != ""
-
-    // let v = get_required_variable()
-
     let mut output_buffer = String::new();
 
     for node in nodes {
@@ -23,6 +19,8 @@ pub fn interpolate(i: &str, locals: &HashMap<String, Variable>) -> ParseResult<S
             }
         }
     }
+
+    output_buffer.push_str(r);
 
     Ok(output_buffer)
 }
@@ -77,6 +75,7 @@ pub(crate) fn check_interpolate_reference() {
 
 fn interpolate_text(i: &str) -> IResult<&str, &str> {
     take_until("${")(i)
+    // is_not("$")(i)
 }
 
 #[test]
@@ -96,6 +95,20 @@ where
         |item| {
             let c = item.clone().as_char();
             !(c == '-' || c == '_' || c == '.' || item.is_alphanum())
+        },
+        ErrorKind::AlphaNumeric,
+    )
+}
+
+fn strings1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+where
+    T: InputTakeAtPosition,
+    <T as InputTakeAtPosition>::Item: AsChar + Clone,
+{
+    input.split_at_position1_complete(
+        |item| {
+            let c = item.clone().as_char();
+            !(c != '-' || c == '_' || c == '.' || item.is_alphanum())
         },
         ErrorKind::AlphaNumeric,
     )
