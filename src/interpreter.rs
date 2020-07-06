@@ -113,7 +113,8 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
                 }
             }
             Node::Text(t) => {
-                state.write_to_current_buffer(&t)?;
+                let buffer = crate::interpolation::interpolate(t, &state.variables_in_scope)?;
+                state.write_to_current_buffer(&buffer)?;
             }
             Node::ForLoop(f) => {
                 // FIXME: throw errors in error conditions, don't just fall through
@@ -128,6 +129,10 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
                     new_state
                         .variables_in_scope
                         .insert("post.route".into(), Variable::QuotedString("/hello".into()));
+
+                    new_state
+                        .variables_in_scope
+                        .insert("post.body".into(), Variable::QuotedString("<h1>some stuff</h1>".into()));
 
                     run(&f.children, &mut new_state)?;
                     state.page_buffers = new_state.page_buffers; // kind of a dirty hack

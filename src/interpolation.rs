@@ -7,7 +7,7 @@ use nom::branch::alt;
 use nom::{error::{ErrorKind, ParseError}, character::complete::char};
 use nom::combinator::map;
 
-pub fn interpolate(i: &str, locals: &HashMap<&String, &Variable>) -> ParseResult<String> {
+pub fn interpolate(i: &str, locals: &HashMap<String, Variable>) -> ParseResult<String> {
     let (r, nodes) = run(i).expect("interpolation failed");
     // TODO: fail if r != ""
 
@@ -19,7 +19,7 @@ pub fn interpolate(i: &str, locals: &HashMap<&String, &Variable>) -> ParseResult
         match node {
             InterpolationNode::Text(t) => { output_buffer.push_str(&t); }
             InterpolationNode::Reference(r) => {
-                output_buffer.push_str(&stringify_variable(&get_required_variable(&r, &locals)?, &locals)?);
+                output_buffer.push_str(&stringify_variable(&get_required_variable(&r, &locals)?, locals)?);
             }
         }
     }
@@ -102,7 +102,7 @@ where
 }
 
 // FIXME (changed) duplicated code from interpeter.rs
-pub fn stringify_variable(variable: &Variable, locals: &HashMap<&String, &Variable>) -> ParseResult<String> {
+pub fn stringify_variable(variable: &Variable, locals: &HashMap<String, Variable>) -> ParseResult<String> {
     match variable {
         Variable::RelativePath(p) => Ok(p.clone()),
         Variable::Reference(p) => {
@@ -120,7 +120,7 @@ pub fn stringify_variable(variable: &Variable, locals: &HashMap<&String, &Variab
 // FIXME dupe code from interpreter.rs
 pub fn get_required_variable(
     i: &str,
-    attributes: &HashMap<&String, &Variable>,
+    attributes: &HashMap<String, Variable>,
 ) -> ParseResult<Variable> {
     attributes
         .get(&String::from(i.clone()))
