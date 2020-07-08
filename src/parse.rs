@@ -45,7 +45,6 @@ fn codeblock(i: &str) -> IResult<&str, CodeBlock> {
 
     while line_indent(r) > line_indent(pre) {
         let (rem, line) = take_until("\n")(r)?;
-        println!("LINE: {:?}", line);
         children.push(line);
         r = rem;
     }

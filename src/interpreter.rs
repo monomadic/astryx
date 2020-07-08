@@ -65,8 +65,19 @@ impl State {
     }
 }
 
-pub fn html_tag(ident: &str, _attributes: Vec<(&str, String)>) -> String {
-    format!("<{}>", ident)
+pub fn html_tag(ident: &str, attributes: Vec<(&str, String)>) -> String {
+    let attribs = if !attributes.is_empty() {
+        format!(" {}", attributes
+            .iter()
+            .map(|(k, v)| format!("{}=\"{}\"", k, v))
+            .collect::<Vec<String>>()
+            .join(" ")
+        )
+    } else {
+        String::new()
+    };
+
+    format!("<{}{}>", ident, attribs)
 }
 
 /// run the interpreter over a series of nodes
@@ -77,6 +88,8 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
                 let arguments = collect_named_attributes(&e.attributes)?;
 
                 match e.ident.as_str() {
+                    // TODO make elements scriptable / programmable
+
                     "page" => {
                         // keep note of current page
                         let current_page = state.current_page_buffer.clone();

@@ -35,7 +35,7 @@ fn main() {
     match parse::run(TARGET_EXAMPLE) {
         Ok((_, nodes)) => {
             let state = &mut State::new();
-            print::print_nodes(nodes.clone(), 0);
+            // print::print_nodes(nodes.clone(), 0);
 
             let _ = interpreter::run(&nodes, state).unwrap();
             println!("{:#?}", state.page_buffers);
