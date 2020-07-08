@@ -11,3 +11,5 @@ Why?
 - declarative, safe, correct
 - (optionally) single file script generates an entire site
 - not specific to blogs, expressive enough for any applicable use case
+
+__NOTE: pre-production state, not even alpha yet. pushing updates regularly, check the kanban board for progress__

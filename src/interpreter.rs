@@ -89,6 +89,7 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
 
                 match e.ident.as_str() {
                     // TODO make elements scriptable / programmable
+                    // suggestion: nodes can 'resolve' to other nodes, ending in tag
 
                     "page" => {
                         // keep note of current page
