@@ -130,16 +130,20 @@ pub fn stringify_variable(
         Variable::RelativePath(p) => Ok(p.clone()),
         Variable::Reference(p) => {
             // resolve the reference
-            locals
-                .get(p)
-                .ok_or(AstryxError::ParseError(format!(
-                    "reference_not_found: {} {:?}",
-                    &p, &locals
-                )))
-                .and_then(|v| stringify_variable(v, locals))
+            // locals
+            //     .get(p)
+            //     .ok_or(AstryxError::ParseError(format!(
+            //         "reference_not_found: {} {:?}",
+            //         &p, &locals
+            //     )))
+            //     .and_then(|v| stringify_variable(v, locals))
+            Ok("totototo".into())
         }
         Variable::QuotedString(p) => Ok(p.clone()),
-        Variable::TemplateFile(t) => Ok(t.body.clone()),
+        Variable::TemplateFile(t) => {
+            println!("== {:?}", t);
+            Ok(t.body.clone())
+        },
     }
 }
 

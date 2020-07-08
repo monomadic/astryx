@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use crate::error::*;
 use crate::models::*;
+use yaml_rust::Yaml;
 
 #[derive(Debug, Clone)]
 pub struct Site {
@@ -139,14 +140,11 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
                     // create a new local state to pass down the tree
                     let mut new_state = state.clone();
 
-                    // FIXME temp variable used here.
                     new_state
                         .variables_in_scope
-                        .insert("post.route".into(), Variable::QuotedString("/hello".into()));
+                        .insert(f.index.clone(), Variable::TemplateFile(file));
 
-                    new_state
-                        .variables_in_scope
-                        .insert("post.body".into(), Variable::QuotedString("<h1>some stuff</h1>".into()));
+                    println!("state: {:#?}", new_state.variables_in_scope);
 
                     run(&f.children, &mut new_state)?;
                     state.page_buffers = new_state.page_buffers; // kind of a dirty hack
@@ -223,16 +221,46 @@ pub fn stringify_variable(variable: &Variable, state: &State) -> ParseResult<Str
     match variable {
         Variable::RelativePath(p) => Ok(p.clone()),
         Variable::Reference(p) => {
+            // FIXME unsafe array index
+            let base_ref: &str = p.split(".").collect::<Vec<&str>>()[0];
+            let subref: &str = p.split(".").collect::<Vec<&str>>()[1];
+
+            if let Some(Variable::TemplateFile(template_file )) = state.variables_in_scope.get(base_ref) {
+                
+                let yaml_var = template_file.metadata.clone().unwrap()[subref].clone();
+
+                match yaml_var {
+                    Yaml::String(s) => Ok(s),
+                    _ => Err(AstryxError::ParseError(format!("reference_not_found: {}", subref)))
+                }
+
+                //     Ok(format!("{:?}", subvar))
+                // } else {
+                //     Err(AstryxError::ParseError(format!("reference_not_found: {}", subref)))
+                // }
+            } else {
+                state
+                    .variables_in_scope
+                    .get(p)
+                    .ok_or(
+                        AstryxError::ParseError(format!("reference_not_found: {} {:?}", &p, &state.variables_in_scope)))
+                    .and_then(|v| stringify_variable(v, state))
+            }
+
+            // println!("looking for {:?}", p.clone().split(".").collect::<Vec<&str>>()[0]);
             // resolve the reference
-            state
-                .variables_in_scope
-                .get(p)
-                .ok_or(
-                    AstryxError::ParseError(format!("reference_not_found: {} {:?}", &p, &state.variables_in_scope)))
-                .and_then(|v| stringify_variable(v, state))
+            // state
+            //     .variables_in_scope
+            //     .get(base_variable.clone())
+            //     .ok_or(
+            //         AstryxError::ParseError(format!("reference_not_found: {} {:?}", &p, &state.variables_in_scope)))
+            //     .and_then(|v| stringify_variable(v, state))
         }
         Variable::QuotedString(p) => Ok(p.clone()),
-        Variable::TemplateFile(t) => Ok(t.body.clone()),
+        Variable::TemplateFile(t) => {
+            // TODO pull out variable correctly
+            Ok(t.body.clone())
+        },
     }
 }
 

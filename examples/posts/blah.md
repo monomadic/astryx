@@ -1,5 +1,6 @@
 ---
 title: "My Title"
+route: "/blah"
 my_list:
   - one
   - two

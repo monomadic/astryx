@@ -29,7 +29,6 @@ page \
                 page path=post.route
                     h1
                         | ${ post.title }
-                    | ${ post.body }
 "#;
 
 fn main() {
