@@ -40,6 +40,7 @@ pub enum Variable {
     RelativePath(String),
     QuotedString(String),
     Reference(String),
+    TemplateFile(TemplateFile),
 }
 
 impl Variable {
@@ -54,14 +55,18 @@ impl std::fmt::Display for Variable {
             Variable::RelativePath(s) | Variable::QuotedString(s) | Variable::Reference(s) => {
                 f.write_str(s)
             }
+            Variable::TemplateFile(t) => {
+                f.write_str(&t.body)
+            }
         }
     }
 }
 
 #[derive(Debug, Clone)]
-pub struct Metadata {
+pub struct TemplateFile {
     // created_at: Date
     pub body: String,
-    pub filename: String,
-    pub variables: HashMap<String, String>,
+    // pub filename: String,
+    // pub variables: HashMap<String, String>,
+    pub metadata: Option<yaml_rust::Yaml>,
 }

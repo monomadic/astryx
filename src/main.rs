@@ -2,6 +2,7 @@ use interpreter::State;
 
 mod error;
 mod filesystem;
+mod frontmatter;
 mod interpolation;
 mod interpreter;
 mod models;

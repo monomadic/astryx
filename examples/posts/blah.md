@@ -1,5 +1,4 @@
 ---
-layout: "custom"
 title: "My Title"
 my_list:
   - one

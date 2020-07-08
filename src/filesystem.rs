@@ -1,26 +1,25 @@
 
-// pub(crate) fn read_file(pathbuf: std::path::PathBuf) -> crate::CassetteResult<String> {
-//     use std::fs::File;
-//     use std::io::prelude::*;
+pub(crate) fn read_file(pathbuf: std::path::PathBuf) -> ParseResult<String> {
+    use std::fs::File;
+    use std::io::prelude::*;
 
-//     let mut f = File::open(pathbuf.clone()).map_err(|_| {
-//         failure::format_err!(
-//             "Could not open or read file: {}",
-//             pathbuf.to_str().unwrap_or("")
-//         )
-//     })?;
-//     let mut buffer = String::new();
+    let mut f = File::open(pathbuf.clone()).map_err(|_| {
+        AstryxError::ParseError("error opening file".into())
+    })?;
+    let mut buffer = String::new();
 
-//     f.read_to_string(&mut buffer)?;
+    f.read_to_string(&mut buffer).map_err(|_| {
+        AstryxError::ParseError("error reading file".into())
+    })?;
 
-//     Ok(buffer)
-// }
+    Ok(buffer)
+}
 
 use crate::error::*;
 use crate::models::*;
 use std::{collections::HashMap, path::PathBuf};
 
-pub(crate) fn read_content_metadata(pattern: &str) -> ParseResult<Vec<Metadata>> {
+pub(crate) fn read_content_metadata(pattern: &str) -> ParseResult<Vec<TemplateFile>> {
 
     let options = glob::MatchOptions {
         case_sensitive: false,
@@ -29,13 +28,23 @@ pub(crate) fn read_content_metadata(pattern: &str) -> ParseResult<Vec<Metadata>>
     };
 
     let mut files = Vec::new();
+    let globs = glob::glob_with(&format!("./{}", pattern), options).map_err(|_| {
+        AstryxError::ParseError("error globbing file".into())
+    })?;
 
-    for file in glob::glob_with(&format!("./{}", pattern), options).unwrap() {
+    for file in globs {
         // let path = file.map_err(|_| CassetteError::ParseError("file not found".into()))?;
-        files.push(Metadata {
-            body: "body".into(),
-            filename: format!("{:?}", file.unwrap()),
-            variables: HashMap::new(),
+        // let filename = file.pa
+        let file_content = read_file(file.expect("file to unwrap"))?;
+
+        files.push(TemplateFile {
+            body: file_content.clone(),
+            // nodes:
+            // filename: format!("{:?}", file.unwrap()),
+            // variables: HashMap::new(),
+            metadata: crate::frontmatter::parse(&file_content).map_err(|_| {
+                AstryxError::ParseError("error reading metadata".into())
+            })?
         });
     };
 

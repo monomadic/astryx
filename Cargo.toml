@@ -6,7 +6,5 @@ edition = "2018"
 
 [dependencies]
 glob = "*"
-
-[dependencies.nom]
-version = "5.1.1"
-features = ["std"]
+nom = { version = "5.1.1", features = ["std"] }
+yaml-rust = "0.4"

@@ -49,5 +49,6 @@ pub fn variable_to_string(v: Variable) -> String {
         Variable::QuotedString(s) => format!("\"{}\"", s),
         Variable::RelativePath(s) => format!("./{}", s),
         Variable::Reference(s) => s,
+        Variable::TemplateFile(t) => format!("./{}", t.body), // FIXME this is wrong. show filename
     }
 }

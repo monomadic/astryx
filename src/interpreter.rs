@@ -232,6 +232,7 @@ pub fn stringify_variable(variable: &Variable, state: &State) -> ParseResult<Str
                 .and_then(|v| stringify_variable(v, state))
         }
         Variable::QuotedString(p) => Ok(p.clone()),
+        Variable::TemplateFile(t) => Ok(t.body.clone()),
     }
 }
 
