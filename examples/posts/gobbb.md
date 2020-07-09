@@ -1,5 +1,5 @@
 ---
-title: "My Title"
+title: "GOBBO TITLE"
 route: "/lolol/lol"
 my_list:
   - one
@@ -7,4 +7,4 @@ my_list:
   - three
 ---
 
-A post
+GOBBO POST

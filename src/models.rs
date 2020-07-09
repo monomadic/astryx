@@ -1,4 +1,4 @@
-use std::{path::PathBuf, collections::HashMap};
+use std::{path::PathBuf};
 use crate::error::ParseResult;
 
 #[derive(Debug, Clone)]
@@ -49,6 +49,7 @@ impl Variable {
     }
 }
 
+// caution: does not resolve references.
 impl std::fmt::Display for Variable {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {

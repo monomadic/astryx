@@ -1,8 +1,6 @@
-use std::collections::HashMap;
-
 use crate::error::*;
 use crate::models::*;
-use yaml_rust::Yaml;
+use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 pub struct Site {
@@ -36,12 +34,10 @@ impl State {
     pub fn get_required_variable(&self, i: &str) -> ParseResult<&Variable> {
         self.variables_in_scope
             .get(i)
-            .ok_or(AstryxError::ParseError(
-                format!(
-                    "variable not found: {}\nvariables in scope: {:?}",
-                    i, self.variables_in_scope
-                ),
-            ))
+            .ok_or(AstryxError::ParseError(format!(
+                "variable not found: {}\nvariables in scope: {:?}",
+                i, self.variables_in_scope
+            )))
     }
 
     pub fn get_current_page_buffer(&mut self) -> ParseResult<&mut String> {
@@ -68,11 +64,13 @@ impl State {
 
 pub fn html_tag(ident: &str, attributes: Vec<(&str, String)>) -> String {
     let attribs = if !attributes.is_empty() {
-        format!(" {}", attributes
-            .iter()
-            .map(|(k, v)| format!("{}=\"{}\"", k, v))
-            .collect::<Vec<String>>()
-            .join(" ")
+        format!(
+            " {}",
+            attributes
+                .iter()
+                .map(|(k, v)| format!("{}=\"{}\"", k, v))
+                .collect::<Vec<String>>()
+                .join(" ")
         )
     } else {
         String::new()
@@ -91,18 +89,20 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
                 match e.ident.as_str() {
                     // TODO make elements scriptable / programmable
                     // suggestion: nodes can 'resolve' to other nodes, ending in tag
-
                     "page" => {
                         // keep note of current page
                         let current_page = state.current_page_buffer.clone();
-                        let path = stringify_variable(
+                        let path = crate::interpolation::stringify_variable(
                             &get_required_argument("path", &arguments)?,
-                            state
+                            &state.variables_in_scope,
                         )?;
 
                         state.create_buffer(path)?;
                         state.write_to_current_buffer("<html><head>")?;
                         if let Some(title) = get_optional_variable("title", &arguments) {
+                            let title = crate::interpolation::stringify_variable(
+                                &title, &state.variables_in_scope)?;
+
                             state.write_to_current_buffer(&format!("<title>{}</title>", title))?;
                         };
                         state.write_to_current_buffer("<body>")?;
@@ -118,7 +118,13 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
                         state.write_to_current_buffer("</div>")?;
                     }
                     "image" | "img" | "i" => {
-                        let path = stringify_variable(&get_required_argument("path", &arguments)?, state)?;
+                        // let path =
+                        //     stringify_variable(&get_required_argument("path", &arguments)?, state)?;
+
+                        let path = crate::interpolation::stringify_variable(
+                            &get_required_argument("path", &arguments)?,
+                            &state.variables_in_scope,
+                        )?;
 
                         state.write_to_current_buffer(&html_tag("img", vec![("src", path)]))?;
                     }
@@ -151,7 +157,9 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
                 }
             }
             Node::CodeBlock(cb) => {
-                state.page_buffers.insert(cb.ident.clone(), cb.content.clone());
+                state
+                    .page_buffers
+                    .insert(cb.ident.clone(), cb.content.clone());
             }
         }
     }
@@ -182,25 +190,25 @@ pub fn collect_named_attributes(
 
 pub fn get_optional_variable(
     i: &str,
-    attributes: &HashMap<&String, &Variable>,
+    locals: &HashMap<&String, &Variable>,
 ) -> Option<Variable> {
-    attributes
+    locals
         .get(&String::from(i.clone()))
         .map(|v| v.clone().clone())
 }
 
-pub fn get_required_variable(
-    i: &str,
-    attributes: &HashMap<&String, &Variable>,
-) -> ParseResult<Variable> {
-    attributes
-        .get(&String::from(i.clone()))
-        .map(|v| v.clone().clone())
-        .ok_or(AstryxError::ParseError(format!(
-            "could not find variable: {}",
-            i
-        )))
-}
+// pub fn get_required_variable(
+//     i: &str,
+//     attributes: &HashMap<&String, &Variable>,
+// ) -> ParseResult<Variable> {
+//     attributes
+//         .get(&String::from(i.clone()))
+//         .map(|v| v.clone().clone())
+//         .ok_or(AstryxError::ParseError(format!(
+//             "could not find variable: {}",
+//             i
+//         )))
+// }
 
 pub fn get_required_argument(
     i: &str,
@@ -209,84 +217,26 @@ pub fn get_required_argument(
     arguments
         .get(&i.to_string())
         .map(|v| v.clone().clone())
-        .ok_or(
-            AstryxError::ParseError(
-                format!("argument not found: {}. arguments: {:?}", i, arguments))
-        )
+        .ok_or(AstryxError::ParseError(format!(
+            "argument not found: {}. arguments: {:?}",
+            i, arguments
+        )))
 
     // stringify_variable(&get_required_variable(i, arguments)?, state)
 }
 
-pub fn stringify_variable(variable: &Variable, state: &State) -> ParseResult<String> {
-    match variable {
-        Variable::RelativePath(p) => Ok(p.clone()),
-        Variable::Reference(p) => {
-            // FIXME unsafe array index
-            let base_ref: &str = p.split(".").collect::<Vec<&str>>()[0];
-            let subref: &str = p.split(".").collect::<Vec<&str>>()[1];
-
-            if let Some(Variable::TemplateFile(template_file )) = state.variables_in_scope.get(base_ref) {
-                
-                let yaml_var = template_file.metadata.clone().unwrap()[subref].clone();
-
-                match yaml_var {
-                    Yaml::String(s) => Ok(s),
-                    _ => Err(AstryxError::ParseError(format!("reference_not_found: {}", subref)))
-                }
-
-                //     Ok(format!("{:?}", subvar))
-                // } else {
-                //     Err(AstryxError::ParseError(format!("reference_not_found: {}", subref)))
-                // }
-            } else {
-                state
-                    .variables_in_scope
-                    .get(p)
-                    .ok_or(
-                        AstryxError::ParseError(format!("reference_not_found: {} {:?}", &p, &state.variables_in_scope)))
-                    .and_then(|v| stringify_variable(v, state))
-            }
-
-            // println!("looking for {:?}", p.clone().split(".").collect::<Vec<&str>>()[0]);
-            // resolve the reference
-            // state
-            //     .variables_in_scope
-            //     .get(base_variable.clone())
-            //     .ok_or(
-            //         AstryxError::ParseError(format!("reference_not_found: {} {:?}", &p, &state.variables_in_scope)))
-            //     .and_then(|v| stringify_variable(v, state))
-        }
-        Variable::QuotedString(p) => Ok(p.clone()),
-        Variable::TemplateFile(t) => {
-            // TODO pull out variable correctly
-            Ok(t.body.clone())
-        },
-    }
-}
-
-/// returns a specific string from an attributes array or throws an error.
-pub fn get_required_string(
-    i: &str,
-    attributes: &HashMap<&String, &Variable>,
-) -> ParseResult<String> {
-    match get_required_variable(i, attributes)? {
-        Variable::QuotedString(s) => {
-            return Ok(s.clone());
-        }
-        _ => {
-            // TODO return Err 'wrong type'.
-            panic!(format!("wrong type: {:?}", i));
-        }
-    }
-}
-
-// fn write_page_buffer(page: String, state: &mut State, nodes: &Vec<Node>) -> ParseResult<()> {
-//     state.create_buffer(page)?;
-//     state.write_to_current_buffer("<html>")?;
-//     run(nodes, state)?;
-//     state.write_to_current_buffer("</html>")
-// }
-
-// fn write_html_tag(ident: String, state: &mut State, nodes: &Vec<Node>) -> ParseResult<()> {
-//     Err(CassetteError::ParseError("hi".into()))
+// returns a specific string from an attributes array or throws an error.
+// pub fn get_required_string(
+//     i: &str,
+//     attributes: &HashMap<&String, &Variable>,
+// ) -> ParseResult<String> {
+//     match get_required_variable(i, attributes)? {
+//         Variable::QuotedString(s) => {
+//             return Ok(s.clone());
+//         }
+//         _ => {
+//             // TODO return Err 'wrong type'.
+//             panic!(format!("wrong type: {:?}", i));
+//         }
+//     }
 // }
