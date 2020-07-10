@@ -1,0 +1,20 @@
+css:
+    body { background: red; }
+
+page \
+    path="/" \
+    title="monomadic"
+
+    row centered
+        column max-width="960px" class="main-header"
+            image path=./monomadic.svg
+            | monomadic
+
+            for post in ./examples/posts/*.md
+                link href=post.route
+                    | ${ post.title }
+
+                page path=post.route title=post.title
+                    h1
+                        | ${ post.title }
+                    | ${ post.body }

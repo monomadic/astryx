@@ -101,7 +101,9 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
                         state.write_to_current_buffer("<html><head>")?;
                         if let Some(title) = get_optional_variable("title", &arguments) {
                             let title = crate::interpolation::stringify_variable(
-                                &title, &state.variables_in_scope)?;
+                                &title,
+                                &state.variables_in_scope,
+                            )?;
 
                             state.write_to_current_buffer(&format!("<title>{}</title>", title))?;
                         };
@@ -188,27 +190,11 @@ pub fn collect_named_attributes(
     Ok(named_attributes)
 }
 
-pub fn get_optional_variable(
-    i: &str,
-    locals: &HashMap<&String, &Variable>,
-) -> Option<Variable> {
+pub fn get_optional_variable(i: &str, locals: &HashMap<&String, &Variable>) -> Option<Variable> {
     locals
         .get(&String::from(i.clone()))
         .map(|v| v.clone().clone())
 }
-
-// pub fn get_required_variable(
-//     i: &str,
-//     attributes: &HashMap<&String, &Variable>,
-// ) -> ParseResult<Variable> {
-//     attributes
-//         .get(&String::from(i.clone()))
-//         .map(|v| v.clone().clone())
-//         .ok_or(AstryxError::ParseError(format!(
-//             "could not find variable: {}",
-//             i
-//         )))
-// }
 
 pub fn get_required_argument(
     i: &str,
@@ -221,22 +207,4 @@ pub fn get_required_argument(
             "argument not found: {}. arguments: {:?}",
             i, arguments
         )))
-
-    // stringify_variable(&get_required_variable(i, arguments)?, state)
 }
-
-// returns a specific string from an attributes array or throws an error.
-// pub fn get_required_string(
-//     i: &str,
-//     attributes: &HashMap<&String, &Variable>,
-// ) -> ParseResult<String> {
-//     match get_required_variable(i, attributes)? {
-//         Variable::QuotedString(s) => {
-//             return Ok(s.clone());
-//         }
-//         _ => {
-//             // TODO return Err 'wrong type'.
-//             panic!(format!("wrong type: {:?}", i));
-//         }
-//     }
-// }
