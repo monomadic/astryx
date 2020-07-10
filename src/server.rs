@@ -1,7 +1,6 @@
 use crate::{
     error::*,
     interpreter::{self, State},
-    parse,
 };
 use simple_server::{Method, Server, StatusCode};
 use std::path::PathBuf;
@@ -9,6 +8,7 @@ use std::path::PathBuf;
 pub(crate) fn start(file: PathBuf, port: u32) -> AstryxResult<()> {
     let host = "127.0.0.1";
     let port = port.to_string();
+    
     let server = Server::new(move |request, mut response| {
         // info!("Request received. {} {}", request.method(), request.uri());
         let state = &mut State::new();

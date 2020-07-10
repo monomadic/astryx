@@ -1,4 +1,6 @@
-use interpreter::State;
+use error::AstryxResult;
+use std::path::PathBuf;
+use structopt::StructOpt;
 
 mod error;
 mod filesystem;
@@ -11,21 +13,23 @@ mod parse;
 mod print;
 mod server;
 
+#[derive(StructOpt, Debug)]
+#[structopt(name = "cassette")]
+struct Opt {
+    /// Input file
+    #[structopt(short, long, parse(from_os_str))]
+    file: PathBuf,
+}
+
 fn main() {
-    let file = filesystem::read_file(std::path::PathBuf::from("./examples/basic.astryx"))
-        .expect("could not read example file");
+    match run() {
+        Ok(_) => println!("\n"),
+        Err(e) => println!("\n\nERROR: {:?}", e),
+    }
+}
 
-    server::start(std::path::PathBuf::from("./examples/basic.astryx"), 8888)
-        .expect("server crashed");
+pub fn run() -> AstryxResult<()> {
+    let opt = Opt::from_args();
 
-    // match parse::run(&file) {
-    //     Ok((_, nodes)) => {
-    //         let state = &mut State::new();
-    //         let _ = interpreter::run(&nodes, state).unwrap();
-    //         println!("{:#?}", state.page_buffers);
-    //     }
-    //     Err(e) => {
-    //         println!("error: {:?}", e);
-    //     }
-    // }
+    server::start(opt.file, 8888)
 }
