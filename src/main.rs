@@ -24,14 +24,13 @@ page \
             | monomadic
 
             for post in ./examples/posts/*.md
-                | TITLE = ${ post.title }
                 link href=post.route
                     | ${ post.title }
 
                 page path=post.route title=post.title
-                    | ${ post.title }
                     h1
                         | ${ post.title }
+                    | ${ post.body }
 "#;
 
 fn main() {
