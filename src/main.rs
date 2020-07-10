@@ -5,6 +5,7 @@ mod filesystem;
 mod frontmatter;
 mod interpolation;
 mod interpreter;
+mod markdown;
 mod models;
 mod parse;
 mod print;

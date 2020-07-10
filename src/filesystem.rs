@@ -37,14 +37,16 @@ pub(crate) fn read_content_metadata(pattern: &str) -> ParseResult<Vec<TemplateFi
         // let filename = file.pa
         let file_content = read_file(file.expect("file to unwrap"))?;
 
+        let (yaml, markdown) = crate::frontmatter::parse(&file_content).map_err(|_| {
+            AstryxError::ParseError("error reading metadata".into())
+        })?;
+
         files.push(TemplateFile {
-            body: file_content.clone(),
+            body: crate::markdown::parse(&markdown)?,
             // nodes:
             // filename: format!("{:?}", file.unwrap()),
             // variables: HashMap::new(),
-            metadata: crate::frontmatter::parse(&file_content).map_err(|_| {
-                AstryxError::ParseError("error reading metadata".into())
-            })?
+            metadata: yaml
         });
     };
 

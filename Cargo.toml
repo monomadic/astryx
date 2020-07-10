@@ -8,4 +8,4 @@ edition = "2018"
 glob = "*"
 nom = { version = "5.1.1", features = ["std"] }
 yaml-rust = "0.4"
-# comrak # markdown
+markdown = "0.2"

@@ -21,7 +21,6 @@ pub fn parse_and_find_content(text: &str) -> Result<(Option<Yaml>, &str), ScanEr
         Some((fm_start, fm_end, content_start)) => {
             let yaml_str = &text[fm_start..fm_end];
             let mut documents = YamlLoader::load_from_str(yaml_str)?;
-
             let rest_of_text = &text[content_start..];
 
             Ok((documents.pop(), rest_of_text))
@@ -30,9 +29,9 @@ pub fn parse_and_find_content(text: &str) -> Result<(Option<Yaml>, &str), ScanEr
     }
 }
 
-pub fn parse(text: &str) -> Result<Option<Yaml>, ScanError> {
-    let (matter, _) = parse_and_find_content(text)?;
-    Ok(matter)
+pub fn parse(text: &str) -> Result<(Option<Yaml>, String), ScanError> {
+    let (yaml, content) = parse_and_find_content(text)?;
+    Ok((yaml, String::from(content)))
 }
 
 #[test]
