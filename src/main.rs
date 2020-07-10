@@ -12,17 +12,20 @@ mod print;
 mod server;
 
 fn main() {
-    let file = filesystem::read_file(std::path::PathBuf::from("./examples/basic.astryx")).expect("could not read example file");
-    match parse::run(&file) {
-        Ok((_, nodes)) => {
-            let state = &mut State::new();
-            // print::print_nodes(nodes.clone(), 0);
+    let file = filesystem::read_file(std::path::PathBuf::from("./examples/basic.astryx"))
+        .expect("could not read example file");
 
-            let _ = interpreter::run(&nodes, state).unwrap();
-            println!("{:#?}", state.page_buffers);
-        }
-        Err(e) => {
-            println!("error: {:?}", e);
-        }
-    }
+    server::start(std::path::PathBuf::from("./examples/basic.astryx"), 8888)
+        .expect("server crashed");
+
+    // match parse::run(&file) {
+    //     Ok((_, nodes)) => {
+    //         let state = &mut State::new();
+    //         let _ = interpreter::run(&nodes, state).unwrap();
+    //         println!("{:#?}", state.page_buffers);
+    //     }
+    //     Err(e) => {
+    //         println!("error: {:?}", e);
+    //     }
+    // }
 }

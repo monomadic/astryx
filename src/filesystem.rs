@@ -1,5 +1,5 @@
 
-pub(crate) fn read_file(pathbuf: std::path::PathBuf) -> ParseResult<String> {
+pub(crate) fn read_file(pathbuf: std::path::PathBuf) -> AstryxResult<String> {
     use std::fs::File;
     use std::io::prelude::*;
 
@@ -19,7 +19,7 @@ use crate::error::*;
 use crate::models::*;
 use std::{collections::HashMap, path::PathBuf};
 
-pub(crate) fn read_content_metadata(pattern: &str) -> ParseResult<Vec<TemplateFile>> {
+pub(crate) fn read_content_metadata(pattern: &str) -> AstryxResult<Vec<TemplateFile>> {
 
     let options = glob::MatchOptions {
         case_sensitive: false,

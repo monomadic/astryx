@@ -11,7 +11,7 @@ use nom::{
 use std::collections::HashMap;
 use yaml_rust::Yaml;
 
-pub fn interpolate(i: &str, locals: &HashMap<String, Variable>) -> ParseResult<String> {
+pub fn interpolate(i: &str, locals: &HashMap<String, Variable>) -> AstryxResult<String> {
     let (r, nodes) = run(i).expect("interpolation failed");
     let mut output_buffer = String::new();
 
@@ -129,7 +129,7 @@ where
 pub fn stringify_variable(
     variable: &Variable,
     locals: &HashMap<String, Variable>,
-) -> ParseResult<String> {
+) -> AstryxResult<String> {
     match variable {
         Variable::RelativePath(p) => Ok(p.clone()),
         Variable::Reference(p) => {
@@ -161,7 +161,7 @@ pub fn stringify_variable(
         }
         Variable::QuotedString(p) => Ok(p.clone()),
         Variable::TemplateFile(t) => {
-            println!("== {:?}", t);
+            // println!("== {:?}", t);
             Ok(t.body.clone())
         },
     }
@@ -171,7 +171,7 @@ pub fn stringify_variable(
 pub fn get_required_variable(
     i: &str,
     attributes: &HashMap<String, Variable>,
-) -> ParseResult<Variable> {
+) -> AstryxResult<Variable> {
     attributes
         .get(&String::from(i.clone()))
         .map(|v| v.clone().clone())

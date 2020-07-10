@@ -31,7 +31,7 @@ impl State {
         }
     }
 
-    pub fn get_required_variable(&self, i: &str) -> ParseResult<&Variable> {
+    pub fn get_required_variable(&self, i: &str) -> AstryxResult<&Variable> {
         self.variables_in_scope
             .get(i)
             .ok_or(AstryxError::ParseError(format!(
@@ -40,7 +40,7 @@ impl State {
             )))
     }
 
-    pub fn get_current_page_buffer(&mut self) -> ParseResult<&mut String> {
+    pub fn get_current_page_buffer(&mut self) -> AstryxResult<&mut String> {
         if let Some(current_page) = self.current_page_buffer.clone() {
             if let Some(current_page_buffer) = self.page_buffers.get_mut(&current_page) {
                 return Ok(current_page_buffer);
@@ -51,13 +51,13 @@ impl State {
     }
 
     // TODO extract this out into a multibuffer design pattern
-    pub fn create_buffer(&mut self, key: String) -> ParseResult<()> {
+    pub fn create_buffer(&mut self, key: String) -> AstryxResult<()> {
         self.page_buffers.insert(key.clone(), String::new()); // FIXME check for collisions!
         self.current_page_buffer = Some(key);
         Ok(())
     }
 
-    pub fn write_to_current_buffer(&mut self, string: &str) -> ParseResult<()> {
+    pub fn write_to_current_buffer(&mut self, string: &str) -> AstryxResult<()> {
         Ok(self.get_current_page_buffer()?.push_str(string))
     }
 }
@@ -80,7 +80,7 @@ pub fn html_tag(ident: &str, attributes: Vec<(&str, String)>) -> String {
 }
 
 /// run the interpreter over a series of nodes
-pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
+pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
     for node in nodes {
         match node {
             Node::Element(e) => {
@@ -171,7 +171,7 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> ParseResult<()> {
 
 pub fn collect_named_attributes(
     attributes: &Vec<Attribute>,
-) -> ParseResult<HashMap<&String, &Variable>> {
+) -> AstryxResult<HashMap<&String, &Variable>> {
     let mut named_attributes: HashMap<&String, &Variable> = HashMap::new();
 
     for attribute in attributes {
@@ -199,7 +199,7 @@ pub fn get_optional_variable(i: &str, locals: &HashMap<&String, &Variable>) -> O
 pub fn get_required_argument(
     i: &str,
     arguments: &HashMap<&String, &Variable>,
-) -> ParseResult<Variable> {
+) -> AstryxResult<Variable> {
     arguments
         .get(&i.to_string())
         .map(|v| v.clone().clone())

@@ -1,5 +1,5 @@
 use std::{path::PathBuf};
-use crate::error::ParseResult;
+use crate::error::AstryxResult;
 
 #[derive(Debug, Clone)]
 pub enum Node {
@@ -44,7 +44,7 @@ pub enum Variable {
 }
 
 impl Variable {
-    pub fn get_required_path(&self, k: &str) -> ParseResult<PathBuf> {
+    pub fn get_required_path(&self, k: &str) -> AstryxResult<PathBuf> {
         panic!("");
     }
 }
