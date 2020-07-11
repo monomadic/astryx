@@ -8,8 +8,7 @@ page \
     row centered
         column max-width="960px" class="main-header"
             image path=./monomadic.svg
-            h1
-                | monomadic
+            h1 | monomadic
             p
                 | pages:
             ol

@@ -1,4 +1,7 @@
-use crate::models::*;
+use crate::{
+    error::{AstryxError, AstryxResult},
+    models::*,
+};
 
 use nom::branch::alt;
 use nom::bytes::complete::{is_not, tag, take_until};
@@ -10,6 +13,18 @@ use nom::{
     character::complete::{alphanumeric1, char, multispace0, newline, one_of, space0, space1},
     combinator::{map, opt},
 };
+
+/// returns a vector of ast nodes
+pub fn parse(i: &str) -> AstryxResult<Vec<Node>> {
+    let (r, nodes) =
+        run(i).map_err(|e| AstryxError::ParseError(format!("error parsing: {:?}", e)))?;
+
+    if r.is_empty() {
+        return Err(AstryxError::ParseError("file did not fully parse.".into()));
+    }
+
+    Ok(nodes)
+}
 
 /// returns a nom combinator version of the parser
 pub fn run(i: &str) -> IResult<&str, Vec<Node>> {
