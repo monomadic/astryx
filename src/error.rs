@@ -5,9 +5,9 @@ pub type AstryxResult<T> = Result<T, AstryxError>;
 
 #[derive(Debug, Clone)]
 pub struct AstryxError {
-    kind: AstryxErrorKind,
-    state: Option<State>,
-    msg: String,
+    pub kind: AstryxErrorKind,
+    pub state: Option<State>,
+    pub msg: String,
 }
 
 #[derive(Debug, Clone)]

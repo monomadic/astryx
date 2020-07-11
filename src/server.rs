@@ -28,8 +28,9 @@ pub(crate) fn start(file: PathBuf, port: u32) -> AstryxResult<()> {
             }
             Err(e) => {
                 response.status(StatusCode::INTERNAL_SERVER_ERROR);
+                // println!("ERROR: {:#?}", e);
                 Ok(response.body(
-                    format!("<h1>Error :(</h1><pre>{:?}</pre>", e)
+                    format!("Error :(\n\n{}\n\n{:#?}", e.msg, e.state)
                         .as_bytes()
                         .to_vec(),
                 )?)
@@ -46,6 +47,7 @@ fn render_pages(file: PathBuf) -> AstryxResult<HashMap<String, String>> {
     let state = &mut State::new();
     let file = crate::filesystem::read_file(file.clone())?;
     let nodes = crate::parse::parse(&file)?;
+    println!("nodes: {:#?}", nodes);
     let _ = interpreter::run(&nodes, state)?;
 
     state

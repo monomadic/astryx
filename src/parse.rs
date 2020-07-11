@@ -1,5 +1,5 @@
 use crate::{
-    error::{AstryxError, AstryxResult},
+    error::{AstryxError, AstryxErrorKind, AstryxResult},
     models::*,
 };
 
@@ -16,11 +16,17 @@ use nom::{
 
 /// returns a vector of ast nodes
 pub fn parse(i: &str) -> AstryxResult<Vec<Node>> {
-    let (r, nodes) =
-        run(i).map_err(|e| AstryxError::new(&format!("error parsing: {:?}", e)))?;
+    let (r, nodes) = run(i)
+        .map_err(|e|
+            AstryxError::new(&format!("error parsing: {:?}", e))
+        )?;
 
     if !r.is_empty() {
-        return Err(AstryxError::new("file did not fully parse."));
+        return Err(AstryxError {
+            kind: AstryxErrorKind::ParseError,
+            state: None,
+            msg: format!("file did not fully parse.\n\nRemainder:\n{}\n\nNodes:\n{:#?}", r, nodes),
+        });
     }
 
     Ok(nodes)
@@ -105,11 +111,12 @@ fn for_loop(i: &str) -> IResult<&str, ForLoop> {
 }
 
 fn element(i: &str) -> IResult<&str, Element> {
-    let (mut r, (pre, ident, _, attributes, _)) = nom::sequence::tuple((
+    let (mut r, (pre, ident, _, attributes, _, _)) = nom::sequence::tuple((
         multispace0,
         symbolic1,
         space0_with_early_terminators,
         nom::multi::many0(attribute),
+        newline,
         blank_lines,
     ))(i)?;
 
