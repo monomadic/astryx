@@ -43,12 +43,6 @@ pub enum Variable {
     TemplateFile(TemplateFile),
 }
 
-impl Variable {
-    pub fn get_required_path(&self, k: &str) -> AstryxResult<PathBuf> {
-        panic!("");
-    }
-}
-
 // caution: does not resolve references.
 impl std::fmt::Display for Variable {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

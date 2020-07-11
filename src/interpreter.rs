@@ -169,7 +169,7 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
                         state.write_to_current_buffer("</a>")?;
                     }
                     _ => {
-                        // panic!("");
+                        return Err(AstryxError::new(&format!("interpreter error: node not found: {}", e.ident)));
                     }
                 }
             }

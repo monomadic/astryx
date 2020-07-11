@@ -21,21 +21,12 @@ pub fn interpolate(i: &str, locals: &HashMap<String, Variable>) -> AstryxResult<
                 output_buffer.push_str(&t);
             }
             InterpolationNode::Reference(r) => {
-                // FIXME unsafe
-                // let base_ref: &str = r.split(".").collect::<Vec<&str>>()[0];
-                // let variable = &get_required_variable(&base_ref, &locals)?;
-
-                // println!(
-                //     "BOO {:?}",
-                //     stringify_variable(&Variable::Reference(r.clone()), locals,)
-                // );
-
                 output_buffer.push_str(&stringify_variable(&Variable::Reference(r), locals)?);
             }
         }
     }
 
-    output_buffer.push_str(r);
+    output_buffer.push_str(r); // push any remainder as well (text at the end of the line)
 
     Ok(output_buffer)
 }
@@ -136,7 +127,6 @@ pub fn stringify_variable(
     match variable {
         Variable::RelativePath(p) => Ok(p.clone()),
         Variable::Reference(p) => {
-            // println!("REFERENCE LOOKUP: {:?}", (p, locals));
             // FIXME unsafe array index
             let base_ref: &str = p.split(".").collect::<Vec<&str>>()[0];
             let subref: &str = p.split(".").collect::<Vec<&str>>()[1];
@@ -167,8 +157,7 @@ pub fn stringify_variable(
         }
         Variable::QuotedString(p) => Ok(p.clone()),
         Variable::TemplateFile(t) => {
-            // TODO: remove this for production
-            panic!("nonspecific template file reference");
+            // a page object has been printed directly. use its body.
             Ok(t.body.clone())
         }
     }
@@ -179,8 +168,6 @@ pub fn get_required_variable(
     i: &str,
     attributes: &HashMap<String, Variable>,
 ) -> AstryxResult<Variable> {
-    // println!("GET_REQ {:?}", (i, attributes));
-
     attributes
         .get(&String::from(i.clone()))
         .map(|v| v.clone().clone())
