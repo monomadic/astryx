@@ -25,10 +25,10 @@ pub fn interpolate(i: &str, locals: &HashMap<String, Variable>) -> AstryxResult<
                 // let base_ref: &str = r.split(".").collect::<Vec<&str>>()[0];
                 // let variable = &get_required_variable(&base_ref, &locals)?;
 
-                println!(
-                    "BOO {:?}",
-                    stringify_variable(&Variable::Reference(r.clone()), locals,)
-                );
+                // println!(
+                //     "BOO {:?}",
+                //     stringify_variable(&Variable::Reference(r.clone()), locals,)
+                // );
 
                 output_buffer.push_str(&stringify_variable(&Variable::Reference(r), locals)?);
             }

@@ -40,14 +40,17 @@ impl State {
             )))
     }
 
+    /// Retrieve the current page from the state buffer
     pub fn get_current_page_buffer(&mut self) -> AstryxResult<&mut String> {
-        if let Some(current_page) = self.current_page_buffer.clone() {
-            if let Some(current_page_buffer) = self.page_buffers.get_mut(&current_page) {
-                return Ok(current_page_buffer);
-            }
-        }
-        // TODO return error
-        panic!("oop");
+        self
+            .current_page_buffer
+            .clone()
+            .and_then(move |current_page_buffer  | {
+                self.page_buffers.get_mut(&current_page_buffer)
+            })
+            .ok_or(AstryxError::ParseError(
+                format!("page buffer request error.")
+            ))
     }
 
     // TODO extract this out into a multibuffer design pattern

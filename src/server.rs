@@ -2,7 +2,7 @@ use crate::{
     error::*,
     interpreter::{self, State},
 };
-use simple_server::{Method, Server, StatusCode};
+use simple_server::{Server, StatusCode};
 use std::{collections::HashMap, path::PathBuf};
 
 pub(crate) fn start(file: PathBuf, port: u32) -> AstryxResult<()> {
@@ -13,6 +13,8 @@ pub(crate) fn start(file: PathBuf, port: u32) -> AstryxResult<()> {
         // info!("Request received. {} {}", request.method(), request.uri());
         let path = request.uri().path();
         let pages = render_pages(file.clone());
+
+        println!("{} {}", request.method(), path);
 
         match pages {
             Ok(pages) => {
@@ -31,8 +33,6 @@ pub(crate) fn start(file: PathBuf, port: u32) -> AstryxResult<()> {
                         .as_bytes()
                         .to_vec(),
                 )?)
-                // response.status(StatusCode::NOT_FOUND);
-                // Ok(response.body("<h1>404</h1><p>Not found!<p>".as_bytes().to_vec())?)
             }
         }
 

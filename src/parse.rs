@@ -19,7 +19,7 @@ pub fn parse(i: &str) -> AstryxResult<Vec<Node>> {
     let (r, nodes) =
         run(i).map_err(|e| AstryxError::ParseError(format!("error parsing: {:?}", e)))?;
 
-    if r.is_empty() {
+    if !r.is_empty() {
         return Err(AstryxError::ParseError("file did not fully parse.".into()));
     }
 
