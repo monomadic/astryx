@@ -19,7 +19,8 @@ pub(crate) fn start(file: PathBuf, port: u32) -> AstryxResult<()> {
         let path = request.uri().path();
 
         println!("state: {:#?}", state);
-        state.page_buffers.insert("/debug".into(), format!("{:#?}", state));
+        state.page_buffers.insert("/state".into(), format!("{:#?}", state));
+        state.page_buffers.insert("/nodes".into(), format!("{:#?}", nodes));
 
         match state.page_buffers.get(path) {
             Some(page) => Ok(response.body(page.as_bytes().to_vec())?),

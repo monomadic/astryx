@@ -179,8 +179,6 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
                         .variables_in_scope
                         .insert(f.index.clone(), Variable::TemplateFile(file));
 
-                    println!("state: {:#?}", new_state.variables_in_scope);
-
                     run(&f.children, &mut new_state)?;
                     state.page_buffers = new_state.page_buffers; // kind of a dirty hack
                 }
@@ -203,7 +201,7 @@ pub fn collect_named_attributes(
 
     for attribute in attributes {
         match attribute {
-            Attribute::Assignment { ident, variable } => {
+            Attribute::NamedAttribute { ident, variable } => {
                 let _ = named_attributes.insert(ident, variable);
 
                 // .ok_or(CassetteError::ParseError(format!(

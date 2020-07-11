@@ -23,9 +23,10 @@ pub fn interpolate(i: &str, locals: &HashMap<String, Variable>) -> AstryxResult<
             InterpolationNode::Reference(r) => {
                 // FIXME unsafe
                 let base_ref: &str = r.split(".").collect::<Vec<&str>>()[0];
+                let variable = &get_required_variable(&base_ref, &locals)?;
 
                 output_buffer.push_str(&stringify_variable(
-                    &get_required_variable(&base_ref, &locals)?,
+                    variable,
                     locals,
                 )?);
             }
@@ -161,7 +162,6 @@ pub fn stringify_variable(
         }
         Variable::QuotedString(p) => Ok(p.clone()),
         Variable::TemplateFile(t) => {
-            // println!("== {:?}", t);
             Ok(t.body.clone())
         },
     }

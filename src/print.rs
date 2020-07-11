@@ -38,7 +38,7 @@ pub fn print_for_loop(f: ForLoop, indent: usize) {
 pub fn print_attribute(a: Attribute) {
     match a {
         Attribute::Symbol(s) => print!(" {}", s),
-        Attribute::Assignment { ident, variable } => {
+        Attribute::NamedAttribute { ident, variable } => {
             print!(" {}={}", ident, variable_to_string(variable))
         }
     }

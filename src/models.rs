@@ -32,7 +32,7 @@ pub struct Element {
 #[derive(Debug, Clone)]
 pub enum Attribute {
     Symbol(String),
-    Assignment { ident: String, variable: Variable },
+    NamedAttribute { ident: String, variable: Variable },
 }
 
 #[derive(Debug, Clone)]

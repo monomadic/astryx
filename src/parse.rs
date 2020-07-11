@@ -134,7 +134,7 @@ fn attribute_assignment(i: &str) -> IResult<&str, Attribute> {
 
     return Ok((
         input,
-        Attribute::Assignment {
+        Attribute::NamedAttribute {
             ident: String::from(ident),
             variable: variable,
         },
