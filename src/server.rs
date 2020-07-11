@@ -16,10 +16,10 @@ pub(crate) fn start(file: PathBuf, port: u32) -> AstryxResult<()> {
         let (_, nodes) =
             crate::parse::run(&file).expect("method parse");
         let _ = interpreter::run(&nodes, state);
-
         let path = request.uri().path();
 
         println!("state: {:#?}", state);
+        state.page_buffers.insert("/debug".into(), format!("{:#?}", state));
 
         match state.page_buffers.get(path) {
             Some(page) => Ok(response.body(page.as_bytes().to_vec())?),

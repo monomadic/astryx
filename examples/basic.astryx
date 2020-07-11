@@ -8,9 +8,11 @@ page \
     row centered
         column max-width="960px" class="main-header"
             image path=./monomadic.svg
-            | monomadic
+            h1
+                | monomadic
+            p
+                | pages:
 
-            | pages
             for post in ./examples/posts/*.md
                 link path=post.route
                     | ${ post.title }

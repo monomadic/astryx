@@ -142,6 +142,11 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
 
                         state.write_to_current_buffer(&html_tag("img", vec![("src", path)]))?;
                     }
+                    "h1" | "h2" | "h3" | "p" => {
+                        state.write_to_current_buffer(&format!("<{}>", e.ident))?;
+                        run(&e.children, state)?;
+                        state.write_to_current_buffer(&format!("</{}>", e.ident))?;
+                    }
                     "link" | "a" => {
                         let path = crate::interpolation::stringify_variable(
                             &get_required_argument("path", &arguments)?,
