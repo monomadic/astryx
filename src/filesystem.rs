@@ -4,12 +4,12 @@ pub(crate) fn read_file(pathbuf: std::path::PathBuf) -> AstryxResult<String> {
     use std::io::prelude::*;
 
     let mut f = File::open(pathbuf.clone()).map_err(|_| {
-        AstryxError::ParseError("error opening file".into())
+        AstryxError::new("error opening file")
     })?;
     let mut buffer = String::new();
 
     f.read_to_string(&mut buffer).map_err(|_| {
-        AstryxError::ParseError("error reading file".into())
+        AstryxError::new("error reading file")
     })?;
 
     Ok(buffer)
@@ -29,7 +29,7 @@ pub(crate) fn read_content_metadata(pattern: &str) -> AstryxResult<Vec<TemplateF
 
     let mut files = Vec::new();
     let globs = glob::glob_with(&format!("./{}", pattern), options).map_err(|_| {
-        AstryxError::ParseError("error globbing file".into())
+        AstryxError::new("error globbing file")
     })?;
 
     for file in globs {
@@ -38,7 +38,7 @@ pub(crate) fn read_content_metadata(pattern: &str) -> AstryxResult<Vec<TemplateF
         let file_content = read_file(file.expect("file to unwrap"))?;
 
         let (yaml, markdown) = crate::frontmatter::parse(&file_content).map_err(|_| {
-            AstryxError::ParseError("error reading metadata".into())
+            AstryxError::new("error reading metadata")
         })?;
 
         files.push(TemplateFile {

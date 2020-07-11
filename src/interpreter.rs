@@ -34,7 +34,7 @@ impl State {
     pub fn get_required_variable(&self, i: &str) -> AstryxResult<&Variable> {
         self.variables_in_scope
             .get(i)
-            .ok_or(AstryxError::ParseError(format!(
+            .ok_or(AstryxError::new(&format!(
                 "variable not found: {}\nvariables in scope: {:?}",
                 i, self.variables_in_scope
             )))
@@ -48,8 +48,8 @@ impl State {
             .and_then(move |current_page_buffer  | {
                 self.page_buffers.get_mut(&current_page_buffer)
             })
-            .ok_or(AstryxError::ParseError(
-                format!("page buffer request error.")
+            .ok_or(AstryxError::new(
+                &format!("page buffer request error.")
             ))
     }
 
@@ -231,7 +231,7 @@ pub fn get_required_argument(
     arguments
         .get(&i.to_string())
         .map(|v| v.clone().clone())
-        .ok_or(AstryxError::ParseError(format!(
+        .ok_or(AstryxError::new(&format!(
             "argument not found: {}. arguments: {:?}",
             i, arguments
         )))

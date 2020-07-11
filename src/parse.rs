@@ -17,10 +17,10 @@ use nom::{
 /// returns a vector of ast nodes
 pub fn parse(i: &str) -> AstryxResult<Vec<Node>> {
     let (r, nodes) =
-        run(i).map_err(|e| AstryxError::ParseError(format!("error parsing: {:?}", e)))?;
+        run(i).map_err(|e| AstryxError::new(&format!("error parsing: {:?}", e)))?;
 
     if !r.is_empty() {
-        return Err(AstryxError::ParseError("file did not fully parse.".into()));
+        return Err(AstryxError::new("file did not fully parse."));
     }
 
     Ok(nodes)

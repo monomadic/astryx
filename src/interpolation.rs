@@ -149,7 +149,7 @@ pub fn stringify_variable(
 
                     match yaml_var {
                         Yaml::String(s) => Ok(s),
-                        _ => Err(AstryxError::ParseError(format!(
+                        _ => Err(AstryxError::new(&format!(
                             "reference_not_found: {}",
                             subref
                         ))),
@@ -158,7 +158,7 @@ pub fn stringify_variable(
             } else {
                 locals
                     .get(p)
-                    .ok_or(AstryxError::ParseError(format!(
+                    .ok_or(AstryxError::new(&format!(
                         "reference_not_found: {} {:?}",
                         &p, &locals
                     )))
@@ -184,7 +184,7 @@ pub fn get_required_variable(
     attributes
         .get(&String::from(i.clone()))
         .map(|v| v.clone().clone())
-        .ok_or(AstryxError::ParseError(format!(
+        .ok_or(AstryxError::new(&format!(
             "could not find variable: {} {:?}",
             i,
             attributes.keys()
