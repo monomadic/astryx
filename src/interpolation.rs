@@ -22,13 +22,15 @@ pub fn interpolate(i: &str, locals: &HashMap<String, Variable>) -> AstryxResult<
             }
             InterpolationNode::Reference(r) => {
                 // FIXME unsafe
-                let base_ref: &str = r.split(".").collect::<Vec<&str>>()[0];
-                let variable = &get_required_variable(&base_ref, &locals)?;
+                // let base_ref: &str = r.split(".").collect::<Vec<&str>>()[0];
+                // let variable = &get_required_variable(&base_ref, &locals)?;
 
-                output_buffer.push_str(&stringify_variable(
-                    variable,
-                    locals,
-                )?);
+                println!(
+                    "BOO {:?}",
+                    stringify_variable(&Variable::Reference(r.clone()), locals,)
+                );
+
+                output_buffer.push_str(&stringify_variable(&Variable::Reference(r), locals)?);
             }
         }
     }
@@ -134,21 +136,24 @@ pub fn stringify_variable(
     match variable {
         Variable::RelativePath(p) => Ok(p.clone()),
         Variable::Reference(p) => {
+            // println!("REFERENCE LOOKUP: {:?}", (p, locals));
             // FIXME unsafe array index
             let base_ref: &str = p.split(".").collect::<Vec<&str>>()[0];
             let subref: &str = p.split(".").collect::<Vec<&str>>()[1];
 
-            if let Some(Variable::TemplateFile(template_file)) =
-                locals.get(base_ref)
-            {
-                let yaml_var = template_file.metadata.clone().unwrap()[subref].clone();
+            if let Some(Variable::TemplateFile(template_file)) = locals.get(base_ref) {
+                if subref == "body" {
+                    Ok(template_file.body.clone())
+                } else {
+                    let yaml_var = template_file.metadata.clone().unwrap()[subref].clone();
 
-                match yaml_var {
-                    Yaml::String(s) => Ok(s),
-                    _ => Err(AstryxError::ParseError(format!(
-                        "reference_not_found: {}",
-                        subref
-                    ))),
+                    match yaml_var {
+                        Yaml::String(s) => Ok(s),
+                        _ => Err(AstryxError::ParseError(format!(
+                            "reference_not_found: {}",
+                            subref
+                        ))),
+                    }
                 }
             } else {
                 locals
@@ -162,8 +167,10 @@ pub fn stringify_variable(
         }
         Variable::QuotedString(p) => Ok(p.clone()),
         Variable::TemplateFile(t) => {
+            // TODO: remove this for production
+            panic!("nonspecific template file reference");
             Ok(t.body.clone())
-        },
+        }
     }
 }
 
@@ -172,6 +179,8 @@ pub fn get_required_variable(
     i: &str,
     attributes: &HashMap<String, Variable>,
 ) -> AstryxResult<Variable> {
+    // println!("GET_REQ {:?}", (i, attributes));
+
     attributes
         .get(&String::from(i.clone()))
         .map(|v| v.clone().clone())
