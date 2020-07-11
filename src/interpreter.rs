@@ -99,6 +99,8 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
 
                         state.create_buffer(path)?;
                         state.write_to_current_buffer("<html><head>")?;
+
+                        // <title> tag
                         if let Some(title) = get_optional_variable("title", &arguments) {
                             let title = crate::interpolation::stringify_variable(
                                 &title,
@@ -106,6 +108,16 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
                             )?;
 
                             state.write_to_current_buffer(&format!("<title>{}</title>", title))?;
+                        };
+
+                        // <style> in head tag
+                        if let Some(css) = state.variables_in_scope.get("css") {
+                            let css = crate::interpolation::stringify_variable(
+                                &css,
+                                &state.variables_in_scope,
+                            )?;
+
+                            state.write_to_current_buffer(&format!("<style>{}</style>", css))?;
                         };
                         state.write_to_current_buffer("<body>")?;
                         run(&e.children, state)?;
@@ -129,6 +141,16 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
                         )?;
 
                         state.write_to_current_buffer(&html_tag("img", vec![("src", path)]))?;
+                    }
+                    "link" | "a" => {
+                        let path = crate::interpolation::stringify_variable(
+                            &get_required_argument("path", &arguments)?,
+                            &state.variables_in_scope,
+                        )?;
+
+                        state.write_to_current_buffer(&format!("<a href=\"{}\">", path))?;
+                        run(&e.children, state)?;
+                        state.write_to_current_buffer("</a>")?;
                     }
                     _ => {
                         // panic!("");
@@ -160,8 +182,8 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
             }
             Node::CodeBlock(cb) => {
                 state
-                    .page_buffers
-                    .insert(cb.ident.clone(), cb.content.clone());
+                    .variables_in_scope
+                    .insert(cb.ident.clone(), Variable::QuotedString(cb.content.clone()));
             }
         }
     }

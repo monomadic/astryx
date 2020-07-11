@@ -1,5 +1,5 @@
 css:
-    body { background: red; }
+    body { background: black; color: white; }
 
 page \
     path="/" \
@@ -10,8 +10,9 @@ page \
             image path=./monomadic.svg
             | monomadic
 
+            | pages
             for post in ./examples/posts/*.md
-                link href=post.route
+                link path=post.route
                     | ${ post.title }
 
                 page path=post.route title=post.title
