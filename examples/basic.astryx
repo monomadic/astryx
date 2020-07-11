@@ -12,12 +12,13 @@ page \
                 | monomadic
             p
                 | pages:
+            ol
+                for post in ./examples/posts/*.md
+                    li
+                        link path=post.route
+                            | ${ post.title }
 
-            for post in ./examples/posts/*.md
-                link path=post.route
-                    | ${ post.title }
-
-                page path=post.route title=post.title
-                    h1
-                        | ${ post.title }
-                    | ${ post.body }
+                    page path=post.route title=post.title
+                        h1
+                            | ${ post.title }
+                        | ${ post.body }

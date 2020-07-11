@@ -142,7 +142,7 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
 
                         state.write_to_current_buffer(&html_tag("img", vec![("src", path)]))?;
                     }
-                    "h1" | "h2" | "h3" | "p" => {
+                    "h1" | "h2" | "h3" | "p" | "ul" | "li" | "ol" => {
                         state.write_to_current_buffer(&format!("<{}>", e.ident))?;
                         run(&e.children, state)?;
                         state.write_to_current_buffer(&format!("</{}>", e.ident))?;
