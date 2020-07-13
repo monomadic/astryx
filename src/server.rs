@@ -9,12 +9,20 @@ pub(crate) fn start(file: PathBuf, port: u32) -> AstryxResult<()> {
     let host = "127.0.0.1";
     let port = port.to_string();
 
-    let server = Server::new(move |request, mut response| {
+    let mut server = Server::new(move |request, mut response| {
         // info!("Request received. {} {}", request.method(), request.uri());
         let path = request.uri().path();
         let pages = render_pages(file.clone());
 
         println!("{} {}", request.method(), path);
+
+        let svgfile = crate::filesystem::read_file(
+            std::path::PathBuf::from("./examples/public/monomadic.svg")).unwrap();
+
+        if path.contains("svg")  {
+            response.header("content-type", "image/svg+xml");
+            return Ok(response.body(svgfile.as_bytes().to_vec())?);
+        }
 
         match pages {
             Ok(pages) => {
@@ -40,6 +48,7 @@ pub(crate) fn start(file: PathBuf, port: u32) -> AstryxResult<()> {
         // request.method() -> &Method::GET
     });
 
+    server.set_static_directory("examples/public");
     server.listen(host, &port);
 }
 

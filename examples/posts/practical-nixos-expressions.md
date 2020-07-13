@@ -9,5 +9,9 @@ tags:
   - "expressions"
 ---
 
-# NIXOS STUFF
-NIXOS
+# Stuff
+
+An example:
+``` bash
+wget -r www.google.com
+```

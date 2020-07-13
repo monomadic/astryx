@@ -4,7 +4,7 @@ pub(crate) fn read_file(pathbuf: std::path::PathBuf) -> AstryxResult<String> {
     use std::io::prelude::*;
 
     let mut f = File::open(pathbuf.clone()).map_err(|_| {
-        AstryxError::new("error opening file")
+        AstryxError::new(&format!("error opening file: {:?}", pathbuf))
     })?;
     let mut buffer = String::new();
 

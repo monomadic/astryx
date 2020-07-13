@@ -14,6 +14,9 @@ pub struct AstryxError {
 pub enum AstryxErrorKind {
     Unknown,
     ParseError,
+    InterpreterError,
+    IOError,
+    ServerError,
 }
 
 impl AstryxError {
@@ -21,13 +24,7 @@ impl AstryxError {
         Self {
             kind: AstryxErrorKind::Unknown,
             state: None,
-            msg: msg.into()
+            msg: msg.into(),
         }
     }
 }
-
-// impl error::Error for CassetteError {
-//     // fn description(&self) -> &str {
-//     //     &format!("{}", self)
-//     // }
-// }

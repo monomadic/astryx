@@ -168,6 +168,17 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
                         run(&e.children, state)?;
                         state.write_to_current_buffer("</a>")?;
                     }
+                    "embed" => {
+                        let path = crate::interpolation::stringify_variable(
+                            &get_required_argument("path", &arguments)?,
+                            &state.variables_in_scope,
+                        )?;
+
+                        let svgfile = crate::filesystem::read_file(
+                            std::path::PathBuf::from(path))?;
+
+                        state.write_to_current_buffer(&svgfile)?;
+                    }
                     _ => {
                         return Err(AstryxError::new(&format!("interpreter error: node not found: {}", e.ident)));
                     }
