@@ -7,10 +7,12 @@ Astryx is a programming language for generating static web content and web front
 
 Why?
 
+Architecturally and practically, Astryx is quite different from other web generators. It is closer to a flutter or elm than other static tools, but much easier to use and rapidly produce content.
+
+- single binary (makes CI/CD into github/gitlab pages very simple)
 - declarative, safe, correct language
-  - aspiring to be something like elm, but far easier and faster to get something going.
 - zero boilerplate
-- (optionally) single file program generates an entire site
+- (optionally) a single astryx program generates an entire site of static content and files including html, css, images to a degree, and scripts.
 - not specific to blogs, expressive enough for any applicable use case including SPAs
 
 __NOTE: pre-production state, not even alpha yet. pushing updates regularly, check the kanban board for progress__

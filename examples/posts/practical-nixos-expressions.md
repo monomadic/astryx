@@ -12,6 +12,10 @@ tags:
 # Stuff
 
 An example:
-``` bash
-wget -r www.google.com
+``` rust
+pub(crate) fn main() {
+  println!("hi");
+}
+
+pub struct Wow { hi: u64 }\nfn blah() -> u64 {}
 ```
