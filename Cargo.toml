@@ -8,6 +8,7 @@ edition = "2018"
 glob = "0.3.0"
 nom = { version = "5.1.1", features = ["std"] }
 yaml-rust = "0.4"
-markdown = "0.2"
 simple-server = "0.4.0"
 structopt = "0.3"
+pulldown-cmark = "*"
+syntect = "*"
