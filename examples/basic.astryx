@@ -1,3 +1,5 @@
+css path=./examples/public/style.css
+
 page \
     path="/" \
     title="monomadic"
@@ -8,9 +10,6 @@ page \
                     column max-width="960px" class="main-header"
                         div class="centered"
                             embed path=./examples/public/monomadic.svg
-
-                            style
-                                embed path=./examples/public/style.css
 
                             div class="fade-in-up"
                                 h1 style="font-weight: 900; font-size: 30px; letter-spacing: 0.15em; line-height: 80px;"

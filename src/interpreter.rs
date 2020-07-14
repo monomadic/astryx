@@ -116,6 +116,10 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
                             state.write_to_current_buffer(&format!("<title>{}</title>", title))?;
                         };
 
+                        if state.page_buffers.get("/style.css").is_some() {
+                            state.write_to_current_buffer(r#"<link rel="stylesheet" media="all" href="/style.css"/>"#)?;
+                        }
+
                         // <style> in head tag
                         if let Some(css) = state.variables_in_scope.get("css") {
                             let css = crate::interpolation::stringify_variable(
@@ -131,6 +135,15 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
 
                         // surrender page buffer after use to previous page buffer
                         state.current_page_buffer = current_page;
+                    }
+                    "css" => {
+                        let path = crate::interpolation::stringify_variable(
+                            &get_required_argument("path", &arguments)?,
+                            &state.variables_in_scope,
+                        )?;
+                        let cssfile = crate::filesystem::read_file(std::path::PathBuf::from(path))?;
+
+                        state.page_buffers.insert("/style.css".into(), cssfile);
                     }
                     "row" | "column" => {
                         state.write_to_current_buffer(&format!("<div class=\"{}\">", e.ident))?;
