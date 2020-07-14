@@ -43,13 +43,10 @@ impl State {
     /// Retrieve the current page from the state buffer
     pub fn get_current_page_buffer(&mut self) -> AstryxResult<&mut String> {
         let state = self.clone();
-        self
-            .current_page_buffer
+        self.current_page_buffer
             .clone()
-            .and_then(move |current_page_buffer  | {
-                self.page_buffers.get_mut(&current_page_buffer)
-            })
-            .ok_or(AstryxError{
+            .and_then(move |current_page_buffer| self.page_buffers.get_mut(&current_page_buffer))
+            .ok_or(AstryxError {
                 kind: AstryxErrorKind::Unknown,
                 state: Some(state),
                 msg: format!("page buffer request error."),
@@ -64,16 +61,14 @@ impl State {
     }
 
     pub fn write_to_current_buffer(&mut self, string: &str) -> AstryxResult<()> {
-        self
-            .get_current_page_buffer()
-            .and_then(|pb| {
-                pb.push_str(string);
-                Ok(())
-            })
+        self.get_current_page_buffer().and_then(|pb| {
+            pb.push_str(string);
+            Ok(())
+        })
     }
 }
 
-pub fn html_tag(ident: &str, attributes: Vec<(&str, String)>) -> String {
+pub fn html_tag(ident: &str, attributes: Vec<(String, String)>) -> String {
     let attribs = if !attributes.is_empty() {
         format!(
             " {}",
@@ -151,10 +146,17 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
                             &state.variables_in_scope,
                         )?;
 
-                        state.write_to_current_buffer(&html_tag("img", vec![("src", path)]))?;
+                        state.write_to_current_buffer(&html_tag(
+                            "img",
+                            vec![("src".into(), path)],
+                        ))?;
                     }
-                    "h1" | "h2" | "h3" | "p" | "ul" | "li" | "ol" => {
-                        state.write_to_current_buffer(&format!("<{}>", e.ident))?;
+                    "h1" | "h2" | "h3" | "p" | "ul" | "li" | "ol" | "style" | "div" => {
+                        state.write_to_current_buffer(&format!(
+                            "<{}{}>",
+                            &e.ident,
+                            crate::html::render_attributes(&e.attributes)
+                        ))?;
                         run(&e.children, state)?;
                         state.write_to_current_buffer(&format!("</{}>", e.ident))?;
                     }
@@ -174,13 +176,15 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
                             &state.variables_in_scope,
                         )?;
 
-                        let svgfile = crate::filesystem::read_file(
-                            std::path::PathBuf::from(path))?;
+                        let svgfile = crate::filesystem::read_file(std::path::PathBuf::from(path))?;
 
                         state.write_to_current_buffer(&svgfile)?;
                     }
                     _ => {
-                        return Err(AstryxError::new(&format!("interpreter error: node not found: {}", e.ident)));
+                        return Err(AstryxError::new(&format!(
+                            "interpreter error: node not found: {}",
+                            e.ident
+                        )));
                     }
                 }
             }

@@ -1,29 +1,34 @@
-css:
-    body { background: black; color: white; }
-
 page \
     path="/" \
     title="monomadic"
 
-    row centered
-        column max-width="960px" class="main-header"
-            embed path=./examples/public/monomadic.svg
+    div style="max-width: 960px; margin: 0 auto;"
+        div class="site-content"
+            row centered
+                    column max-width="960px" class="main-header"
+                        div class="centered"
+                            embed path=./examples/public/monomadic.svg
 
-            | <style>
-            embed path=./examples/public/style.css
-            | </style>
+                            style
+                                embed path=./examples/public/style.css
 
-            h1
-                | monomadic
-            p
-                | pages:
-            ol
-                for post in ./examples/posts/*.md
-                    li
-                        link path=post.route
-                            | ${ post.title }
+                            div class="fade-in-up"
+                                h1 style="font-weight: 900; font-size: 30px; letter-spacing: 0.15em; line-height: 80px;"
+                                    | MONOMADIC
 
-                    page path=post.route title=post.title
-                        h1
-                            | ${ post.title }
-                        | ${ post.body }
+                        for post in ./examples/posts/*.md
+
+                            div class="page-link"
+                                link path=post.route
+                                    div class="title"
+                                        | ${ post.title }
+                                    div class="description"
+                                        | ${ post.description }
+
+                            page path=post.route title=post.title
+                                style
+                                    embed path=./examples/public/style.css
+
+                                h1
+                                    | ${ post.title }
+                                | ${ post.body }
