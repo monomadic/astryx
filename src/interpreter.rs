@@ -121,14 +121,14 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
                         }
 
                         // <style> in head tag
-                        if let Some(css) = state.variables_in_scope.get("css") {
-                            let css = crate::interpolation::stringify_variable(
-                                &css,
-                                &state.variables_in_scope,
-                            )?;
+                        // if let Some(css) = state.variables_in_scope.get("css") {
+                        //     let css = crate::interpolation::stringify_variable(
+                        //         &css,
+                        //         &state.variables_in_scope,
+                        //     )?;
 
-                            state.write_to_current_buffer(&format!("<style>{}</style>", css))?;
-                        };
+                        //     state.write_to_current_buffer(&format!("<style>{}</style>", css))?;
+                        // };
                         state.write_to_current_buffer("<body>")?;
                         run(&e.children, state)?;
                         state.write_to_current_buffer("</body></html>")?;
