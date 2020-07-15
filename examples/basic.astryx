@@ -26,19 +26,19 @@ page \
                                     | ${ post.description }
 
                             page path=post.route title=post.title
+                                div style="max-width: 960px; margin: 0 auto;"
+                                    div class="capslink"
+                                        link path=.//
+                                            embed path=./examples/public/monomadic-small.svg
+                                            strong
+                                                | MONOMADIC
 
-                                div class="capslink"
-                                    link path=.//
-                                        embed path=./examples/public/monomadic-small.svg
-                                        strong
-                                            | MONOMADIC
-
-                                h1
-                                    | ${ post.title }
-                                abstract
-                                    | ${ post.description }
-                                hr
-                                | ${ post.body }
+                                    h1
+                                        | ${ post.title }
+                                    abstract
+                                        | ${ post.description }
+                                    hr
+                                    | ${ post.body }
 
                     div class="centered"
                         strong
