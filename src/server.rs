@@ -16,8 +16,6 @@ pub(crate) fn start(file: PathBuf, port: u32) -> AstryxResult<()> {
 
         println!("{} {}", request.method(), path);
 
-        let svgfile = crate::filesystem::read_file(
-            std::path::PathBuf::from("./examples/public/monomadic.svg")).unwrap();
 
         if path.contains("svg")  {
             response.header("content-type", "image/svg+xml");
@@ -37,8 +35,14 @@ pub(crate) fn start(file: PathBuf, port: u32) -> AstryxResult<()> {
             Err(e) => {
                 response.status(StatusCode::INTERNAL_SERVER_ERROR);
                 println!("ERROR: {:#?}", e);
+
+                let mut highlighter = crate::highlighter::SyntaxHighlighter::new();
+                highlighter.set_syntax_by_file_extension("yaml");
+                let highlighted_msg = highlighter.highlight(&format!("{}", e.msg));
+                let highlighted_state = highlighter.highlight(&format!("{:?}", e.state));
+
                 Ok(response.body(
-                    format!("Error :(\n\n{}\n\n{:#?}", e.msg, e.state)
+                    format!("<html style='background-color: black;color: white;'><body><h1>Error :(</h1><pre>{}</pre>\n\n<pre>{:#?}</pre></body></html>", highlighted_msg, highlighted_state)
                         .as_bytes()
                         .to_vec(),
                 )?)

@@ -5,6 +5,7 @@ use structopt::StructOpt;
 mod error;
 mod filesystem;
 mod frontmatter;
+mod highlighter;
 mod html;
 mod interpolation;
 mod interpreter;

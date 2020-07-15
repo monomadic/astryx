@@ -9,15 +9,16 @@ page \
             row centered
                     column max-width="960px" class="main-header"
                         div class="centered"
-                            embed path=./examples/public/monomadic.svg
 
                             div class="fade-in-up"
+                                embed path=./examples/public/monomadic.svg
+
                                 h1 style="font-weight: 900; font-size: 30px; letter-spacing: 0.15em; line-height: 80px;"
                                     | MONOMADIC
 
                         for post in ./examples/posts/*.md
 
-                            div class="page-link"
+                            div class="page-link post padding-sm"
                                 link path=post.route
                                     div class="title"
                                         | ${ post.title }
@@ -25,10 +26,18 @@ page \
                                     | ${ post.description }
 
                             page path=post.route title=post.title
-                                embed path=./examples/public/monomadic-small.svg
+
+                                div class="capslink"
+                                    link path=.//
+                                        embed path=./examples/public/monomadic-small.svg
+                                        strong
+                                            | MONOMADIC
 
                                 h1
                                     | ${ post.title }
+                                abstract
+                                    | ${ post.description }
+                                hr
                                 | ${ post.body }
 
                     div class="centered"

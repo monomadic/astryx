@@ -1,6 +1,6 @@
 use crate::error::*;
+use crate::highlighter::SyntaxHighlighter;
 use pulldown_cmark::{html, Event, Options, Parser, Tag};
-use std::io::stdout;
 
 pub fn parse(i: &str) -> AstryxResult<String> {
     // TODO use a stricter lib that will throw errors, or
@@ -35,7 +35,7 @@ pub fn parse(i: &str) -> AstryxResult<String> {
                 Event::Html(html.into())
                 // Event::Html("<code>".into())
             }
-            Event::Text(text) => Event::Html(h.highlight(&text.to_owned()).into()),
+            Event::Text(text) => Event::Html(h.highlight_line(&text.to_owned()).into()),
             Event::End(Tag::CodeBlock(_)) => {
                 // syntax_mode = None;
                 Event::Html("</pre></code>".into())
@@ -84,42 +84,4 @@ pub fn parse(i: &str) -> AstryxResult<String> {
     let mut buf: Vec<u8> = Vec::new();
     html::write_html(&mut buf, parser).unwrap();
     Ok(String::from_utf8(buf).unwrap())
-}
-
-use syntect::easy::HighlightLines;
-use syntect::highlighting::ThemeSet;
-use syntect::html::{
-    start_highlighted_html_snippet, styled_line_to_highlighted_html, IncludeBackground,
-};
-use syntect::parsing::SyntaxSet;
-
-struct SyntaxHighlighter<'a> {
-    highlighter: Option<HighlightLines<'a>>,
-    syntaxes: SyntaxSet,
-    themes: ThemeSet,
-}
-
-impl SyntaxHighlighter<'_> {
-    fn new() -> Self {
-        SyntaxHighlighter {
-            themes: ThemeSet::load_defaults(),
-            highlighter: None,
-            syntaxes: SyntaxSet::load_defaults_newlines(),
-        }
-    }
-
-    // fn set_syntax(id: &str)
-    // fn set_theme(theme: &str)
-
-    fn start_highlight(&self) -> String {
-        let snippet = start_highlighted_html_snippet(&self.themes.themes["base16-ocean.dark"]);
-        snippet.0
-    }
-
-    fn highlight<'a>(&self, i: &str) -> String {
-        let s = self.syntaxes.find_syntax_by_extension("rs").unwrap();
-        let mut h = HighlightLines::new(s, &self.themes.themes["base16-ocean.dark"]);
-        let regions = h.highlight(i, &self.syntaxes);
-        styled_line_to_highlighted_html(&regions[..], IncludeBackground::No)
-    }
 }

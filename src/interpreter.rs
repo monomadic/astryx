@@ -164,7 +164,7 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
                             vec![("src".into(), path)],
                         ))?;
                     }
-                    "h1" | "h2" | "h3" | "p" | "ul" | "li" | "ol" | "style" | "div" | "strong" => {
+                    "h1" | "h2" | "h3" | "p" | "ul" | "li" | "ol" | "style" | "div" | "strong" | "hr" | "abstract" => {
                         state.write_to_current_buffer(&format!(
                             "<{}{}>",
                             &e.ident,
