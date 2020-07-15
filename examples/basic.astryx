@@ -21,13 +21,18 @@ page \
                                 link path=post.route
                                     div class="title"
                                         | ${ post.title }
-                                    div class="description"
-                                        | ${ post.description }
+                                div class="description"
+                                    | ${ post.description }
 
                             page path=post.route title=post.title
-                                style
-                                    embed path=./examples/public/style.css
+                                embed path=./examples/public/monomadic-small.svg
 
                                 h1
                                     | ${ post.title }
                                 | ${ post.body }
+
+                    div class="centered"
+                        strong
+                            | made with 
+                            link path="https://github.com/monomadic/astryx"
+                                | astryx

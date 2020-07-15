@@ -16,3 +16,7 @@ Architecturally and practically, Astryx is quite different from other web genera
 - not specific to blogs, expressive enough for any applicable use case including SPAs
 
 __NOTE: pre-production state, not even alpha yet. pushing updates regularly, check the kanban board for progress__
+
+- example code
+
+Looks too magical? Actually it tries to be extremely reasonable and logical.

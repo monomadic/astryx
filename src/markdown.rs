@@ -28,38 +28,6 @@ pub fn parse(i: &str) -> AstryxResult<String> {
 
     let parser = Parser::new_ext(i, Options::empty())
         .map(|event| match event {
-            // Event::Code(code) => {
-            //     println!("CODE: {:?}", code);
-            //     Event::Html(code.into())
-            // }
-            // Event::Start(Tag::CodeBlock(ref kind)) => {
-            //     println!("CIODE KIND {:?}", kind);
-            //     let snippet = start_highlighted_html_snippet(&ts.themes["base16-ocean.dark"]);
-            //     let mut html = snippet.0;
-            //     html.push_str("<code>");
-            //     syntax_mode = Some(kind.to_owned());
-            //     Event::Html(html.into())
-            // }
-            // Event::End(Tag::CodeBlock(_)) => {
-            //     syntax_mode = None;
-            //     Event::Html("</code></pre>".into())
-            // }
-            // Event::Text(text) => {
-            //     // let html = styled_line_to_highlighted_html(text, Color::WHITE);
-
-            //     // let s = "pub struct Wow { hi: u64 }\nfn blah() -> u64 {}";
-            //     // // for line in LinesWithEndings::from(&String::from(text)) {
-            //     //     let ranges: Vec<(Style, &str)> = h.highlight(line, &ps);
-            //     //     let escaped = as_24_bit_terminal_escaped(&ranges[..], true);
-            //     //     println!("{}", escaped);
-            //     // }
-
-            //     Event::Html(highlight("pub struct Wow { hi: u64 }\nfn blah() -> u64 {}").into())
-            // }
-
-            // Event::Start(Tag::CodeBlock(ref kind)) => {
-            //     Event::Html(highlight(html.into).into())
-            // }
             Event::Start(Tag::CodeBlock(ref kind)) => {
                 let mut html = h.start_highlight();
                 html.push_str("<code>");
@@ -105,7 +73,6 @@ pub fn parse(i: &str) -> AstryxResult<String> {
             //     // Event::Html(html.into())
             // }
             _ => {
-                // println!("EVENT {:?}", event);
                 event
             }
         })

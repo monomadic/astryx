@@ -21,7 +21,7 @@ pub(crate) fn start(file: PathBuf, port: u32) -> AstryxResult<()> {
 
         if path.contains("svg")  {
             response.header("content-type", "image/svg+xml");
-            return Ok(response.body(svgfile.as_bytes().to_vec())?);
+            // return Ok(response.body(svgfile.as_bytes().to_vec())?);
         }
 
         match pages {
