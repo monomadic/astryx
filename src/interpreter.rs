@@ -20,6 +20,8 @@ pub struct State {
     pub page_buffers: HashMap<String, String>,
     variables_in_scope: HashMap<String, Variable>,
     current_page_buffer: Option<String>,
+    overlays: HashMap<String, TagOverlay>,
+    decorators: HashMap<String, TagDecorator>,
 }
 
 impl State {
@@ -28,6 +30,8 @@ impl State {
             variables_in_scope: HashMap::new(),
             page_buffers: HashMap::new(),
             current_page_buffer: None, // TODO should be current_page, it's not the buffer.
+            overlays: TagOverlay::defaults(),
+            decorators: TagDecorator::defaults(),
         }
     }
 
@@ -90,7 +94,7 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
     for node in nodes {
         match node {
             Node::Element(e) => {
-                let arguments = collect_named_attributes(&e.attributes)?;
+                let arguments = collect_attributes(&e.attributes, &state.decorators)?;
 
                 match e.ident.as_str() {
                     // TODO make elements scriptable / programmable
@@ -117,7 +121,9 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
                         };
 
                         if state.page_buffers.get("/style.css").is_some() {
-                            state.write_to_current_buffer(r#"<link rel="stylesheet" media="all" href="/style.css"/>"#)?;
+                            state.write_to_current_buffer(
+                                r#"<link rel="stylesheet" media="all" href="/style.css"/>"#,
+                            )?;
                         }
 
                         // <style> in head tag
@@ -137,14 +143,13 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
                         state.current_page_buffer = current_page;
                     }
                     "css" => {
-                        let path = get_required_argument("path", &arguments)?
-                            .to_string()?;
+                        let path = get_required_argument("path", &arguments)?.to_string()?;
 
                         // let path = crate::interpolation::stringify_variable(
                         //     &get_required_argument("path", &arguments)?,
                         //     &state.variables_in_scope,
                         // )?;
-                        
+
                         let cssfile = crate::filesystem::read_file(std::path::PathBuf::from(path))?;
 
                         state.page_buffers.insert("/style.css".into(), cssfile);
@@ -161,7 +166,10 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
                             &state.variables_in_scope,
                         )?;
 
-                        state.write_to_current_buffer(&format!("<div style=\"width: clamp(10px, {}, 1000px)\">", max_width))?;
+                        state.write_to_current_buffer(&format!(
+                            "<div style=\"width: clamp(10px, {}, 1000px)\">",
+                            max_width
+                        ))?;
                         run(&e.children, state)?;
                         state.write_to_current_buffer("</div>")?;
                     }
@@ -179,11 +187,16 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
                             vec![("src".into(), path)],
                         ))?;
                     }
-                    "h1" | "h2" | "h3" | "p" | "ul" | "li" | "ol" | "style" | "div" | "strong" | "hr" | "abstract" => {
+                    "h1" | "h2" | "h3" | "p" | "ul" | "li" | "ol" | "style" | "div" | "strong"
+                    | "hr" | "abstract" => {
+                        let attributes = collect_attributes(&e.attributes, &state.decorators)?;
+
                         state.write_to_current_buffer(&format!(
                             "<{}{}>",
                             &e.ident,
-                            crate::html::render_attributes(&e.attributes)
+                            &attributes.iter().map(|(ident, variable)| {
+                                format!(" {}=\"{}\"", ident, variable)
+                            }).collect::<Vec<String>>().join("")
                         ))?;
                         run(&e.children, state)?;
                         state.write_to_current_buffer(&format!("</{}>", e.ident))?;
@@ -209,10 +222,14 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
                         state.write_to_current_buffer(&svgfile)?;
                     }
                     _ => {
-                        return Err(AstryxError::new(&format!(
-                            "interpreter error: node not found: {}",
-                            e.ident
-                        )));
+                        if let Some(overlay) = state.overlays.clone().get(&e.ident) {
+                            state.write_to_current_buffer(&format!("<h1>{}</h1>", overlay.tag))?;
+                        } else {
+                            return Err(AstryxError::new(&format!(
+                                "interpreter error: node not found: {}",
+                                e.ident
+                            )));
+                        }
                     }
                 }
             }
@@ -248,28 +265,39 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
     Ok(())
 }
 
-pub fn collect_named_attributes(
+fn collect_attributes(
     attributes: &Vec<Attribute>,
-) -> AstryxResult<HashMap<&String, &Variable>> {
-    let mut named_attributes: HashMap<&String, &Variable> = HashMap::new();
+    decorators: &HashMap<String, TagDecorator>,
+) -> AstryxResult<HashMap<String, Variable>> {
+    let mut named_attributes: HashMap<String, Variable> = HashMap::new();
 
     for attribute in attributes {
         match attribute {
             Attribute::NamedAttribute { ident, variable } => {
-                let _ = named_attributes.insert(ident, variable);
-
-                // .ok_or(CassetteError::ParseError(format!(
-                //     "duplicate assignment: {}",
-                //     ident
-                // )))?;
+                let _ = named_attributes.insert(ident.clone(), variable.clone());
             }
-            _ => (),
+            Attribute::Decorator(d) => {
+                if let Some(decorator) = decorators.get(&d.ident) {
+                    // FIXME this is crap, needs a way better solution
+                    named_attributes.insert(
+                        "class".into(),
+                        Variable::QuotedString(decorator.classes.join(" ")),
+                    );
+                // for class in decorator.classes {
+
+                // }
+                } else {
+                    return Err(AstryxError::new("no such decorator".into()));
+                }
+            }
+            Attribute::Symbol(_) => {}
         }
     }
+    println!("EEEE {:?}", named_attributes);
     Ok(named_attributes)
 }
 
-pub fn get_optional_variable(i: &str, locals: &HashMap<&String, &Variable>) -> Option<Variable> {
+pub fn get_optional_variable(i: &str, locals: &HashMap<String, Variable>) -> Option<Variable> {
     locals
         .get(&String::from(i.clone()))
         .map(|v| v.clone().clone())
@@ -277,7 +305,7 @@ pub fn get_optional_variable(i: &str, locals: &HashMap<&String, &Variable>) -> O
 
 pub fn get_required_argument(
     i: &str,
-    arguments: &HashMap<&String, &Variable>,
+    arguments: &HashMap<String, Variable>,
 ) -> AstryxResult<Variable> {
     arguments
         .get(&i.to_string())
@@ -286,4 +314,38 @@ pub fn get_required_argument(
             "argument not found: {}. arguments: {:?}",
             i, arguments
         )))
+}
+
+#[derive(Debug, Clone)]
+struct TagOverlay {
+    tag: String,
+}
+
+impl TagOverlay {
+    fn defaults() -> HashMap<String, TagOverlay> {
+        let mut overlays = HashMap::new();
+
+        overlays.insert("rrow".into(), TagOverlay { tag: "div".into() });
+
+        overlays
+    }
+}
+#[derive(Debug, Clone)]
+struct TagDecorator {
+    classes: Vec<String>,
+}
+
+impl TagDecorator {
+    fn defaults() -> HashMap<String, TagDecorator> {
+        let mut decorators = HashMap::new();
+
+        decorators.insert(
+            "centered".into(),
+            TagDecorator {
+                classes: vec!["centered".into()],
+            },
+        );
+
+        decorators
+    }
 }
