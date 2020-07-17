@@ -137,16 +137,31 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
                         state.current_page_buffer = current_page;
                     }
                     "css" => {
-                        let path = crate::interpolation::stringify_variable(
-                            &get_required_argument("path", &arguments)?,
-                            &state.variables_in_scope,
-                        )?;
+                        let path = get_required_argument("path", &arguments)?
+                            .to_string()?;
+
+                        // let path = crate::interpolation::stringify_variable(
+                        //     &get_required_argument("path", &arguments)?,
+                        //     &state.variables_in_scope,
+                        // )?;
+                        
                         let cssfile = crate::filesystem::read_file(std::path::PathBuf::from(path))?;
 
                         state.page_buffers.insert("/style.css".into(), cssfile);
                     }
                     "row" | "column" => {
                         state.write_to_current_buffer(&format!("<div class=\"{}\">", e.ident))?;
+                        run(&e.children, state)?;
+                        state.write_to_current_buffer("</div>")?;
+                    }
+                    "clamp" => {
+                        // clamp(<min>, <actual>, <max>)
+                        let max_width = crate::interpolation::stringify_variable(
+                            &get_required_argument("max-width", &arguments)?,
+                            &state.variables_in_scope,
+                        )?;
+
+                        state.write_to_current_buffer(&format!("<div style=\"width: clamp(10px, {}, 1000px)\">", max_width))?;
                         run(&e.children, state)?;
                         state.write_to_current_buffer("</div>")?;
                     }

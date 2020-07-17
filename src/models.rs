@@ -1,5 +1,5 @@
-use std::{path::PathBuf};
-use crate::error::AstryxResult;
+use crate::error::{AstryxError, AstryxResult};
+use std::path::PathBuf;
 
 #[derive(Debug, Clone)]
 pub enum Node {
@@ -32,7 +32,14 @@ pub struct Element {
 #[derive(Debug, Clone)]
 pub enum Attribute {
     Symbol(String),
+    Decorator(Decorator),
     NamedAttribute { ident: String, variable: Variable },
+}
+
+#[derive(Debug, Clone)]
+pub struct Decorator {
+    pub ident: String,
+    // value: ?
 }
 
 #[derive(Debug, Clone)]
@@ -43,6 +50,18 @@ pub enum Variable {
     TemplateFile(TemplateFile),
 }
 
+impl Variable {
+    // pub fn resolve(locals:) -> AstryxResult<Variable>
+
+    pub fn to_string(&self) -> AstryxResult<String> {
+        match self {
+            Variable::QuotedString(s) => Ok(s.clone()),
+            Variable::RelativePath(p) => Ok(p.clone()),
+            _ => Err(AstryxError::new(&format!("cannot to_string: {:?}", self))),
+        }
+    }
+}
+
 // caution: does not resolve references.
 impl std::fmt::Display for Variable {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -50,9 +69,7 @@ impl std::fmt::Display for Variable {
             Variable::RelativePath(s) | Variable::QuotedString(s) | Variable::Reference(s) => {
                 f.write_str(s)
             }
-            Variable::TemplateFile(t) => {
-                f.write_str(&t.body)
-            }
+            Variable::TemplateFile(t) => f.write_str(&t.body),
         }
     }
 }

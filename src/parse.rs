@@ -140,9 +140,26 @@ fn element(i: &str) -> IResult<&str, Element> {
 
 fn attribute(i: &str) -> IResult<&str, Attribute> {
     alt((
+        map(decorator, |d| Attribute::Decorator(d)),
         attribute_assignment,
         map(symbolic1, |s| Attribute::Symbol(String::from(s))),
     ))(i)
+}
+
+fn decorator(i: &str) -> IResult<&str, Decorator> {
+    let (input, (_, _, ident, _)) = nom::sequence::tuple((
+        space0_with_early_terminators,
+        char('@'),
+        symbolic1,
+        space0_with_early_terminators,
+    ))(i)?;
+
+    return Ok((
+        input,
+        Decorator {
+            ident: String::from(ident),
+        },
+    ));
 }
 
 fn attribute_assignment(i: &str) -> IResult<&str, Attribute> {

@@ -1,0 +1,47 @@
+css path=./examples/public/style.css
+
+page \
+    path="/" \
+    title="monomadic"
+
+    div style="max-width: 960px; margin: 0 auto;"
+        div class="site-content"
+            row @centered
+                    column max-width="960px" class="main-header"
+                        div class="centered"
+
+                            div class="fade-in-up"
+                                embed path=./examples/public/monomadic.svg
+
+                                h1 style="font-weight: 900; font-size: 30px; letter-spacing: 0.15em; line-height: 80px;"
+                                    | MONOMADIC
+
+                        for post in ./examples/posts/*.md
+
+                            div class="page-link post padding-sm"
+                                link path=post.route
+                                    div class="title"
+                                        | ${ post.title }
+                                div class="description"
+                                    | ${ post.description }
+
+                            page path=post.route title=post.title
+                                div style="max-width: 960px; margin: 0 auto;"
+                                    div class="capslink"
+                                        link path=.//
+                                            embed path=./examples/public/monomadic-small.svg
+                                            strong
+                                                | MONOMADIC
+
+                                    h1
+                                        | ${ post.title }
+                                    abstract
+                                        | ${ post.description }
+                                    hr
+                                    | ${ post.body }
+
+                    div class="centered"
+                        strong
+                            | made with 
+                            link path="https://github.com/monomadic/astryx"
+                                | astryx

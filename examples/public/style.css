@@ -3,6 +3,21 @@
   animation: move-up 3s ease-out forwards;
 }
 
+.row {
+  display: flex;
+  flex-direction: row;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+}
+
+.centered {
+  place-content: center;
+  display: grid
+}
+
 @keyframes move-up {
   from {
       bottom: -20px;
@@ -162,7 +177,7 @@ a {
   font-size: 20px;
 }
 
-.centered {
+.text-align-centered {
   text-align: center;
 }
 
