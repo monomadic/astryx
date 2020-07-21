@@ -4,10 +4,7 @@ page \
     path="/" \
     title="monomadic"
 
-    rrow
-        | hello
-
-    div @centered
+    cols @centered
         div style="max-width: 600px; min-width: 300px;"
             div @centered
 

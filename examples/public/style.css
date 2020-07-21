@@ -3,12 +3,12 @@
   animation: move-up 3s ease-out forwards;
 }
 
-.row {
+.rows {
   display: flex;
   flex-direction: row;
 }
 
-.column {
+.columns {
   display: flex;
   flex-direction: column;
 }

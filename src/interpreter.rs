@@ -194,9 +194,11 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
                         state.write_to_current_buffer(&format!(
                             "<{}{}>",
                             &e.ident,
-                            &attributes.iter().map(|(ident, variable)| {
-                                format!(" {}=\"{}\"", ident, variable)
-                            }).collect::<Vec<String>>().join("")
+                            &attributes
+                                .iter()
+                                .map(|(ident, variable)| { format!(" {}=\"{}\"", ident, variable) })
+                                .collect::<Vec<String>>()
+                                .join("")
                         ))?;
                         run(&e.children, state)?;
                         state.write_to_current_buffer(&format!("</{}>", e.ident))?;
@@ -227,9 +229,11 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
                         state.write_to_current_buffer(&format!(
                             "<{}{}>",
                             &e.ident,
-                            &attributes.iter().map(|(ident, variable)| {
-                                format!(" {}=\"{}\"", ident, variable)
-                            }).collect::<Vec<String>>().join("")
+                            &attributes
+                                .iter()
+                                .map(|(ident, variable)| { format!(" {}=\"{}\"", ident, variable) })
+                                .collect::<Vec<String>>()
+                                .join("")
                         ))?;
                         run(&e.children, state)?;
                         state.write_to_current_buffer(&format!("</{}>", e.ident))?;
@@ -244,7 +248,6 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
                                 children: e.children.clone(), // ouch, we should try to find a way around cloning here
                             };
                             run(&vec![Node::Element(current_el)], state)?;
-
                         } else {
                             // ok it's really not found, return an error.
                             return Err(AstryxError::new(&format!(
@@ -340,6 +343,7 @@ pub fn get_required_argument(
 #[derive(Debug, Clone)]
 struct TagOverlay {
     ident: String,
+    classes: Vec<String>,
     // attributes: HashMap<String, Attribute>,
 }
 
@@ -347,8 +351,29 @@ impl TagOverlay {
     fn defaults() -> HashMap<String, TagOverlay> {
         let mut overlays = HashMap::new();
 
-        overlays.insert("image".into(), TagOverlay { ident: "img".into() });
-        overlays.insert("h1".into(), TagOverlay { ident: "h1".into() });
+        overlays.insert(
+            "image".into(),
+            TagOverlay {
+                ident: "img".into(),
+                classes: vec![],
+            },
+        );
+
+        overlays.insert(
+            "h1".into(),
+            TagOverlay {
+                ident: "h1".into(),
+                classes: vec![],
+            },
+        );
+
+        overlays.insert(
+            "rows".into(),
+            TagOverlay {
+                ident: "div".into(),
+                classes: vec!["rows".into()],
+            },
+        );
 
         overlays
     }

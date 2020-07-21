@@ -1,11 +1,15 @@
 { pkgs ? import <nixpkgs> { } }:
 pkgs.mkShell {
+  name = "rust-env";
+
   buildInputs = with pkgs; [
-    cargo
-    cmake
-    pkgconfig
     rustc
-    rustfmt
-    python36
+    cargo
+    clang
+    openssl
+    pkgconfig
   ];
+
+  shellHook = ''
+  '';
 }
