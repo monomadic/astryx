@@ -221,10 +221,32 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
 
                         state.write_to_current_buffer(&svgfile)?;
                     }
+                    "tag" => {
+                        let attributes = collect_attributes(&e.attributes, &state.decorators)?;
+
+                        state.write_to_current_buffer(&format!(
+                            "<{}{}>",
+                            &e.ident,
+                            &attributes.iter().map(|(ident, variable)| {
+                                format!(" {}=\"{}\"", ident, variable)
+                            }).collect::<Vec<String>>().join("")
+                        ))?;
+                        run(&e.children, state)?;
+                        state.write_to_current_buffer(&format!("</{}>", e.ident))?;
+                    }
                     _ => {
+                        // tag was not found, lets check if it exists as an overlay
                         if let Some(overlay) = state.overlays.clone().get(&e.ident) {
-                            state.write_to_current_buffer(&format!("<h1>{}</h1>", overlay.tag))?;
+                            // it was an overlay, lets resolve it and reparse
+                            let current_el = Element {
+                                ident: overlay.ident.clone(),
+                                attributes: e.attributes.clone(),
+                                children: e.children.clone(), // ouch, we should try to find a way around cloning here
+                            };
+                            run(&vec![Node::Element(current_el)], state)?;
+
                         } else {
+                            // ok it's really not found, return an error.
                             return Err(AstryxError::new(&format!(
                                 "interpreter error: node not found: {}",
                                 e.ident
@@ -293,7 +315,6 @@ fn collect_attributes(
             Attribute::Symbol(_) => {}
         }
     }
-    println!("EEEE {:?}", named_attributes);
     Ok(named_attributes)
 }
 
@@ -318,14 +339,16 @@ pub fn get_required_argument(
 
 #[derive(Debug, Clone)]
 struct TagOverlay {
-    tag: String,
+    ident: String,
+    // attributes: HashMap<String, Attribute>,
 }
 
 impl TagOverlay {
     fn defaults() -> HashMap<String, TagOverlay> {
         let mut overlays = HashMap::new();
 
-        overlays.insert("rrow".into(), TagOverlay { tag: "div".into() });
+        overlays.insert("image".into(), TagOverlay { ident: "img".into() });
+        overlays.insert("h1".into(), TagOverlay { ident: "h1".into() });
 
         overlays
     }
