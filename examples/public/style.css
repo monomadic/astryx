@@ -4,8 +4,8 @@
 }
 
 .rows {
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
 }
 
 .columns {
@@ -15,7 +15,7 @@
 
 .centered {
   place-content: center;
-  display: grid
+  display: grid;
 }
 
 @keyframes move-up {

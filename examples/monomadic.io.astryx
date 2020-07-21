@@ -4,8 +4,8 @@ page \
     path="/" \
     title="monomadic"
 
-    cols @centered
-        div style="max-width: 600px; min-width: 300px;"
+    rows @centered
+        row style="max-width: 600px; min-width: 300px;"
             div @centered
 
                 div class="fade-in-up"  style="text-align:center"
@@ -14,6 +14,7 @@ page \
                     h1 style="font-weight: 900; font-size: 30px; letter-spacing: 0.15em; line-height: 80px;"
                         | MONOMADIC
 
+        row
             for post in ./examples/posts/*.md
 
                 div class="page-link post padding-sm"

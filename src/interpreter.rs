@@ -1,12 +1,13 @@
 use crate::error::*;
-use crate::models::*;
+use crate::{html::HTMLNode, models::*};
 use std::collections::HashMap;
+use rctree::Node;
 
-#[derive(Debug, Clone)]
-pub struct Site {
-    // pub styles: HashMap<String, Style>,
-    pub pages: HashMap<String, String>,
-}
+// #[derive(Debug, Clone)]
+// pub struct Site {
+//     // pub styles: HashMap<String, Style>,
+//     pub pages: HashMap<String, String>,
+// }
 
 // #[derive(Debug, Clone)]
 // pub enum Style {
@@ -22,6 +23,7 @@ pub struct State {
     current_page_buffer: Option<String>,
     overlays: HashMap<String, TagOverlay>,
     decorators: HashMap<String, TagDecorator>,
+    pages: HashMap<String, Node<HTMLNode>>,
 }
 
 impl State {
@@ -32,6 +34,7 @@ impl State {
             current_page_buffer: None, // TODO should be current_page, it's not the buffer.
             overlays: TagOverlay::defaults(),
             decorators: TagDecorator::defaults(),
+            pages: HashMap::new(),
         }
     }
 
@@ -90,10 +93,10 @@ pub fn html_tag(ident: &str, attributes: Vec<(String, String)>) -> String {
 }
 
 /// run the interpreter over a series of nodes
-pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
+pub fn run(nodes: &Vec<Token>, state: &mut State) -> AstryxResult<()> {
     for node in nodes {
         match node {
-            Node::Element(e) => {
+            Token::Element(e) => {
                 let arguments = collect_attributes(&e.attributes, &state.decorators)?;
 
                 match e.ident.as_str() {
@@ -219,7 +222,7 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
                             &state.variables_in_scope,
                         )?;
 
-                        let svgfile = crate::filesystem::read_file(std::path::PathBuf::from(path))?;
+                    let svgfile = crate::filesystem::read_file(std::path::PathBuf::from(path))?;
 
                         state.write_to_current_buffer(&svgfile)?;
                     }
@@ -247,7 +250,7 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
                                 attributes: e.attributes.clone(),
                                 children: e.children.clone(), // ouch, we should try to find a way around cloning here
                             };
-                            run(&vec![Node::Element(current_el)], state)?;
+                            run(&vec![Token::Element(current_el)], state)?;
                         } else {
                             // ok it's really not found, return an error.
                             return Err(AstryxError::new(&format!(
@@ -258,11 +261,11 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
                     }
                 }
             }
-            Node::Text(t) => {
+            Token::Text(t) => {
                 let buffer = crate::interpolator::interpolate(t, &state.variables_in_scope)?;
                 state.write_to_current_buffer(&buffer)?;
             }
-            Node::ForLoop(f) => {
+            Token::ForLoop(f) => {
                 // FIXME: throw errors in error conditions, don't just fall through
                 // FIXME: give a variable which can be interpolated
 
@@ -279,7 +282,7 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
                     state.page_buffers = new_state.page_buffers; // kind of a dirty hack
                 }
             }
-            Node::CodeBlock(cb) => {
+            Token::CodeBlock(cb) => {
                 state
                     .variables_in_scope
                     .insert(cb.ident.clone(), Variable::QuotedString(cb.content.clone()));
@@ -368,10 +371,26 @@ impl TagOverlay {
         );
 
         overlays.insert(
+            "columns".into(),
+            TagOverlay {
+                ident: "div".into(),
+                classes: vec!["rows".into()],
+            },
+        );
+
+        overlays.insert(
             "rows".into(),
             TagOverlay {
                 ident: "div".into(),
                 classes: vec!["rows".into()],
+            },
+        );
+
+        overlays.insert(
+            "row".into(),
+            TagOverlay {
+                ident: "div".into(),
+                classes: vec!["row".into()],
             },
         );
 
@@ -391,6 +410,13 @@ impl TagDecorator {
             "centered".into(),
             TagDecorator {
                 classes: vec!["centered".into()],
+            },
+        );
+
+        decorators.insert(
+            "red".into(),
+            TagDecorator {
+                classes: vec!["red".into()],
             },
         );
 

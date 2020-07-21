@@ -2,7 +2,7 @@ use crate::error::{AstryxError, AstryxResult};
 use std::path::PathBuf;
 
 #[derive(Debug, Clone)]
-pub enum Node {
+pub enum Token {
     ForLoop(ForLoop),
     Element(Element),
     Text(String),
@@ -19,14 +19,14 @@ pub struct CodeBlock {
 pub struct ForLoop {
     pub index: String,
     pub iterable: String,
-    pub children: Vec<Node>,
+    pub children: Vec<Token>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Element {
     pub ident: String,
     pub attributes: Vec<Attribute>,
-    pub children: Vec<Node>,
+    pub children: Vec<Token>,
 }
 
 #[derive(Debug, Clone)]

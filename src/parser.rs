@@ -18,7 +18,7 @@ use nom::{
 };
 
 /// returns a vector of ast nodes
-pub fn parse(i: &str) -> AstryxResult<Vec<Node>> {
+pub fn parse(i: &str) -> AstryxResult<Vec<Token>> {
     let (r, nodes) = run(i)
         .map_err(|e|
             AstryxError::new(&format!("error parsing: {:?}", e))
@@ -36,7 +36,7 @@ pub fn parse(i: &str) -> AstryxResult<Vec<Node>> {
 }
 
 /// returns a nom combinator version of the parser
-pub fn run(i: &str) -> IResult<&str, Vec<Node>> {
+pub fn run(i: &str) -> IResult<&str, Vec<Token>> {
     nom::multi::many0(node)(i)
 }
 
@@ -45,15 +45,15 @@ pub fn run(i: &str) -> IResult<&str, Vec<Node>> {
 //   i.replace("\\n", "")
 // }
 
-fn node(i: &str) -> IResult<&str, Node> {
+fn node(i: &str) -> IResult<&str, Token> {
     // knock out blank lines at start of doc
     let (r, _) = blank_lines(i)?;
 
     alt((
-        map(for_loop, |f| Node::ForLoop(f)),
-        map(piped_string, |s| Node::Text(String::from(s))),
-        map(codeblock, |cb| Node::CodeBlock(cb)),
-        map(element, |e| Node::Element(e)),
+        map(for_loop, |f| Token::ForLoop(f)),
+        map(piped_string, |s| Token::Text(String::from(s))),
+        map(codeblock, |cb| Token::CodeBlock(cb)),
+        map(element, |e| Token::Element(e)),
     ))(r)
 }
 
