@@ -28,6 +28,7 @@ dependencies = [
  "glob",
  "nom",
  "pulldown-cmark",
+ "rctree",
  "simple-server",
  "structopt",
  "syntect",
@@ -443,6 +444,12 @@ checksum = "aa563d17ecb180e500da1cfd2b028310ac758de548efdd203e18f283af693f37"
 dependencies = [
  "proc-macro2",
 ]
+
+[[package]]
+name = "rctree"
+version = "0.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "be9e29cb19c8fe84169fcb07f8f11e66bc9e6e0280efd4715c54818296f8a4a8"
 
 [[package]]
 name = "regex-syntax"
