@@ -5,18 +5,16 @@ use syntect::html::{
 };
 use syntect::parsing::SyntaxSet;
 
-pub struct SyntaxHighlighter<'a> {
-    highlighter: Option<HighlightLines<'a>>,
+pub struct SyntaxHighlighter {
     syntax: String, // todo: enum
     syntaxes: SyntaxSet,
     themes: ThemeSet,
 }
 
-impl SyntaxHighlighter<'_> {
+impl SyntaxHighlighter {
     pub fn new() -> Self {
         SyntaxHighlighter {
             themes: ThemeSet::load_defaults(),
-            highlighter: None,
             syntaxes: SyntaxSet::load_defaults_newlines(),
             syntax: String::from("rs"),
         }
