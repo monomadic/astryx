@@ -1,5 +1,5 @@
 
-pub(crate) fn read_file(pathbuf: std::path::PathBuf) -> AstryxResult<String> {
+pub fn read_file(pathbuf: std::path::PathBuf) -> AstryxResult<String> {
     use std::fs::File;
     use std::io::prelude::*;
 
@@ -17,7 +17,6 @@ pub(crate) fn read_file(pathbuf: std::path::PathBuf) -> AstryxResult<String> {
 
 use crate::error::*;
 use crate::models::*;
-use std::{collections::HashMap, path::PathBuf};
 
 pub(crate) fn read_content_metadata(pattern: &str) -> AstryxResult<Vec<TemplateFile>> {
 

@@ -102,7 +102,7 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
                     "page" => {
                         // keep note of current page
                         let current_page = state.current_page_buffer.clone();
-                        let path = crate::interpolation::stringify_variable(
+                        let path = crate::interpolator::stringify_variable(
                             &get_required_argument("path", &arguments)?,
                             &state.variables_in_scope,
                         )?;
@@ -112,7 +112,7 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
 
                         // <title> tag
                         if let Some(title) = get_optional_variable("title", &arguments) {
-                            let title = crate::interpolation::stringify_variable(
+                            let title = crate::interpolator::stringify_variable(
                                 &title,
                                 &state.variables_in_scope,
                             )?;
@@ -161,7 +161,7 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
                     }
                     "clamp" => {
                         // clamp(<min>, <actual>, <max>)
-                        let max_width = crate::interpolation::stringify_variable(
+                        let max_width = crate::interpolator::stringify_variable(
                             &get_required_argument("max-width", &arguments)?,
                             &state.variables_in_scope,
                         )?;
@@ -177,7 +177,7 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
                         // let path =
                         //     stringify_variable(&get_required_argument("path", &arguments)?, state)?;
 
-                        let path = crate::interpolation::stringify_variable(
+                        let path = crate::interpolator::stringify_variable(
                             &get_required_argument("path", &arguments)?,
                             &state.variables_in_scope,
                         )?;
@@ -204,7 +204,7 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
                         state.write_to_current_buffer(&format!("</{}>", e.ident))?;
                     }
                     "link" | "a" => {
-                        let path = crate::interpolation::stringify_variable(
+                        let path = crate::interpolator::stringify_variable(
                             &get_required_argument("path", &arguments)?,
                             &state.variables_in_scope,
                         )?;
@@ -214,7 +214,7 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
                         state.write_to_current_buffer("</a>")?;
                     }
                     "embed" => {
-                        let path = crate::interpolation::stringify_variable(
+                        let path = crate::interpolator::stringify_variable(
                             &get_required_argument("path", &arguments)?,
                             &state.variables_in_scope,
                         )?;
@@ -259,7 +259,7 @@ pub fn run(nodes: &Vec<Node>, state: &mut State) -> AstryxResult<()> {
                 }
             }
             Node::Text(t) => {
-                let buffer = crate::interpolation::interpolate(t, &state.variables_in_scope)?;
+                let buffer = crate::interpolator::interpolate(t, &state.variables_in_scope)?;
                 state.write_to_current_buffer(&buffer)?;
             }
             Node::ForLoop(f) => {

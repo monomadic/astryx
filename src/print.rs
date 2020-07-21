@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use crate::models::*;
+use astryx::models::*;
 
 pub fn print_nodes(nodes: Vec<Node>, indent: usize) {
     for node in nodes {

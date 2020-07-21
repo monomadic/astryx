@@ -1,3 +1,6 @@
+// lexer
+// tokenises an astryx program
+
 use crate::{
     error::{AstryxError, AstryxErrorKind, AstryxResult},
     models::*,
