@@ -156,7 +156,11 @@ pub(crate) fn _run(
                 state.pages = new_state.pages;
             }
         }
-        Token::Text(_) => {}
+        Token::Text(t) => {
+            if let Some(parent) = parent {
+                parent.append(Node::new(HTMLNode::Text(t.clone())));
+            }
+        }
         Token::CodeBlock(_) => {}
     }
 

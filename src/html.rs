@@ -2,30 +2,45 @@
 
 use crate::error::{AstryxError, AstryxResult};
 use rctree::Node;
-use std::{fmt::Write, collections::HashMap};
+use std::{collections::HashMap, fmt::Write};
 
 #[derive(Debug, Clone)]
-pub(crate) struct HTMLNode {
+pub(crate) enum HTMLNode {
+    Element(HTMLElement),
+    Text(String),
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct HTMLElement {
     ident: String,
     attributes: HashMap<String, String>,
 }
 
 impl HTMLNode {
     pub(crate) fn new(ident: &str) -> Self {
-        Self {
+        HTMLNode::Element(HTMLElement {
             ident: ident.into(),
             attributes: HashMap::new(),
-        }
+        })
     }
 }
 
 pub(crate) fn render_page<W: Write>(node: &Node<HTMLNode>, writer: &mut W) -> AstryxResult<()> {
-    writer.write_str(&format!("{}", html_tag(&node.borrow().ident, &node.borrow().attributes))).unwrap(); //todo: err
-    for child in node.children() {
-        render_page(&child, writer)?;
-    }
-    writer.write_str(&format!("</{}>", node.borrow().ident)).unwrap();
-    Ok(())
+    // can we avoid a clone here?
+    Ok(match node.borrow().clone() {
+        HTMLNode::Element(e) => {
+            writer
+                .write_str(&format!("{}", html_tag(&e.ident, &e.attributes)))
+                .unwrap(); //todo: err
+            for child in node.children() {
+                render_page(&child, writer)?;
+            }
+            writer.write_str(&format!("</{}>", e.ident)).unwrap();
+        }
+        HTMLNode::Text(t) => {
+            writer.write_str(&t).unwrap();
+        }
+    })
 }
 
 pub fn html_tag(ident: &str, attributes: &HashMap<String, String>) -> String {
@@ -51,21 +66,19 @@ pub(crate) fn match_html_tag(
 ) -> AstryxResult<HTMLNode> {
     println!("checking {}", ident);
     match ident {
-        "h1" => {
-            Ok(HTMLNode {
-                ident: ident.into(),
-                attributes: HashMap::new(),
-            })
-        }
+        "h1" => Ok(HTMLNode::Element( HTMLElement {
+            ident: ident.into(),
+            attributes: HashMap::new(),
+        })),
         "rows" | "row" => {
             let mut attributes = HashMap::new();
             attributes.insert("class".into(), ident.into());
 
-            Ok(HTMLNode {
+            Ok(HTMLNode::Element( HTMLElement {
                 ident: "div".into(),
                 attributes,
-            })
-        },
+            }))
+        }
         _ => Err(AstryxError::new(&format!(
             "interpreter error: node not found: {}",
             ident
