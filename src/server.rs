@@ -17,7 +17,6 @@ pub(crate) fn start(file: PathBuf, port: u32) -> AstryxResult<()> {
 
         println!("{} {}", request.method(), path);
 
-
         if path.contains("svg")  {
             response.header("content-type", "image/svg+xml");
             // return Ok(response.body(svgfile.as_bytes().to_vec())?);
@@ -29,7 +28,7 @@ pub(crate) fn start(file: PathBuf, port: u32) -> AstryxResult<()> {
                     Some(page) => Ok(response.body(page.as_bytes().to_vec())?),
                     None => {
                         response.status(StatusCode::NOT_FOUND);
-                        Ok(response.body("<h1>404</h1><p>Not found!<p>".as_bytes().to_vec())?)
+                        Ok(response.body(format!("<h1>404</h1><p>Path not found: {}<p>", path).as_bytes().to_vec())?)
                     }
                 }
             }
@@ -65,13 +64,10 @@ fn render_pages(file: PathBuf) -> AstryxResult<HashMap<String, String>> {
 
     let _ = interpreter::__run(&nodes, state)?;
 
-    state
-        .page_buffers
-        .insert("/state".into(), format!("{:#?}", state));
+    let mut pages = state.render_pages()?;
 
-    state
-        .page_buffers
-        .insert("/nodes".into(), format!("{:#?}", nodes));
+    pages.insert("/state".into(), format!("{:#?}", state));
+    pages.insert("/nodes".into(), format!("{:#?}", nodes));
 
-    Ok(state.page_buffers.clone())
+    Ok(pages)
 }

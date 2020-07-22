@@ -1,12 +1,13 @@
 // writes an xml graph to a html string
 
-use std::collections::HashMap;
+use crate::error::{AstryxError, AstryxResult};
 use rctree::Node;
+use std::{fmt::Write, collections::HashMap};
 
 #[derive(Debug, Clone)]
 pub(crate) struct HTMLNode {
     ident: String,
-    attributes: HashMap<String, String>
+    attributes: HashMap<String, String>,
 }
 
 impl HTMLNode {
@@ -18,10 +19,50 @@ impl HTMLNode {
     }
 }
 
-pub(crate) fn render_page(node: &Node<HTMLNode>) {
-    println!("<{}>", node.borrow().ident);
+pub(crate) fn render_page<W: Write>(node: &Node<HTMLNode>, writer: &mut W) -> AstryxResult<()> {
+    writer.write_str(&format!("{}", html_tag(&node.borrow().ident, &node.borrow().attributes))).unwrap(); //todo: err
     for child in node.children() {
-        render_page(&child)
+        render_page(&child, writer);
     }
-    println!("</{}>", node.borrow().ident);
+    writer.write_str(&format!("</{}>", node.borrow().ident)).unwrap();
+    Ok(())
+}
+
+pub fn html_tag(ident: &str, attributes: &HashMap<String, String>) -> String {
+    let attribs = if !attributes.is_empty() {
+        format!(
+            " {}",
+            attributes
+                .iter()
+                .map(|(k, v)| format!("{}=\"{}\"", k, v))
+                .collect::<Vec<String>>()
+                .join(" ")
+        )
+    } else {
+        String::new()
+    };
+
+    format!("<{}{}>", ident, attribs)
+}
+
+pub(crate) fn match_html_tag(
+    ident: &str,
+    locals: HashMap<String, String>,
+) -> AstryxResult<HTMLNode> {
+    println!("checking {}", ident);
+    match ident {
+        "rows" | "row" => {
+            let mut attributes = HashMap::new();
+            attributes.insert("class".into(), ident.into());
+
+            Ok(HTMLNode {
+                ident: "div".into(),
+                attributes,
+            })
+        },
+        _ => Err(AstryxError::new(&format!(
+            "interpreter error: node not found: {}",
+            ident
+        ))),
+    }
 }

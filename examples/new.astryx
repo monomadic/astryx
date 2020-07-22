@@ -1,7 +1,11 @@
 
-page path="/" title="monomadic"
-  element ident="div"
+page \
+    path="/" \
+    title="monomadic"
 
-  for post in ./examples/posts/*.md
-    page path=post.route title=post.title
-      element ident="div"
+    rows @centered
+      row style="max-width: 600px; min-width: 300px;"
+      
+        for post in ./examples/posts/*.md
+          page path=post.route title=post.title
+            element ident="div"
