@@ -5,6 +5,9 @@ page \
 
     rows @centered
       row style="max-width: 600px; min-width: 300px;"
+
+        h1
+          | MONOMADIC
       
         for post in ./examples/posts/*.md
           page path=post.route title=post.title

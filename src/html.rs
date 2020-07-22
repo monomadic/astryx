@@ -22,7 +22,7 @@ impl HTMLNode {
 pub(crate) fn render_page<W: Write>(node: &Node<HTMLNode>, writer: &mut W) -> AstryxResult<()> {
     writer.write_str(&format!("{}", html_tag(&node.borrow().ident, &node.borrow().attributes))).unwrap(); //todo: err
     for child in node.children() {
-        render_page(&child, writer);
+        render_page(&child, writer)?;
     }
     writer.write_str(&format!("</{}>", node.borrow().ident)).unwrap();
     Ok(())
@@ -47,10 +47,16 @@ pub fn html_tag(ident: &str, attributes: &HashMap<String, String>) -> String {
 
 pub(crate) fn match_html_tag(
     ident: &str,
-    locals: HashMap<String, String>,
+    _locals: HashMap<String, String>, // TODO use locals
 ) -> AstryxResult<HTMLNode> {
     println!("checking {}", ident);
     match ident {
+        "h1" => {
+            Ok(HTMLNode {
+                ident: ident.into(),
+                attributes: HashMap::new(),
+            })
+        }
         "rows" | "row" => {
             let mut attributes = HashMap::new();
             attributes.insert("class".into(), ident.into());

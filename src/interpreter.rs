@@ -3,22 +3,9 @@ use crate::{html::HTMLNode, models::*};
 use rctree::Node;
 use std::collections::HashMap;
 
-// #[derive(Debug, Clone)]
-// pub struct Site {
-//     // pub styles: HashMap<String, Style>,
-//     pub pages: HashMap<String, String>,
-// }
-
-// #[derive(Debug, Clone)]
-// pub enum Style {
-//     // todo: separate only into valid styles eg TextStyle
-//     BackgroundColor(String), // todo: Color
-//     Custom(String),          // custom css eg "border: 1px solid red" etc
-// }
-
 #[derive(Debug, Clone)]
 pub struct State {
-    pub page_buffers: HashMap<String, String>,
+    // pub page_buffers: HashMap<String, String>,
     variables_in_scope: HashMap<String, Variable>,
     // current_page_buffer: Option<String>,
     overlays: HashMap<String, TagOverlay>,
@@ -31,12 +18,10 @@ impl State {
     pub fn new() -> Self {
         State {
             variables_in_scope: HashMap::new(),
-            page_buffers: HashMap::new(),
-            // current_page_buffer: None, // TODO should be current_page, it's not the buffer.
+            // page_buffers: HashMap::new(),
             overlays: TagOverlay::defaults(),
             decorators: TagDecorator::defaults(),
             pages: HashMap::new(),
-            // page_cursor: None,
         }
     }
 
@@ -58,63 +43,30 @@ impl State {
                 i, self.variables_in_scope
             )))
     }
-
-    // /// Retrieve the current page from the state buffer
-    // pub fn get_current_page_buffer(&mut self) -> AstryxResult<&mut String> {
-    //     let state = self.clone();
-    //     self.current_page_buffer
-    //         .clone()
-    //         .and_then(move |current_page_buffer| self.page_buffers.get_mut(&current_page_buffer))
-    //         .ok_or(AstryxError {
-    //             kind: AstryxErrorKind::Unknown,
-    //             state: Some(state),
-    //             msg: format!("page buffer request error."),
-    //         })
-    // }
-
-    // // TODO extract this out into a multibuffer design pattern
-    // pub fn create_buffer(&mut self, key: String) -> AstryxResult<()> {
-    //     self.page_buffers.insert(key.clone(), String::new()); // FIXME check for collisions!
-    //     self.current_page_buffer = Some(key);
-    //     Ok(())
-    // }
-
-    // pub fn write_to_current_buffer(&mut self, string: &str) -> AstryxResult<()> {
-    //     self.get_current_page_buffer().and_then(|pb| {
-    //         pb.push_str(string);
-    //         Ok(())
-    //     })
-    // }
 }
 
-pub fn html_tag(ident: &str, attributes: Vec<(String, String)>) -> String {
-    let attribs = if !attributes.is_empty() {
-        format!(
-            " {}",
-            attributes
-                .iter()
-                .map(|(k, v)| format!("{}=\"{}\"", k, v))
-                .collect::<Vec<String>>()
-                .join(" ")
-        )
-    } else {
-        String::new()
-    };
+// pub fn html_tag(ident: &str, attributes: Vec<(String, String)>) -> String {
+//     let attribs = if !attributes.is_empty() {
+//         format!(
+//             " {}",
+//             attributes
+//                 .iter()
+//                 .map(|(k, v)| format!("{}=\"{}\"", k, v))
+//                 .collect::<Vec<String>>()
+//                 .join(" ")
+//         )
+//     } else {
+//         String::new()
+//     };
 
-    format!("<{}{}>", ident, attribs)
-}
+//     format!("<{}{}>", ident, attribs)
+// }
 
+// TODO result should be meaningful, do not accept or leak state.
 pub fn __run(tokens: &Vec<Token>, state: &mut State) -> AstryxResult<()> {
     for token in tokens {
-        let n = _run(token, state, &mut None);
+         _run(token, state, &mut None)?;
     }
-
-    // for (route, page) in state.pages.clone() {
-    //     // remove this
-    //     println!("\n\n{}:", route);
-    //     let mut buf = String::new();
-    //     crate::html::render_page(&page, buf);
-    // }
 
     Ok(())
 }
@@ -163,6 +115,8 @@ pub(crate) fn _run(
 
                     if let Some(parent) = parent {
                         parent.append(Node::new(HTMLNode::new(&ident)));
+                    } else {
+                        return Err(AstryxError::new("tag found without page to assign to"));
                     }
                 }
                 _ => {
@@ -170,33 +124,21 @@ pub(crate) fn _run(
 
                     if let Some(parent) = parent {
                         parent.append(node);
+                    } else {
+                        return Err(AstryxError::new("tag found without page to assign to"));
                     }
 
                     for token in &e.children {
                         _run(
                             token,
                             state,
-                            &mut &mut Some(Node::new(crate::html::match_html_tag(
-                                &e.ident,
-                                HashMap::new(),
-                            )?)),
+                            parent,
                         )?;
                     }
-                    // _run(
-                    //     &e.children,
-                    //     state,
-                    //     &mut Some(Node::new(crate::html::match_html_tag(
-                    //         &e.ident,
-                    //         HashMap::new(),
-                    //     )?)),
-                    // )?;
                 }
             }
         }
         Token::ForLoop(f) => {
-            // FIXME: throw errors in error conditions, don't just fall through
-            // FIXME: give a variable which can be interpolated
-
             let files = crate::filesystem::read_content_metadata(&f.iterable)?;
             for file in files {
                 // create a new local state to pass down the tree
@@ -210,7 +152,7 @@ pub(crate) fn _run(
                     _run(token, &mut new_state, parent)?;
                 }
 
-                state.page_buffers = new_state.page_buffers; // kind of a dirty hack
+                // state.page_buffers = new_state.page_buffers; // kind of a dirty hack
                 state.pages = new_state.pages;
             }
         }
