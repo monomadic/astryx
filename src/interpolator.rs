@@ -163,17 +163,17 @@ pub fn stringify_variable(
     }
 }
 
-// FIXME dupe code from interpreter.rs
-pub fn get_required_variable(
-    i: &str,
-    attributes: &HashMap<String, Variable>,
-) -> AstryxResult<Variable> {
-    attributes
-        .get(&String::from(i.clone()))
-        .map(|v| v.clone().clone())
-        .ok_or(AstryxError::new(&format!(
-            "could not find variable: {} {:?}",
-            i,
-            attributes.keys()
-        )))
-}
+// // FIXME dupe code from interpreter.rs
+// pub fn get_required_variable(
+//     i: &str,
+//     attributes: &HashMap<String, Variable>,
+// ) -> AstryxResult<Variable> {
+//     attributes
+//         .get(&String::from(i.clone()))
+//         .map(|v| v.clone().clone())
+//         .ok_or(AstryxError::new(&format!(
+//             "could not find variable: {} {:?}",
+//             i,
+//             attributes.keys()
+//         )))
+// }

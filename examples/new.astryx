@@ -10,5 +10,8 @@ page \
           | MONOMADIC
       
         for post in ./examples/posts/*.md
+          h2
+            | ${ post.title }
+
           page path=post.route title=post.title
-            element ident="div"
+            | ${ post.title }

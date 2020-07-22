@@ -1,7 +1,4 @@
-use astryx::{
-    error::*,
-    interpreter::{self, State},
-};
+use astryx::interpreter::{self, State};
 use simple_server::{Server, StatusCode};
 use std::{collections::HashMap, path::PathBuf};
 use astryx::error::AstryxResult;

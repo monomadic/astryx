@@ -1,5 +1,4 @@
 use crate::error::{AstryxError, AstryxResult};
-use std::path::PathBuf;
 
 #[derive(Debug, Clone)]
 pub enum Token {

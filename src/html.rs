@@ -64,9 +64,8 @@ pub(crate) fn match_html_tag(
     ident: &str,
     _locals: HashMap<String, String>, // TODO use locals
 ) -> AstryxResult<HTMLNode> {
-    println!("checking {}", ident);
     match ident {
-        "h1" => Ok(HTMLNode::Element( HTMLElement {
+        "h1" | "h2" | "h3" => Ok(HTMLNode::Element( HTMLElement {
             ident: ident.into(),
             attributes: HashMap::new(),
         })),

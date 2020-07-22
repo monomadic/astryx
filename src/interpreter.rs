@@ -65,7 +65,7 @@ impl State {
 // TODO result should be meaningful, do not accept or leak state.
 pub fn __run(tokens: &Vec<Token>, state: &mut State) -> AstryxResult<()> {
     for token in tokens {
-         _run(token, state, &mut None)?;
+        _run(token, state, &mut None)?;
     }
 
     Ok(())
@@ -98,7 +98,6 @@ pub(crate) fn _run(
 
                     node.append(body.unwrap()); // unwrap is ok cause I just made it Some... rethink this though
 
-                    println!("INSERTING PATH {}", path);
                     state.pages.insert(path, node.clone().root());
                 }
                 "element" => {
@@ -129,11 +128,7 @@ pub(crate) fn _run(
                     }
 
                     for token in &e.children {
-                        _run(
-                            token,
-                            state,
-                            parent,
-                        )?;
+                        _run(token, state, parent)?;
                     }
                 }
             }
@@ -158,7 +153,8 @@ pub(crate) fn _run(
         }
         Token::Text(t) => {
             if let Some(parent) = parent {
-                parent.append(Node::new(HTMLNode::Text(t.clone())));
+                let buffer = crate::interpolator::interpolate(t, &state.variables_in_scope)?;
+                parent.append(Node::new(HTMLNode::Text(buffer)));
             }
         }
         Token::CodeBlock(_) => {}
