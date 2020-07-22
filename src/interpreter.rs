@@ -136,9 +136,14 @@ pub(crate) fn _run(
                             .pages
                             .insert(path, node.clone().root());
                     }
-                    "rows" => {
+                    "element" => {
+                        let ident = crate::interpolator::stringify_variable(
+                            &get_required_argument("ident", &arguments)?,
+                            &HashMap::new(),
+                        )?;
+
                         if let Some(parent) = parent {
-                            parent.append(Node::new(HTMLNode::new("div")));
+                            parent.append(Node::new(HTMLNode::new(&ident)));
                         }
                     }
                     _ => {
