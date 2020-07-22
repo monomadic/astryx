@@ -1,7 +1,7 @@
 use crate::error::*;
 use crate::{html::HTMLNode, models::*};
-use std::collections::HashMap;
 use rctree::Node;
+use std::collections::HashMap;
 
 // #[derive(Debug, Clone)]
 // pub struct Site {
@@ -24,6 +24,7 @@ pub struct State {
     overlays: HashMap<String, TagOverlay>,
     decorators: HashMap<String, TagDecorator>,
     pages: HashMap<String, Node<HTMLNode>>,
+    page_cursor: Option<Node<HTMLNode>>,
 }
 
 impl State {
@@ -35,6 +36,7 @@ impl State {
             overlays: TagOverlay::defaults(),
             decorators: TagDecorator::defaults(),
             pages: HashMap::new(),
+            page_cursor: None,
         }
     }
 
@@ -92,17 +94,99 @@ pub fn html_tag(ident: &str, attributes: Vec<(String, String)>) -> String {
     format!("<{}{}>", ident, attribs)
 }
 
-/// run the interpreter over a series of nodes
-pub fn run(nodes: &Vec<Token>, state: &mut State) -> AstryxResult<()> {
-    for node in nodes {
+pub fn __run(tokens: &Vec<Token>, state: &mut State) -> AstryxResult<()> {
+    let n = _run(tokens, state, &mut None);
+
+    for (route, page) in state.pages.clone() { // remove this
+        println!("\n\n{}:", route);
+        crate::html::render_page(&page);
+    }
+
+    n
+}
+
+pub(crate) fn _run(
+    tokens: &Vec<Token>,
+    state: &mut State,
+    parent: &mut Option<Node<HTMLNode>>,
+) -> AstryxResult<()> {
+    for node in tokens {
         match node {
             Token::Element(e) => {
                 let arguments = collect_attributes(&e.attributes, &state.decorators)?;
 
                 match e.ident.as_str() {
-                    // TODO make elements scriptable / programmable
-                    // suggestion: nodes can 'resolve' to other nodes, ending in tag
                     "page" => {
+                        let path = crate::interpolator::stringify_variable(
+                            &get_required_argument("path", &arguments)?,
+                            &state.variables_in_scope,
+                        )?;
+
+                        // make a fresh node tree
+                        let mut node = Node::new(HTMLNode::new("html"));
+                        node.append(Node::new(HTMLNode::new("title")));
+                        let mut body = Some(Node::new(HTMLNode::new("body")));
+
+                        _run(&e.children, state, &mut body)?;
+                        
+                        node.append(body.unwrap()); // unwrap is ok cause I just made it Some... rethink this though
+
+                        println!("INSERTING PATH {}", path);
+                        state
+                            .pages
+                            .insert(path, node.clone().root());
+                    }
+                    "rows" => {
+                        if let Some(parent) = parent {
+                            parent.append(Node::new(HTMLNode::new("div")));
+                        }
+                    }
+                    _ => {
+                        return Err(AstryxError::new(&format!(
+                            "interpreter error: node not found: {}",
+                            e.ident
+                        )));
+                    }
+                }
+            }
+            Token::ForLoop(f) => {
+                // FIXME: throw errors in error conditions, don't just fall through
+                // FIXME: give a variable which can be interpolated
+
+                let files = crate::filesystem::read_content_metadata(&f.iterable)?;
+                for file in files {
+                    // create a new local state to pass down the tree
+                    let mut new_state = state.clone();
+
+                    new_state
+                        .variables_in_scope
+                        .insert(f.index.clone(), Variable::TemplateFile(file));
+
+                    _run(&f.children, &mut new_state, parent)?;
+                    state.page_buffers = new_state.page_buffers; // kind of a dirty hack
+                    state.pages = new_state.pages;
+                }
+            }
+            Token::Text(_) => {}
+            Token::CodeBlock(_) => {}
+        }
+    }
+
+    Ok(())
+}
+
+/// run the interpreter over a series of nodes
+pub fn run(tokens: &Vec<Token>, state: &mut State) -> AstryxResult<()> {
+    for node in tokens {
+        match node {
+            Token::Element(e) => {
+                let arguments = collect_attributes(&e.attributes, &state.decorators)?;
+
+                match e.ident.as_str() {
+                    "page" => {
+                        // make a fresh node tree
+                        state.page_cursor = Some(Node::new(HTMLNode::new("html")));
+
                         // keep note of current page
                         let current_page = state.current_page_buffer.clone();
                         let path = crate::interpolator::stringify_variable(
@@ -110,7 +194,7 @@ pub fn run(nodes: &Vec<Token>, state: &mut State) -> AstryxResult<()> {
                             &state.variables_in_scope,
                         )?;
 
-                        state.create_buffer(path)?;
+                        state.create_buffer(path.clone())?;
                         state.write_to_current_buffer("<html><head>")?;
 
                         // <title> tag
@@ -141,6 +225,9 @@ pub fn run(nodes: &Vec<Token>, state: &mut State) -> AstryxResult<()> {
                         state.write_to_current_buffer("<body>")?;
                         run(&e.children, state)?;
                         state.write_to_current_buffer("</body></html>")?;
+
+                        println!("PAGE FINISHED~!!! {}", path);
+                        state.pages.insert(path, state.page_cursor.clone().unwrap());
 
                         // surrender page buffer after use to previous page buffer
                         state.current_page_buffer = current_page;
@@ -222,7 +309,7 @@ pub fn run(nodes: &Vec<Token>, state: &mut State) -> AstryxResult<()> {
                             &state.variables_in_scope,
                         )?;
 
-                    let svgfile = crate::filesystem::read_file(std::path::PathBuf::from(path))?;
+                        let svgfile = crate::filesystem::read_file(std::path::PathBuf::from(path))?;
 
                         state.write_to_current_buffer(&svgfile)?;
                     }

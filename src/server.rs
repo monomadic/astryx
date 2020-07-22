@@ -61,7 +61,9 @@ fn render_pages(file: PathBuf) -> AstryxResult<HashMap<String, String>> {
     let state = &mut State::new();
     let file = astryx::filesystem::read_file(file.clone())?;
     let nodes = astryx::parser::parse(&file)?;
-    let _ = interpreter::run(&nodes, state)?;
+    // let _ = interpreter::run(&nodes, state)?;
+
+    let _ = interpreter::__run(&nodes, state)?;
 
     state
         .page_buffers

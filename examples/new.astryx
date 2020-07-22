@@ -1,0 +1,7 @@
+
+page path="/" title="monomadic"
+  rows
+
+  for post in ./examples/posts/*.md
+    page path=post.route title=post.title
+      rows
