@@ -100,35 +100,47 @@ pub(crate) fn _run(
 
                     state.pages.insert(path, node.clone().root());
                 }
-                "element" => {
-                    let ident = crate::interpolator::stringify_variable(
-                        &get_required_argument("ident", &arguments)?,
-                        &HashMap::new(),
-                    )?;
+                // "element" => {
+                //     let ident = crate::interpolator::stringify_variable(
+                //         &get_required_argument("ident", &arguments)?,
+                //         &HashMap::new(),
+                //     )?;
 
-                    let mut node = Some(Node::new(HTMLNode::new(&ident)));
+                //     let mut node = Some(Node::new(HTMLNode::new(&ident)));
+
+                //     for token in &e.children {
+                //         _run(token, state, &mut node)?;
+                //     }
+
+                //     if let Some(parent) = parent {
+                //         parent.append(Node::new(HTMLNode::new(&ident)));
+                //     } else {
+                //         return Err(AstryxError::new("tag found without page to assign to"));
+                //     }
+                // }
+                _ => {
+                    // FIXME this should be way easier... and generified
+                    // let path = crate::interpolator::stringify_variable(
+                    //     &get_required_argument("path", &arguments)?,
+                    //     &state.variables_in_scope,
+                    // )?;
+
+                    let mut locals = HashMap::new();
+
+                    for (ident, variable) in arguments {
+                        locals.insert(ident,crate::interpolator::stringify_variable(&variable, &state.variables_in_scope)?);
+                    }
+
+                    let mut node = Some(Node::new(crate::html::match_html_tag(&e.ident, locals)?));
 
                     for token in &e.children {
                         _run(token, state, &mut node)?;
                     }
 
                     if let Some(parent) = parent {
-                        parent.append(Node::new(HTMLNode::new(&ident)));
+                        parent.append(node.unwrap());
                     } else {
                         return Err(AstryxError::new("tag found without page to assign to"));
-                    }
-                }
-                _ => {
-                    let node = Node::new(crate::html::match_html_tag(&e.ident, HashMap::new())?);
-
-                    if let Some(parent) = parent {
-                        parent.append(node);
-                    } else {
-                        return Err(AstryxError::new("tag found without page to assign to"));
-                    }
-
-                    for token in &e.children {
-                        _run(token, state, parent)?;
                     }
                 }
             }

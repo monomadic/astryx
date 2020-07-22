@@ -32,9 +32,11 @@ pub(crate) fn render_page<W: Write>(node: &Node<HTMLNode>, writer: &mut W) -> As
             writer
                 .write_str(&format!("{}", html_tag(&e.ident, &e.attributes)))
                 .unwrap(); //todo: err
+                
             for child in node.children() {
                 render_page(&child, writer)?;
             }
+
             writer.write_str(&format!("</{}>", e.ident)).unwrap();
         }
         HTMLNode::Text(t) => {
@@ -62,18 +64,27 @@ pub fn html_tag(ident: &str, attributes: &HashMap<String, String>) -> String {
 
 pub(crate) fn match_html_tag(
     ident: &str,
-    _locals: HashMap<String, String>, // TODO use locals
+    locals: HashMap<String, String>,
 ) -> AstryxResult<HTMLNode> {
     match ident {
-        "h1" | "h2" | "h3" => Ok(HTMLNode::Element( HTMLElement {
+        "h1" | "h2" | "h3" => Ok(HTMLNode::Element(HTMLElement {
             ident: ident.into(),
             attributes: HashMap::new(),
         })),
+        "link" => {
+            let mut attributes = HashMap::new();
+            attributes.insert("href".into(), locals.get("path").expect("no path").clone());
+
+            Ok(HTMLNode::Element(HTMLElement {
+                ident: "a".into(),
+                attributes,
+            }))
+        }
         "rows" | "row" => {
             let mut attributes = HashMap::new();
             attributes.insert("class".into(), ident.into());
 
-            Ok(HTMLNode::Element( HTMLElement {
+            Ok(HTMLNode::Element(HTMLElement {
                 ident: "div".into(),
                 attributes,
             }))
