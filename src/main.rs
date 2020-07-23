@@ -7,9 +7,22 @@ mod server;
 #[derive(StructOpt, Debug)]
 #[structopt(name = "cassette")]
 struct Opt {
+
+    /// Command
+    #[structopt(subcommand)]
+    command: Command,
+
     /// Input file
     #[structopt(short, long, parse(from_os_str))]
-    file: PathBuf,
+    file: PathBuf, // TODO make optional (default site.astryx)
+}
+
+#[derive(StructOpt, Debug)]
+enum Command {
+    /// start a server
+    Serve,
+    /// build the project
+    Build,
 }
 
 fn main() {
@@ -22,5 +35,8 @@ fn main() {
 pub fn run() -> AstryxResult<()> {
     let opt = Opt::from_args();
 
-    server::start(opt.file, 8888)
+    match opt.command {
+        Command::Serve => server::start(opt.file, 8888),
+        Command::Build => Ok(()),
+    }
 }

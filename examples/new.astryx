@@ -5,15 +5,15 @@ page \
     title="monomadic"
 
     rows @centered
-      row style="max-width: 600px; min-width: 300px;"
-        h1
-          | MONOMADIC
-      
-      row
-        for post in ./examples/posts/*.md
-          h2
-            link path=post.route
-              | ${ post.title }
+		row style="max-width: 600px; min-width: 300px;"
+			h1 @centered
+				| MONOMADIC
+			
+			row
+				for post in ./examples/posts/*.md
+					h2
+						link path=post.route
+							| ${ post.title }
 
-          page path=post.route title=post.title
-            | ${ post.title }
+					page path=post.route title=post.title
+						| ${ post.title }
