@@ -5,13 +5,10 @@ use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 pub struct State {
-    // pub page_buffers: HashMap<String, String>,
     variables_in_scope: HashMap<String, Variable>,
-    // current_page_buffer: Option<String>,
     overlays: HashMap<String, TagOverlay>,
     decorators: HashMap<String, TagDecorator>,
     pages: HashMap<String, Node<HTMLNode>>,
-    // page_cursor: Option<Node<HTMLNode>>,
 }
 
 impl State {
@@ -45,23 +42,6 @@ impl State {
     }
 }
 
-// pub fn html_tag(ident: &str, attributes: Vec<(String, String)>) -> String {
-//     let attribs = if !attributes.is_empty() {
-//         format!(
-//             " {}",
-//             attributes
-//                 .iter()
-//                 .map(|(k, v)| format!("{}=\"{}\"", k, v))
-//                 .collect::<Vec<String>>()
-//                 .join(" ")
-//         )
-//     } else {
-//         String::new()
-//     };
-
-//     format!("<{}{}>", ident, attribs)
-// }
-
 // TODO result should be meaningful, do not accept or leak state.
 pub fn __run(tokens: &Vec<Token>, state: &mut State) -> AstryxResult<()> {
     for token in tokens {
@@ -71,6 +51,53 @@ pub fn __run(tokens: &Vec<Token>, state: &mut State) -> AstryxResult<()> {
     Ok(())
 }
 
+// // Looks for references inside arguments and resolves them against local variables
+// fn resolve_references(
+//     arguments: &HashMap<String, Variable>,
+//     locals: &HashMap<String, Variable>,
+// ) -> AstryxResult<HashMap<String, Variable>> {
+//     let mut resolved: HashMap<String, Variable> = HashMap::new();
+
+//     for (ident, variable) in arguments {
+//         resolved.insert(ident.clone(), resolve_reference(variable, locals)?);
+//     }
+
+//     Ok(resolved)
+// }
+
+// // if a variable has any references in it, attempt to resolve it.
+// fn resolve_reference(variable: &Variable, locals: &HashMap<String, Variable>) -> AstryxResult<Variable> {
+//     Ok(match variable {
+//         Variable::Reference(r) => {
+//             locals.get(r)?.clone()
+//         }
+//         _ => variable.clone()
+//     })
+// }
+
+// Converts a series of variables to strings
+fn stringify_variables(
+    variables: &HashMap<String, Variable>,
+    locals: &HashMap<String, Variable>,
+) -> AstryxResult<HashMap<String, String>> {
+    let mut stringified: HashMap<String, String> = HashMap::new();
+
+    for (ident, variable) in variables {
+        stringified.insert(ident.clone(), 
+         crate::interpolator::stringify_variable(variable, locals)?);
+    }
+
+    Ok(stringified)
+}
+
+fn get_required(ident: &str, variables: &HashMap<String, String>) -> AstryxResult<String> {
+    variables.get(ident)
+        .map(|v|v.into())
+        .ok_or(AstryxError::new("variable not found"))
+}
+
+// resolve_reference(variable: Variable, locals: &HashMap<String, Variable>)
+
 pub(crate) fn _run(
     token: &Token,
     state: &mut State,
@@ -78,14 +105,13 @@ pub(crate) fn _run(
 ) -> AstryxResult<()> {
     match token {
         Token::Element(e) => {
-            let arguments = collect_attributes(&e.attributes, &state.decorators)?;
+            let arguments = convert_attributes_into_locals(&e.attributes, &state.decorators)?;
+            // let locals = resolve_references(&arguments, &state.variables_in_scope)?;
+            let locals = stringify_variables(&arguments, &state.variables_in_scope)?;
 
             match e.ident.as_str() {
                 "page" => {
-                    let path = crate::interpolator::stringify_variable(
-                        &get_required_argument("path", &arguments)?,
-                        &state.variables_in_scope,
-                    )?;
+                    let path = get_required("path", &locals)?;
 
                     // make a fresh node tree
                     let mut node = Node::new(HTMLNode::new("html"));
@@ -98,7 +124,7 @@ pub(crate) fn _run(
 
                     node.append(body.unwrap()); // unwrap is ok cause I just made it Some... rethink this though
 
-                    state.pages.insert(path, node.clone().root());
+                    state.pages.insert(path.into(), node.clone().root());
                 }
                 // "element" => {
                 //     let ident = crate::interpolator::stringify_variable(
@@ -118,19 +144,8 @@ pub(crate) fn _run(
                 //         return Err(AstryxError::new("tag found without page to assign to"));
                 //     }
                 // }
+                "embed" => {}
                 _ => {
-                    // FIXME this should be way easier... and generified
-                    // let path = crate::interpolator::stringify_variable(
-                    //     &get_required_argument("path", &arguments)?,
-                    //     &state.variables_in_scope,
-                    // )?;
-
-                    let mut locals = HashMap::new();
-
-                    for (ident, variable) in arguments {
-                        locals.insert(ident,crate::interpolator::stringify_variable(&variable, &state.variables_in_scope)?);
-                    }
-
                     let mut node = Some(Node::new(crate::html::match_html_tag(&e.ident, locals)?));
 
                     for token in &e.children {
@@ -380,7 +395,9 @@ pub(crate) fn _run(
 //     Ok(())
 // }
 
-fn collect_attributes(
+/// Takes attributes from a node (which can be @decorators or named=arguments) and returns
+/// a hashmap of local variables.
+fn convert_attributes_into_locals(
     attributes: &Vec<Attribute>,
     decorators: &HashMap<String, TagDecorator>,
 ) -> AstryxResult<HashMap<String, Variable>> {

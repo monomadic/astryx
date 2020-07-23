@@ -16,4 +16,9 @@ page \
 							| ${ post.title }
 
 					page path=post.route title=post.title
-						| ${ post.title }
+						h1
+								| ${ post.title }
+						abstract
+								| ${ post.description }
+						hr
+						| ${ post.body }
