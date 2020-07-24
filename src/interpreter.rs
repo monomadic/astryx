@@ -144,7 +144,17 @@ pub(crate) fn _run(
                 //         return Err(AstryxError::new("tag found without page to assign to"));
                 //     }
                 // }
-                "embed" => {}
+                "embed" => {
+                    let path = get_required("path", &locals)?;
+                    let svgfile = crate::filesystem::read_file(std::path::PathBuf::from(path))?;
+                    let node = Node::new(HTMLNode::Text(svgfile));
+
+                    if let Some(parent) = parent {
+                        parent.append(node);
+                    } else {
+                        return Err(AstryxError::new("tag found without page to assign to"));
+                    }
+                }
                 _ => {
                     let mut node = Some(Node::new(crate::html::match_html_tag(&e.ident, locals)?));
 

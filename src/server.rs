@@ -56,15 +56,14 @@ pub(crate) fn start(file: PathBuf, port: u32) -> AstryxResult<()> {
 fn render_pages(file: PathBuf) -> AstryxResult<HashMap<String, String>> {
     let state = &mut State::new();
     let file = astryx::filesystem::read_file(file.clone())?;
-    let nodes = astryx::parser::parse(&file)?;
-    // let _ = interpreter::run(&nodes, state)?;
-
-    let _ = interpreter::__run(&nodes, state)?;
+    let tokens = astryx::parser::parse(&file)?;
+    let _ = interpreter::__run(&tokens, state)?;
 
     let mut pages = state.render_pages()?;
 
+    pages.insert("/tokens".into(), format!("{:#?}", tokens));
+    pages.insert("/pages".into(), format!("{:#?}", pages));
     pages.insert("/state".into(), format!("{:#?}", state));
-    pages.insert("/nodes".into(), format!("{:#?}", nodes));
 
     Ok(pages)
 }

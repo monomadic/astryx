@@ -67,7 +67,7 @@ pub(crate) fn match_html_tag(
     locals: HashMap<String, String>,
 ) -> AstryxResult<HTMLNode> {
     match ident {
-        "h1" | "h2" | "h3" | "abstract" | "hr" => Ok(HTMLNode::Element(HTMLElement {
+        "h1" | "h2" | "h3" | "abstract" | "hr" | "strong" => Ok(HTMLNode::Element(HTMLElement {
             ident: ident.into(),
             attributes: HashMap::new(),
         })),
