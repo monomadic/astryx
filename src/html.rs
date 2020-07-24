@@ -17,10 +17,28 @@ pub(crate) struct HTMLElement {
 }
 
 impl HTMLNode {
-    pub(crate) fn new(ident: &str) -> Self {
+    pub(crate) fn new_element(ident: &str) -> Self {
         HTMLNode::Element(HTMLElement {
             ident: ident.into(),
             attributes: HashMap::new(),
+        })
+    }
+
+    pub(crate) fn new_element_with_attributes(ident: &str, attributes: HashMap<String, String>) -> Self {
+        HTMLNode::Element(HTMLElement {
+            ident: ident.into(),
+            attributes: attributes,
+        })
+    }
+
+    pub(crate) fn new_stylesheet_element<S: Into<String>>(path: S) -> Self {
+        let mut attributes = HashMap::new();
+        attributes.insert("rel".into(), "stylesheet".into());
+        attributes.insert("href".into(), path.into());
+
+        HTMLNode::Element(HTMLElement {
+            ident: "link".into(),
+            attributes: attributes,
         })
     }
 }

@@ -114,9 +114,10 @@ pub(crate) fn _run(
                     let path = get_required("path", &locals)?;
 
                     // make a fresh node tree
-                    let mut node = Node::new(HTMLNode::new("html"));
-                    node.append(Node::new(HTMLNode::new("title")));
-                    let mut body = Some(Node::new(HTMLNode::new("body")));
+                    let mut node = Node::new(HTMLNode::new_element("html"));
+                    node.append(Node::new(HTMLNode::new_element("title")));
+                    node.append(Node::new(HTMLNode::new_stylesheet_element("/style.css")));
+                    let mut body = Some(Node::new(HTMLNode::new_element("body")));
 
                     for token in &e.children {
                         _run(token, state, &mut body)?;
