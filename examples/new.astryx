@@ -4,7 +4,7 @@ page \
 	path="/" \
 	title="monomadic"
 
-	rows @centered
+	rows class="centered"
 		row style="max-width: 600px; min-width: 300px;"
 			embed path=./examples/public/monomadic.svg
 			h1 @centered

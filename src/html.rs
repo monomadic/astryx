@@ -87,7 +87,7 @@ pub(crate) fn match_html_tag(
     match ident {
         "h1" | "h2" | "h3" | "abstract" | "hr" | "strong" => Ok(HTMLNode::Element(HTMLElement {
             ident: ident.into(),
-            attributes: HashMap::new(),
+            attributes: locals, // TODO filter this to type-check attributes
         })),
         "link" => {
             let mut attributes = HashMap::new();
