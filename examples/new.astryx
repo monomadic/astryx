@@ -5,16 +5,20 @@ page \
 	title="monomadic"
 
 	rows @centered
-		row @text-centered style="width: 960px; max-width: 960px; min-width: 300px;"
+		row @text-centered style="width: 960px; max-width: 960px; min-width: 300px; padding: 60px 0"
 			embed path=./examples/public/monomadic.svg
-			h1
+
+			div style="font-weight: 900; font-size: 30px; letter-spacing: 0.15em; line-height: 80px;"
 				| MONOMADIC
 			
 		row
 			for post in ./examples/posts/*.md
-				h2
-					link path=post.route
-						| ${ post.title }
+				div class="post padding-sm page-link"
+					div class="title"
+						link path=post.route
+							| ${ post.title }
+					div class="description"
+							| ${ post.description }
 
 				page path=post.route title=post.title
 					link path=.//
