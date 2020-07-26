@@ -201,159 +201,6 @@ pub(crate) fn _run(
     Ok(())
 }
 
-/// run the interpreter over a series of nodes
-// pub fn run(tokens: &Vec<Token>, state: &mut State) -> AstryxResult<()> {
-//     for node in tokens {
-//         match node {
-//             Token::Element(e) => {
-//                 let arguments = collect_attributes(&e.attributes, &state.decorators)?;
-
-//                 match e.ident.as_str() {
-//                     "page" => {
-//                         // make a fresh node tree
-//                         state.page_cursor = Some(Node::new(HTMLNode::new("html")));
-
-//                         // keep note of current page
-//                         let current_page = state.current_page_buffer.clone();
-//                         let path = crate::interpolator::stringify_variable(
-//                             &get_required_argument("path", &arguments)?,
-//                             &state.variables_in_scope,
-//                         )?;
-
-//                         state.create_buffer(path.clone())?;
-//                         state.write_to_current_buffer("<html><head>")?;
-
-//                         // <title> tag
-//                         if let Some(title) = get_optional_variable("title", &arguments) {
-//                             let title = crate::interpolator::stringify_variable(
-//                                 &title,
-//                                 &state.variables_in_scope,
-//                             )?;
-
-//                             state.write_to_current_buffer(&format!("<title>{}</title>", title))?;
-//                         };
-
-//                         if state.page_buffers.get("/style.css").is_some() {
-//                             state.write_to_current_buffer(
-//                                 r#"<link rel="stylesheet" media="all" href="/style.css"/>"#,
-//                             )?;
-//                         }
-
-//                         // <style> in head tag
-//                         // if let Some(css) = state.variables_in_scope.get("css") {
-//                         //     let css = crate::interpolation::stringify_variable(
-//                         //         &css,
-//                         //         &state.variables_in_scope,
-//                         //     )?;
-
-//                         //     state.write_to_current_buffer(&format!("<style>{}</style>", css))?;
-//                         // };
-//                         state.write_to_current_buffer("<body>")?;
-//                         run(&e.children, state)?;
-//                         state.write_to_current_buffer("</body></html>")?;
-
-//                         println!("PAGE FINISHED~!!! {}", path);
-//                         state.pages.insert(path, state.page_cursor.clone().unwrap());
-
-//                         // surrender page buffer after use to previous page buffer
-//                         state.current_page_buffer = current_page;
-//                     }
-//                     "css" => {
-//                         let path = get_required_argument("path", &arguments)?.to_string()?;
-
-//                         // let path = crate::interpolation::stringify_variable(
-//                         //     &get_required_argument("path", &arguments)?,
-//                         //     &state.variables_in_scope,
-//                         // )?;
-
-//                         let cssfile = crate::filesystem::read_file(std::path::PathBuf::from(path))?;
-
-//                         state.page_buffers.insert("/style.css".into(), cssfile);
-//                     }
-//                     "row" | "column" => {
-//                         state.write_to_current_buffer(&format!("<div class=\"{}\">", e.ident))?;
-//                         run(&e.children, state)?;
-//                         state.write_to_current_buffer("</div>")?;
-//                     }
-//                     "clamp" => {
-//                         // clamp(<min>, <actual>, <max>)
-//                         let max_width = crate::interpolator::stringify_variable(
-//                             &get_required_argument("max-width", &arguments)?,
-//                             &state.variables_in_scope,
-//                         )?;
-
-//                         state.write_to_current_buffer(&format!(
-//                             "<div style=\"width: clamp(10px, {}, 1000px)\">",
-//                             max_width
-//                         ))?;
-//                         run(&e.children, state)?;
-//                         state.write_to_current_buffer("</div>")?;
-//                     }
-//                     "image" | "img" | "i" => {
-//                         // let path =
-//                         //     stringify_variable(&get_required_argument("path", &arguments)?, state)?;
-
-//                         let path = crate::interpolator::stringify_variable(
-//                             &get_required_argument("path", &arguments)?,
-//                             &state.variables_in_scope,
-//                         )?;
-
-//                         state.write_to_current_buffer(&html_tag(
-//                             "img",
-//                             vec![("src".into(), path)],
-//                         ))?;
-//                     }
-//                     "h1" | "h2" | "h3" | "p" | "ul" | "li" | "ol" | "style" | "div" | "strong"
-//                     | "hr" | "abstract" => {
-//                         let attributes = collect_attributes(&e.attributes, &state.decorators)?;
-
-//                         state.write_to_current_buffer(&format!(
-//                             "<{}{}>",
-//                             &e.ident,
-//                             &attributes
-//                                 .iter()
-//                                 .map(|(ident, variable)| { format!(" {}=\"{}\"", ident, variable) })
-//                                 .collect::<Vec<String>>()
-//                                 .join("")
-//                         ))?;
-//                         run(&e.children, state)?;
-//                         state.write_to_current_buffer(&format!("</{}>", e.ident))?;
-//                     }
-//                     "link" | "a" => {
-//                         let path = crate::interpolator::stringify_variable(
-//                             &get_required_argument("path", &arguments)?,
-//                             &state.variables_in_scope,
-//                         )?;
-
-//                         state.write_to_current_buffer(&format!("<a href=\"{}\">", path))?;
-//                         run(&e.children, state)?;
-//                         state.write_to_current_buffer("</a>")?;
-//                     }
-//                     "embed" => {
-//                         let path = crate::interpolator::stringify_variable(
-//                             &get_required_argument("path", &arguments)?,
-//                             &state.variables_in_scope,
-//                         )?;
-
-//                         let svgfile = crate::filesystem::read_file(std::path::PathBuf::from(path))?;
-
-//                         state.write_to_current_buffer(&svgfile)?;
-//                     }
-//                     "tag" => {
-//                         let attributes = collect_attributes(&e.attributes, &state.decorators)?;
-
-//                         state.write_to_current_buffer(&format!(
-//                             "<{}{}>",
-//                             &e.ident,
-//                             &attributes
-//                                 .iter()
-//                                 .map(|(ident, variable)| { format!(" {}=\"{}\"", ident, variable) })
-//                                 .collect::<Vec<String>>()
-//                                 .join("")
-//                         ))?;
-//                         run(&e.children, state)?;
-//                         state.write_to_current_buffer(&format!("</{}>", e.ident))?;
-//                     }
 //                     _ => {
 //                         // tag was not found, lets check if it exists as an overlay
 //                         if let Some(overlay) = state.overlays.clone().get(&e.ident) {
@@ -378,23 +225,6 @@ pub(crate) fn _run(
 //                 let buffer = crate::interpolator::interpolate(t, &state.variables_in_scope)?;
 //                 state.write_to_current_buffer(&buffer)?;
 //             }
-//             Token::ForLoop(f) => {
-//                 // FIXME: throw errors in error conditions, don't just fall through
-//                 // FIXME: give a variable which can be interpolated
-
-//                 let files = crate::filesystem::read_content_metadata(&f.iterable)?;
-//                 for file in files {
-//                     // create a new local state to pass down the tree
-//                     let mut new_state = state.clone();
-
-//                     new_state
-//                         .variables_in_scope
-//                         .insert(f.index.clone(), Variable::TemplateFile(file));
-
-//                     run(&f.children, &mut new_state)?;
-//                     state.page_buffers = new_state.page_buffers; // kind of a dirty hack
-//                 }
-//             }
 //             Token::CodeBlock(cb) => {
 //                 state
 //                     .variables_in_scope
@@ -402,9 +232,6 @@ pub(crate) fn _run(
 //             }
 //         }
 //     }
-
-//     Ok(())
-// }
 
 /// Takes attributes from a node (which can be @decorators or named=arguments) and returns
 /// a hashmap of local variables.
@@ -525,6 +352,13 @@ impl TagDecorator {
             "centered".into(),
             TagDecorator {
                 classes: vec!["centered".into()],
+            },
+        );
+
+        decorators.insert(
+            "text-centered".into(),
+            TagDecorator {
+                classes: vec!["text-centered".into()],
             },
         );
 

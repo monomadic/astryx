@@ -18,6 +18,10 @@
   display: grid;
 }
 
+.text-centered {
+  text-align: center;
+}
+
 @keyframes move-up {
   from {
       bottom: -20px;

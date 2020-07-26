@@ -89,7 +89,7 @@ pub(crate) fn match_html_tag(
             ident: ident.into(),
             attributes: locals, // TODO filter this to type-check attributes
         })),
-        "link" => {
+        "link" | "a" => {
             let mut attributes = HashMap::new();
             attributes.insert("href".into(), locals.get("path").expect("no path").clone());
 
@@ -98,9 +98,17 @@ pub(crate) fn match_html_tag(
                 attributes,
             }))
         }
-        "rows" | "row" => {
-            let mut attributes = HashMap::new();
-            attributes.insert("class".into(), ident.into());
+        "rows" | "row" | "cols" | "col" => {
+            let mut attributes = locals.clone();
+
+            let class = attributes
+                .get("class".into())
+                .map(|c|c.clone())
+                .unwrap_or(String::new());
+
+            let classes = &format!("{} {}", ident, class);
+
+            attributes.insert("class".into(), classes.clone());
 
             Ok(HTMLNode::Element(HTMLElement {
                 ident: "div".into(),

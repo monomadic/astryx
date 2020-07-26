@@ -4,10 +4,10 @@ page \
 	path="/" \
 	title="monomadic"
 
-	rows class="centered"
-		row style="max-width: 600px; min-width: 300px;"
+	rows @centered
+		row @text-centered style="width: 960px; max-width: 960px; min-width: 300px;"
 			embed path=./examples/public/monomadic.svg
-			h1 @centered
+			h1
 				| MONOMADIC
 			
 		row
