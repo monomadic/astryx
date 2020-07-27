@@ -1,0 +1,16 @@
+
+page path="/"
+  rows
+    row
+      | Top
+    row
+      columns
+        column
+          | Left
+        column
+          | Content
+        column
+          | Right
+    row
+      row
+        | Bottom

@@ -84,11 +84,15 @@ pub(crate) fn match_html_tag(
     ident: &str,
     locals: HashMap<String, String>,
 ) -> AstryxResult<HTMLNode> {
-    match ident {
-        "h1" | "h2" | "h3" | "abstract" | "hr" | "strong" | "div" => Ok(HTMLNode::Element(HTMLElement {
+
+    if HTML_TAGS.contains(&ident) {
+        return Ok(HTMLNode::Element(HTMLElement {
             ident: ident.into(),
             attributes: locals, // TODO filter this to type-check attributes
-        })),
+        }));
+    }
+
+    match ident {
         "link" | "a" => {
             let mut attributes = HashMap::new();
             attributes.insert("href".into(), locals.get("path").expect("no path").clone());
@@ -98,15 +102,15 @@ pub(crate) fn match_html_tag(
                 attributes,
             }))
         }
-        "rows" | "row" | "cols" | "col" => {
+        "rows" | "row" | "columns" | "column" => {
             let mut attributes = locals.clone();
 
             let class = attributes
                 .get("class".into())
-                .map(|c|c.clone())
+                .map(|c| format!(" {}", &c))
                 .unwrap_or(String::new());
 
-            let classes = &format!("{} {}", ident, class);
+            let classes = &format!("{}{}", ident, class);
 
             attributes.insert("class".into(), classes.clone());
 
@@ -121,3 +125,123 @@ pub(crate) fn match_html_tag(
         ))),
     }
 }
+
+const HTML_TAGS: &'static [&'static str] = &[
+	"a",
+	"abbr",
+	"address",
+	"area",
+	"article",
+	"aside",
+	"audio",
+	"b",
+	"base",
+	"bdi",
+	"bdo",
+	"blockquote",
+	"body",
+	"br",
+	"button",
+	"canvas",
+	"caption",
+	"cite",
+	"code",
+	"col",
+	"colgroup",
+	"data",
+	"datalist",
+	"dd",
+	"del",
+	"details",
+	"dfn",
+	"dialog",
+	"div",
+	"dl",
+	"dt",
+	"em",
+	"embed",
+	"fieldset",
+	"figcaption",
+	"figure",
+	"footer",
+	"form",
+	"h1",
+	"h2",
+	"h3",
+	"h4",
+	"h5",
+	"h6",
+	"head",
+	"header",
+	"hgroup",
+	"hr",
+	"html",
+	"i",
+	"iframe",
+	"img",
+	"input",
+	"ins",
+	"kbd",
+	"label",
+	"legend",
+	"li",
+	"link",
+	"main",
+	"map",
+	"mark",
+	"math",
+	"menu",
+	"menuitem",
+	"meta",
+	"meter",
+	"nav",
+	"noscript",
+	"object",
+	"ol",
+	"optgroup",
+	"option",
+	"output",
+	"p",
+	"param",
+	"picture",
+	"pre",
+	"progress",
+	"q",
+	"rb",
+	"rp",
+	"rt",
+	"rtc",
+	"ruby",
+	"s",
+	"samp",
+	"script",
+	"section",
+	"select",
+	"slot",
+	"small",
+	"source",
+	"span",
+	"strong",
+	"style",
+	"sub",
+	"summary",
+	"sup",
+	"svg",
+	"table",
+	"tbody",
+	"td",
+	"template",
+	"textarea",
+	"tfoot",
+	"th",
+	"thead",
+	"time",
+	"title",
+	"tr",
+	"track",
+	"u",
+	"ul",
+	"var",
+	"video",
+	"wbr"
+];
