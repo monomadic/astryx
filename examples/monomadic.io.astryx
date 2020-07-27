@@ -2,11 +2,11 @@ page \
     path="/" \
     title="monomadic"
 
-    rows @centered style="max-width: 600px; min-width: 300px;"
+    rows @centered style="max-width: 720px; min-width: 300px; margin: 0 auto;"
         row
             div @centered
 
-                div .fade-in-up  style="text-align:center"
+                div .fade-in-up  .text-centered
                     embed path=./examples/public/monomadic.svg
 
                     h1 style="font-weight: 900; font-size: 30px; letter-spacing: 0.15em; line-height: 80px;"
