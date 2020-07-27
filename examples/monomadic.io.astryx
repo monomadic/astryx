@@ -1,33 +1,31 @@
-css path=./examples/public/style.css
-
 page \
     path="/" \
     title="monomadic"
 
-    rows @centered
-        row style="max-width: 600px; min-width: 300px;"
+    rows @centered style="max-width: 600px; min-width: 300px;"
+        row
             div @centered
 
-                div class="fade-in-up"  style="text-align:center"
+                div .fade-in-up  style="text-align:center"
                     embed path=./examples/public/monomadic.svg
 
                     h1 style="font-weight: 900; font-size: 30px; letter-spacing: 0.15em; line-height: 80px;"
-                        | MONOMΛDIC
+                        | MONOMADIC
 
         row
             for post in ./examples/posts/*.md
 
-                div class="page-link post padding-sm"
-                    link path=post.route
-                        div class="title"
+                div .page-link .post .padding-sm
+                    a href=post.route
+                        div .title
                             | ${ post.title }
-                    div class="description"
+                    div .description
                         | ${ post.description }
 
                 page path=post.route title=post.title
                     div style="max-width: 960px; margin: 0 auto;"
-                        div class="capslink"
-                            link path=.//
+                        div .capslink
+                            a href=.//
                                 embed path=./examples/public/monomadic-small.svg
                                 strong
                                     | MONOMADIC

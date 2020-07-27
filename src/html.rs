@@ -122,7 +122,8 @@ pub(crate) fn match_html_tag(
 
 const HTML_TAGS: &'static [&'static str] = &[
 	"a",
-	"abbr",
+    "abbr",
+    "abstract",
 	"address",
 	"area",
 	"article",
