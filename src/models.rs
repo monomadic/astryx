@@ -32,6 +32,7 @@ pub struct Element {
 pub enum Attribute {
     Symbol(String),
     Decorator(Decorator),
+    Class(String),
     NamedAttribute { ident: String, variable: Variable },
 }
 

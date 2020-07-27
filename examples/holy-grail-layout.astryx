@@ -12,5 +12,4 @@ page path="/"
         column
           | Right
     row
-      row
-        | Bottom
+      | Bottom

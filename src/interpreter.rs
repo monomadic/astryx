@@ -108,6 +108,7 @@ pub(crate) fn _run(
             let arguments = convert_attributes_into_locals(&e.attributes, &state.decorators)?;
             // let locals = resolve_references(&arguments, &state.variables_in_scope)?;
             let locals = stringify_variables(&arguments, &state.variables_in_scope)?;
+            let classes = collect_classes(&e.attributes);
 
             match e.ident.as_str() {
                 "page" => {
@@ -157,7 +158,10 @@ pub(crate) fn _run(
                     }
                 }
                 _ => {
-                    let mut node = Some(Node::new(crate::html::match_html_tag(&e.ident, locals)?));
+                    let mut el = crate::html::match_html_tag(&e.ident, locals)?;
+                    el.classes.append(&mut classes.clone());
+
+                    let mut node = Some(Node::new(HTMLNode::Element(el)));
 
                     for token in &e.children {
                         _run(token, state, &mut node)?;
@@ -260,10 +264,23 @@ fn convert_attributes_into_locals(
                     return Err(AstryxError::new("no such decorator".into()));
                 }
             }
-            Attribute::Symbol(_) => {}
+            Attribute::Symbol(_) => {
+            }
+            Attribute::Class(_) => {
+            }
         }
     }
     Ok(named_attributes)
+}
+
+fn collect_classes(attributes: &Vec<Attribute>) -> Vec<String> {
+    let mut classes = Vec::new();
+    for attribute in attributes {
+        if let Attribute::Class(c) = attribute {
+            classes.push(c.clone());
+        };
+    }
+    classes
 }
 
 pub fn get_optional_variable(i: &str, locals: &HashMap<String, Variable>) -> Option<Variable> {

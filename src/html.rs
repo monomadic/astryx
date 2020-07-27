@@ -14,6 +14,7 @@ pub(crate) enum HTMLNode {
 pub(crate) struct HTMLElement {
     ident: String,
     attributes: HashMap<String, String>,
+    pub classes: Vec<String>,
 }
 
 impl HTMLNode {
@@ -21,6 +22,7 @@ impl HTMLNode {
         HTMLNode::Element(HTMLElement {
             ident: ident.into(),
             attributes: HashMap::new(),
+            classes: Vec::new(),
         })
     }
 
@@ -28,6 +30,7 @@ impl HTMLNode {
         HTMLNode::Element(HTMLElement {
             ident: ident.into(),
             attributes: attributes,
+            classes: Vec::new(),
         })
     }
 
@@ -39,6 +42,7 @@ impl HTMLNode {
         HTMLNode::Element(HTMLElement {
             ident: "link".into(),
             attributes: attributes,
+            classes: Vec::new(),
         })
     }
 }
@@ -47,8 +51,10 @@ pub(crate) fn render_page<W: Write>(node: &Node<HTMLNode>, writer: &mut W) -> As
     // can we avoid a clone here?
     Ok(match node.borrow().clone() {
         HTMLNode::Element(e) => {
+            let mut attributes = e.attributes.clone();
+            attributes.insert("class".into(), e.classes.join(" "));
             writer
-                .write_str(&format!("{}", html_tag(&e.ident, &e.attributes)))
+                .write_str(&format!("{}", html_tag(&e)))
                 .unwrap(); //todo: err
                 
             for child in node.children() {
@@ -63,61 +69,49 @@ pub(crate) fn render_page<W: Write>(node: &Node<HTMLNode>, writer: &mut W) -> As
     })
 }
 
-pub fn html_tag(ident: &str, attributes: &HashMap<String, String>) -> String {
-    let attribs = if !attributes.is_empty() {
+fn html_tag(el: &HTMLElement) -> String {
+    let mut el = el.clone();
+    if !el.classes.is_empty() {
+        el.attributes.insert("class".into(), el.classes.join(" "));
+    }
+
+    let attribs = if !el.attributes.is_empty() {
         format!(
             " {}",
-            attributes
+            el.attributes
                 .iter()
                 .map(|(k, v)| format!("{}=\"{}\"", k, v))
                 .collect::<Vec<String>>()
-                .join(" ")
-        )
+                .join(" "))
     } else {
         String::new()
     };
 
-    format!("<{}{}>", ident, attribs)
+    format!("<{}{}>", el.ident, attribs)
 }
 
 pub(crate) fn match_html_tag(
     ident: &str,
-    locals: HashMap<String, String>,
-) -> AstryxResult<HTMLNode> {
+    locals: HashMap<String, String>
+) -> AstryxResult<HTMLElement> {
+
+    // TODO aliases here eg link -> a
 
     if HTML_TAGS.contains(&ident) {
-        return Ok(HTMLNode::Element(HTMLElement {
+        return Ok(HTMLElement {
             ident: ident.into(),
-            attributes: locals, // TODO filter this to type-check attributes
-        }));
+            attributes: locals, // TODO filter this to type-check attributes against elements
+            classes: Vec::new(), // TODO check for 'class' local
+        });
     }
 
     match ident {
-        "link" | "a" => {
-            let mut attributes = HashMap::new();
-            attributes.insert("href".into(), locals.get("path").expect("no path").clone());
-
-            Ok(HTMLNode::Element(HTMLElement {
-                ident: "a".into(),
-                attributes,
-            }))
-        }
         "rows" | "row" | "columns" | "column" => {
-            let mut attributes = locals.clone();
-
-            let class = attributes
-                .get("class".into())
-                .map(|c| format!(" {}", &c))
-                .unwrap_or(String::new());
-
-            let classes = &format!("{}{}", ident, class);
-
-            attributes.insert("class".into(), classes.clone());
-
-            Ok(HTMLNode::Element(HTMLElement {
+            Ok(HTMLElement {
                 ident: "div".into(),
-                attributes,
-            }))
+                attributes: locals,
+                classes: vec![ident.into()]
+            })
         }
         _ => Err(AstryxError::new(&format!(
             "interpreter error: node not found: {}",

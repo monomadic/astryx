@@ -19,16 +19,16 @@ use nom::{
 
 /// returns a vector of ast nodes
 pub fn parse(i: &str) -> AstryxResult<Vec<Token>> {
-    let (r, nodes) = run(i)
-        .map_err(|e|
-            AstryxError::new(&format!("error parsing: {:?}", e))
-        )?;
+    let (r, nodes) = run(i).map_err(|e| AstryxError::new(&format!("error parsing: {:?}", e)))?;
 
     if !r.is_empty() {
         return Err(AstryxError {
             kind: AstryxErrorKind::ParseError,
             state: None,
-            msg: format!("file did not fully parse.\n\nRemainder:\n{}\n\nNodes:\n{:#?}", r, nodes),
+            msg: format!(
+                "file did not fully parse.\n\nRemainder:\n{}\n\nNodes:\n{:#?}",
+                r, nodes
+            ),
         });
     }
 
@@ -144,6 +144,7 @@ fn element(i: &str) -> IResult<&str, Element> {
 fn attribute(i: &str) -> IResult<&str, Attribute> {
     alt((
         map(decorator, |d| Attribute::Decorator(d)),
+        map(dotted_symbol, |s| Attribute::Class(s)),
         attribute_assignment,
         map(symbolic1, |s| Attribute::Symbol(String::from(s))),
     ))(i)
@@ -162,6 +163,20 @@ fn decorator(i: &str) -> IResult<&str, Decorator> {
         Decorator {
             ident: String::from(ident),
         },
+    ));
+}
+
+fn dotted_symbol(i: &str) -> IResult<&str, String> {
+    let (input, (_, _, ident, _)) = nom::sequence::tuple((
+        space0_with_early_terminators,
+        char('.'),
+        symbolic1,
+        space0_with_early_terminators,
+    ))(i)?;
+
+    return Ok((
+        input,
+        String::from(ident),
     ));
 }
 
