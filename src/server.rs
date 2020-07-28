@@ -34,13 +34,8 @@ pub(crate) fn start(file: PathBuf, port: u32) -> AstryxResult<()> {
                 response.status(StatusCode::INTERNAL_SERVER_ERROR);
                 println!("ERROR: {:#?}", e);
 
-                let mut highlighter = astryx::highlighter::SyntaxHighlighter::new();
-                highlighter.set_syntax_by_file_extension("yaml");
-                let highlighted_msg = highlighter.highlight(&format!("{}", e.msg));
-                let highlighted_state = highlighter.highlight(&format!("{:?}", e.state));
-
                 Ok(response.body(
-                    format!("<html style='background-color: black;color: white;'><body><h1>Error :(</h1><pre>{}</pre>\n\n<pre>{:#?}</pre></body></html>", highlighted_msg, highlighted_state)
+                    format!("<html style='background-color: black;color: white;'><body><h1>Error :(</h1><pre>{}</pre>\n\n<pre>{:#?}</pre></body></html>", &e.msg, &e.state)
                         .as_bytes()
                         .to_vec(),
                 )?)

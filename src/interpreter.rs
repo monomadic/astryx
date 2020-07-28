@@ -1,4 +1,9 @@
-use crate::{error::*, html::HTMLNode, models::*, variable::{stringify_variables, Variable}};
+use crate::{
+    error::*,
+    html::HTMLNode,
+    parser::{Attribute, Token},
+    variable::{stringify_variables, Variable},
+};
 use rctree::Node;
 use std::collections::HashMap;
 
@@ -240,25 +245,6 @@ fn collect_classes(attributes: &Vec<Attribute>) -> Vec<String> {
         };
     }
     classes
-}
-
-pub fn get_optional_variable(i: &str, locals: &HashMap<String, Variable>) -> Option<Variable> {
-    locals
-        .get(&String::from(i.clone()))
-        .map(|v| v.clone().clone())
-}
-
-pub fn get_required_argument(
-    i: &str,
-    arguments: &HashMap<String, Variable>,
-) -> AstryxResult<Variable> {
-    arguments
-        .get(&i.to_string())
-        .map(|v| v.clone().clone())
-        .ok_or(AstryxError::new(&format!(
-            "argument not found: {}. arguments: {:?}",
-            i, arguments
-        )))
 }
 
 #[derive(Debug, Clone)]
