@@ -1,5 +1,4 @@
-use crate::error::*;
-use crate::{html::HTMLNode, models::*};
+use crate::{error::*, html::HTMLNode, models::*, variable::Variable};
 use rctree::Node;
 use std::collections::HashMap;
 
@@ -83,16 +82,19 @@ fn stringify_variables(
     let mut stringified: HashMap<String, String> = HashMap::new();
 
     for (ident, variable) in variables {
-        stringified.insert(ident.clone(), 
-         crate::interpolator::stringify_variable(variable, locals)?);
+        stringified.insert(
+            ident.clone(),
+            crate::interpolator::stringify_variable(variable, locals)?,
+        );
     }
 
     Ok(stringified)
 }
 
 fn get_required(ident: &str, variables: &HashMap<String, String>) -> AstryxResult<String> {
-    variables.get(ident)
-        .map(|v|v.into())
+    variables
+        .get(ident)
+        .map(|v| v.into())
         .ok_or(AstryxError::new("variable not found"))
 }
 
@@ -264,10 +266,8 @@ fn convert_attributes_into_locals(
                     return Err(AstryxError::new("no such decorator".into()));
                 }
             }
-            Attribute::Symbol(_) => {
-            }
-            Attribute::Class(_) => {
-            }
+            Attribute::Symbol(_) => {}
+            Attribute::Class(_) => {}
         }
     }
     Ok(named_attributes)

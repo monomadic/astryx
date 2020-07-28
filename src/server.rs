@@ -1,7 +1,6 @@
-use astryx::interpreter::{self, State};
-use simple_server::{Server, StatusCode};
-use std::{collections::HashMap, path::PathBuf};
 use astryx::error::AstryxResult;
+use simple_server::{Server, StatusCode};
+use std::path::PathBuf;
 
 pub(crate) fn start(file: PathBuf, port: u32) -> AstryxResult<()> {
     let host = "127.0.0.1";
@@ -10,25 +9,27 @@ pub(crate) fn start(file: PathBuf, port: u32) -> AstryxResult<()> {
     let mut server = Server::new(move |request, mut response| {
         // info!("Request received. {} {}", request.method(), request.uri());
         let path = request.uri().path();
-        let pages = render_pages(file.clone());
+        let pages = astryx::render(file.clone());
 
         println!("{} {}", request.method(), path);
 
-        if path.contains("svg")  {
+        if path.contains("svg") {
             response.header("content-type", "image/svg+xml");
             // return Ok(response.body(svgfile.as_bytes().to_vec())?);
         }
 
         match pages {
-            Ok(pages) => {
-                match pages.get(path) {
-                    Some(page) => Ok(response.body(page.as_bytes().to_vec())?),
-                    None => {
-                        response.status(StatusCode::NOT_FOUND);
-                        Ok(response.body(format!("<h1>404</h1><p>Path not found: {}<p>", path).as_bytes().to_vec())?)
-                    }
+            Ok(pages) => match pages.get(path) {
+                Some(page) => Ok(response.body(page.as_bytes().to_vec())?),
+                None => {
+                    response.status(StatusCode::NOT_FOUND);
+                    Ok(response.body(
+                        format!("<h1>404</h1><p>Path not found: {}<p>", path)
+                            .as_bytes()
+                            .to_vec(),
+                    )?)
                 }
-            }
+            },
             Err(e) => {
                 response.status(StatusCode::INTERNAL_SERVER_ERROR);
                 println!("ERROR: {:#?}", e);
@@ -51,19 +52,4 @@ pub(crate) fn start(file: PathBuf, port: u32) -> AstryxResult<()> {
 
     server.set_static_directory("examples/public");
     server.listen(host, &port);
-}
-
-fn render_pages(file: PathBuf) -> AstryxResult<HashMap<String, String>> {
-    let state = &mut State::new();
-    let file = astryx::filesystem::read_file(file.clone())?;
-    let tokens = astryx::parser::parse(&file)?;
-    let _ = interpreter::__run(&tokens, state)?;
-
-    let mut pages = state.render_pages()?;
-
-    pages.insert("/tokens".into(), format!("{:#?}", tokens));
-    pages.insert("/pages".into(), format!("{:#?}", pages));
-    pages.insert("/state".into(), format!("{:#?}", state));
-
-    Ok(pages)
 }

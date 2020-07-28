@@ -1,4 +1,4 @@
-use crate::{error::*, models::*};
+use crate::{error::*, variable::Variable};
 use nom::branch::alt;
 use nom::bytes::complete::{tag, take_until};
 use nom::combinator::map;

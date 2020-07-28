@@ -4,6 +4,7 @@
 use crate::{
     error::{AstryxError, AstryxErrorKind, AstryxResult},
     models::*,
+    variable::Variable,
 };
 
 use nom::branch::alt;
@@ -174,10 +175,7 @@ fn dotted_symbol(i: &str) -> IResult<&str, String> {
         space0_with_early_terminators,
     ))(i)?;
 
-    return Ok((
-        input,
-        String::from(ident),
-    ));
+    return Ok((input, String::from(ident)));
 }
 
 fn attribute_assignment(i: &str) -> IResult<&str, Attribute> {
