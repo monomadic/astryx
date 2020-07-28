@@ -26,13 +26,13 @@ impl HTMLNode {
         })
     }
 
-    pub(crate) fn new_element_with_attributes(ident: &str, attributes: HashMap<String, String>) -> Self {
-        HTMLNode::Element(HTMLElement {
-            ident: ident.into(),
-            attributes: attributes,
-            classes: Vec::new(),
-        })
-    }
+    // pub(crate) fn new_element_with_attributes(ident: &str, attributes: HashMap<String, String>) -> Self {
+    //     HTMLNode::Element(HTMLElement {
+    //         ident: ident.into(),
+    //         attributes: attributes,
+    //         classes: Vec::new(),
+    //     })
+    // }
 
     pub(crate) fn new_stylesheet_element<S: Into<String>>(path: S) -> Self {
         let mut attributes = HashMap::new();

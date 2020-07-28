@@ -1,4 +1,4 @@
-use crate::{error::*, html::HTMLNode, models::*, variable::Variable};
+use crate::{error::*, html::HTMLNode, models::*, variable::{stringify_variables, Variable}};
 use rctree::Node;
 use std::collections::HashMap;
 
@@ -48,47 +48,6 @@ pub fn __run(tokens: &Vec<Token>, state: &mut State) -> AstryxResult<()> {
     }
 
     Ok(())
-}
-
-// // Looks for references inside arguments and resolves them against local variables
-// fn resolve_references(
-//     arguments: &HashMap<String, Variable>,
-//     locals: &HashMap<String, Variable>,
-// ) -> AstryxResult<HashMap<String, Variable>> {
-//     let mut resolved: HashMap<String, Variable> = HashMap::new();
-
-//     for (ident, variable) in arguments {
-//         resolved.insert(ident.clone(), resolve_reference(variable, locals)?);
-//     }
-
-//     Ok(resolved)
-// }
-
-// // if a variable has any references in it, attempt to resolve it.
-// fn resolve_reference(variable: &Variable, locals: &HashMap<String, Variable>) -> AstryxResult<Variable> {
-//     Ok(match variable {
-//         Variable::Reference(r) => {
-//             locals.get(r)?.clone()
-//         }
-//         _ => variable.clone()
-//     })
-// }
-
-// Converts a series of variables to strings
-fn stringify_variables(
-    variables: &HashMap<String, Variable>,
-    locals: &HashMap<String, Variable>,
-) -> AstryxResult<HashMap<String, String>> {
-    let mut stringified: HashMap<String, String> = HashMap::new();
-
-    for (ident, variable) in variables {
-        stringified.insert(
-            ident.clone(),
-            crate::interpolator::stringify_variable(variable, locals)?,
-        );
-    }
-
-    Ok(stringified)
 }
 
 fn get_required(ident: &str, variables: &HashMap<String, String>) -> AstryxResult<String> {

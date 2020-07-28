@@ -1,3 +1,5 @@
+// syntax highlighting for source text
+
 use syntect::easy::HighlightLines;
 use syntect::highlighting::ThemeSet;
 use syntect::html::{
