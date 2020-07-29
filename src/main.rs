@@ -18,14 +18,14 @@ enum Command {
     Serve {
         /// Input file
         #[structopt(parse(from_os_str))]
-        file: PathBuf, // TODO make optional (default site.astryx)
+        file: PathBuf,
         port: Option<u32>,
     },
     /// build the project
     Build {
         /// Input file
         #[structopt(parse(from_os_str))]
-        file: PathBuf, // TODO make optional (default site.astryx)
+        file: PathBuf,
     },
     New,
 }
