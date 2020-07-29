@@ -69,6 +69,7 @@ pub(crate) fn stringify_variable(
         Variable::RelativePath(p) => Ok(p.clone()),
         Variable::Reference(p) => {
             // FIXME unsafe array index
+            // if let Some(ref lang) = info.split('.').next() {
             let base_ref: &str = p.split(".").collect::<Vec<&str>>()[0];
             let subref: &str = p.split(".").collect::<Vec<&str>>()[1];
 

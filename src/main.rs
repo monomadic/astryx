@@ -7,36 +7,48 @@ mod server;
 #[derive(StructOpt, Debug)]
 #[structopt(name = "cassette")]
 struct Opt {
-
     /// Command
     #[structopt(subcommand)]
     command: Command,
-
-    /// Input file
-    #[structopt(short, long, parse(from_os_str))]
-    file: PathBuf, // TODO make optional (default site.astryx)
 }
 
 #[derive(StructOpt, Debug)]
 enum Command {
     /// start a server
-    Serve,
+    Serve {
+        /// Input file
+        #[structopt(parse(from_os_str))]
+        file: PathBuf, // TODO make optional (default site.astryx)
+        port: Option<u32>,
+    },
     /// build the project
-    Build,
+    Build {
+        /// Input file
+        #[structopt(parse(from_os_str))]
+        file: PathBuf, // TODO make optional (default site.astryx)
+    },
+    New,
 }
 
-fn main() {
+pub fn main() {
     match run() {
         Ok(_) => println!("\n"),
         Err(e) => println!("\n\nERROR: {:?}", e),
     }
 }
 
-pub fn run() -> AstryxResult<()> {
+/// run cli commands
+fn run() -> AstryxResult<()> {
     let opt = Opt::from_args();
 
     match opt.command {
-        Command::Serve => server::start(opt.file, 8888),
-        Command::Build => Ok(()),
+        Command::Serve{ file, port } => server::start(file, port.unwrap_or(8888)),
+        Command::Build{ .. } => Ok(()),
+        Command::New => new_project(),
     }
+}
+
+/// set up a new project in the current directory
+fn new_project() -> AstryxResult<()> {
+    Ok(())
 }

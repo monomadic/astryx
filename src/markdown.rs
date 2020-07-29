@@ -1,6 +1,6 @@
 use crate::error::*;
 use crate::highlighter::SyntaxHighlighter;
-use pulldown_cmark::{html, Event, Options, Parser, Tag};
+use pulldown_cmark::{html, Event, Options, Parser, Tag, CodeBlockKind};
 
 pub fn parse(i: &str) -> AstryxResult<String> {
     // TODO use a stricter lib that will throw errors, or
@@ -24,11 +24,23 @@ pub fn parse(i: &str) -> AstryxResult<String> {
     // let syntax = ps.find_syntax_by_extension("rs").unwrap();
     // let mut h = HighlightLines::new(syntax, &ts.themes["base16-ocean.dark"]);
 
-    let h = SyntaxHighlighter::new();
+    let mut h = SyntaxHighlighter::new();
 
     let parser = Parser::new_ext(i, Options::empty())
         .map(|event| match event {
             Event::Start(Tag::CodeBlock(ref kind)) => {
+                // h.set_syntax_by_file_extension(kind.);
+                // println!("H: {:?}", h);
+
+                match kind {
+                    CodeBlockKind::Indented => (),
+                    CodeBlockKind::Fenced(info) => {
+                        // highlighter = Some(get_highlighter(info, &context.config));
+                        // println!("{:?}", info);
+                        h.set_syntax_by_file_extension(info);
+                    }
+                };
+
                 let mut html = h.start_highlight();
                 html.push_str("<code>");
                 // syntax_mode = Some(kind.to_owned());
