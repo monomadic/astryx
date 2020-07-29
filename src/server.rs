@@ -45,8 +45,8 @@ pub(crate) fn start(file: PathBuf, port: u32) -> AstryxResult<()> {
         // request.method() -> &Method::GET
     });
 
-    server.set_static_directory("examples/public");
+    server.set_static_directory("public");
 
-    println!("listening on {}:{}", host, port);
+    println!("listening on http://{}:{}/", host, port);
     server.listen(host, &port);
 }
