@@ -11,8 +11,6 @@ pub enum Variable {
 }
 
 impl Variable {
-    // pub fn resolve(locals:) -> AstryxResult<Variable>
-
     pub fn to_string(&self) -> AstryxResult<String> {
         match self {
             Variable::QuotedString(s) => Ok(s.clone()),
@@ -43,7 +41,7 @@ pub struct TemplateFile {
     pub metadata: Option<yaml_rust::Yaml>,
 }
 
-// Converts a series of variables to strings
+/// Converts a series of variables to strings
 pub(crate) fn stringify_variables(
     variables: &HashMap<String, Variable>,
     locals: &HashMap<String, Variable>,
@@ -60,7 +58,7 @@ pub(crate) fn stringify_variables(
     Ok(stringified)
 }
 
-// FIXME (changed) duplicated code from interpeter.rs - impl display?
+// TODO move into Variable
 pub(crate) fn stringify_variable(
     variable: &Variable,
     locals: &HashMap<String, Variable>,

@@ -5,7 +5,7 @@ use astryx::{self, error::AstryxResult, };
 mod server;
 
 #[derive(StructOpt, Debug)]
-#[structopt(name = "cassette")]
+#[structopt(name = "astryx")]
 struct Opt {
     /// Command
     #[structopt(subcommand)]

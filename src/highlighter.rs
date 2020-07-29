@@ -40,7 +40,7 @@ impl SyntaxHighlighter {
         styled_line_to_highlighted_html(&regions[..], IncludeBackground::No)
     }
 
-    pub fn highlight<'a>(&self, i: &str) -> String {
-        format!("{}{}{}", self.start_highlight(), self.highlight_line(i), "")
-    }
+    // pub fn highlight<'a>(&self, i: &str) -> String {
+    //     format!("{}{}{}", self.start_highlight(), self.highlight_line(i), "")
+    // }
 }
