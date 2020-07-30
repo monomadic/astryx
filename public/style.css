@@ -4,8 +4,8 @@
 }
 
 .rows {
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
 }
 
 .columns {
@@ -15,7 +15,11 @@
 
 .centered {
   place-content: center;
-  display: grid
+  display: grid;
+}
+
+.text-centered {
+  text-align: center;
 }
 
 @keyframes move-up {
@@ -34,7 +38,6 @@
   font-size: 140%;
   font-weight: 800;
   text-decoration: underline;
-  transition: 0.5s ease;
 }
 
 .page-link:hover .title {

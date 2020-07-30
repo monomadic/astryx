@@ -20,3 +20,17 @@ __NOTE: pre-production state, not even alpha yet. pushing updates regularly, che
 - example code
 
 Looks too magical? Actually it tries to be extremely reasonable and logical.
+
+## Installation
+
+### Cargo
+
+``` bash
+cargo install --path https://github.com/monomadic/astryx
+```
+
+### NixOS / Nixpkgs (soon...)
+
+``` bash
+nix-env --install astryx --file https://github.com/monomadic/astryx/astryx.nix
+```

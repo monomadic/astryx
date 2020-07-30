@@ -1,5 +1,6 @@
+use crate::{variable::TemplateFile, error::*};
 
-pub fn read_file(pathbuf: std::path::PathBuf) -> AstryxResult<String> {
+pub(crate) fn read_file(pathbuf: std::path::PathBuf) -> AstryxResult<String> {
     use std::fs::File;
     use std::io::prelude::*;
 
@@ -14,9 +15,6 @@ pub fn read_file(pathbuf: std::path::PathBuf) -> AstryxResult<String> {
 
     Ok(buffer)
 }
-
-use crate::error::*;
-use crate::models::*;
 
 pub(crate) fn read_content_metadata(pattern: &str) -> AstryxResult<Vec<TemplateFile>> {
 

@@ -3,7 +3,7 @@
 
 use crate::{
     error::{AstryxError, AstryxErrorKind, AstryxResult},
-    models::*,
+    variable::Variable,
 };
 
 use nom::branch::alt;
@@ -17,18 +17,60 @@ use nom::{
     combinator::{map, opt},
 };
 
+#[derive(Debug, Clone)]
+pub enum Token {
+    ForLoop(ForLoop),
+    Element(Element),
+    Text(String),
+    CodeBlock(CodeBlock),
+}
+
+#[derive(Debug, Clone)]
+pub struct CodeBlock {
+    pub ident: String,
+    pub content: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct ForLoop {
+    pub index: String,
+    pub iterable: String,
+    pub children: Vec<Token>,
+}
+
+#[derive(Debug, Clone)]
+pub struct Element {
+    pub ident: String,
+    pub attributes: Vec<Attribute>,
+    pub children: Vec<Token>,
+}
+
+#[derive(Debug, Clone)]
+pub enum Attribute {
+    Symbol(String),
+    Decorator(Decorator),
+    Class(String),
+    NamedAttribute { ident: String, variable: Variable },
+}
+
+#[derive(Debug, Clone)]
+pub struct Decorator {
+    pub ident: String,
+    // value: ?
+}
+
 /// returns a vector of ast nodes
-pub fn parse(i: &str) -> AstryxResult<Vec<Node>> {
-    let (r, nodes) = run(i)
-        .map_err(|e|
-            AstryxError::new(&format!("error parsing: {:?}", e))
-        )?;
+pub fn parse(i: &str) -> AstryxResult<Vec<Token>> {
+    let (r, nodes) = run(i).map_err(|e| AstryxError::new(&format!("error parsing: {:?}", e)))?;
 
     if !r.is_empty() {
         return Err(AstryxError {
             kind: AstryxErrorKind::ParseError,
             state: None,
-            msg: format!("file did not fully parse.\n\nRemainder:\n{}\n\nNodes:\n{:#?}", r, nodes),
+            msg: format!(
+                "file did not fully parse.\n\nRemainder:\n{}\n\nNodes:\n{:#?}",
+                r, nodes
+            ),
         });
     }
 
@@ -36,7 +78,7 @@ pub fn parse(i: &str) -> AstryxResult<Vec<Node>> {
 }
 
 /// returns a nom combinator version of the parser
-pub fn run(i: &str) -> IResult<&str, Vec<Node>> {
+pub fn run(i: &str) -> IResult<&str, Vec<Token>> {
     nom::multi::many0(node)(i)
 }
 
@@ -45,15 +87,15 @@ pub fn run(i: &str) -> IResult<&str, Vec<Node>> {
 //   i.replace("\\n", "")
 // }
 
-fn node(i: &str) -> IResult<&str, Node> {
+fn node(i: &str) -> IResult<&str, Token> {
     // knock out blank lines at start of doc
     let (r, _) = blank_lines(i)?;
 
     alt((
-        map(for_loop, |f| Node::ForLoop(f)),
-        map(piped_string, |s| Node::Text(String::from(s))),
-        map(codeblock, |cb| Node::CodeBlock(cb)),
-        map(element, |e| Node::Element(e)),
+        map(for_loop, |f| Token::ForLoop(f)),
+        map(piped_string, |s| Token::Text(String::from(s))),
+        map(codeblock, |cb| Token::CodeBlock(cb)),
+        map(element, |e| Token::Element(e)),
     ))(r)
 }
 
@@ -144,6 +186,7 @@ fn element(i: &str) -> IResult<&str, Element> {
 fn attribute(i: &str) -> IResult<&str, Attribute> {
     alt((
         map(decorator, |d| Attribute::Decorator(d)),
+        map(dotted_symbol, |s| Attribute::Class(s)),
         attribute_assignment,
         map(symbolic1, |s| Attribute::Symbol(String::from(s))),
     ))(i)
@@ -163,6 +206,17 @@ fn decorator(i: &str) -> IResult<&str, Decorator> {
             ident: String::from(ident),
         },
     ));
+}
+
+fn dotted_symbol(i: &str) -> IResult<&str, String> {
+    let (input, (_, _, ident, _)) = nom::sequence::tuple((
+        space0_with_early_terminators,
+        char('.'),
+        symbolic1,
+        space0_with_early_terminators,
+    ))(i)?;
+
+    return Ok((input, String::from(ident)));
 }
 
 fn attribute_assignment(i: &str) -> IResult<&str, Attribute> {

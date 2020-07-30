@@ -1,4 +1,7 @@
-use crate::{error::*, models::*};
+// takes input from the parser and constructs a node graph
+// TODO convert to a tree adt
+
+use crate::{error::*, variable::{stringify_variable, Variable}};
 use nom::branch::alt;
 use nom::bytes::complete::{tag, take_until};
 use nom::combinator::map;
@@ -9,9 +12,8 @@ use nom::{
     error::{ErrorKind, ParseError},
 };
 use std::collections::HashMap;
-use yaml_rust::Yaml;
 
-pub fn interpolate(i: &str, locals: &HashMap<String, Variable>) -> AstryxResult<String> {
+pub(crate) fn interpolate(i: &str, locals: &HashMap<String, Variable>) -> AstryxResult<String> {
     let (r, nodes) = run(i).expect("interpolation failed");
     let mut output_buffer = String::new();
 
@@ -32,12 +34,10 @@ pub fn interpolate(i: &str, locals: &HashMap<String, Variable>) -> AstryxResult<
 }
 
 #[test]
-pub(crate) fn check_interpolate() {
+fn check_interpolate() {
     let r = interpolate("this is a ${ post }.", &HashMap::new()).unwrap();
     assert_eq!(r, "f");
 }
-
-// interpolation
 
 fn run(i: &str) -> IResult<&str, Vec<InterpolationNode>> {
     nom::multi::many0(interpolation_node)(i)
@@ -72,7 +72,7 @@ fn interpolate_reference(i: &str) -> IResult<&str, &str> {
 }
 
 #[test]
-pub(crate) fn check_interpolate_reference() {
+fn check_interpolate_reference() {
     let (r, i) = interpolate_reference("${ post.url }").unwrap();
     assert_eq!(r, "");
     assert_eq!(i, "post.url");
@@ -84,7 +84,7 @@ fn interpolate_text(i: &str) -> IResult<&str, &str> {
 }
 
 #[test]
-pub(crate) fn check_interpolate_text() {
+fn check_interpolate_text() {
     let (r, i) = interpolate_text("blah ${ post.url }").unwrap();
     assert_eq!(r, "${ post.url }");
     assert_eq!(i, "blah ");
@@ -103,77 +103,4 @@ where
         },
         ErrorKind::AlphaNumeric,
     )
-}
-
-// fn strings1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
-// where
-//     T: InputTakeAtPosition,
-//     <T as InputTakeAtPosition>::Item: AsChar + Clone,
-// {
-//     input.split_at_position1_complete(
-//         |item| {
-//             let c = item.clone().as_char();
-//             !(c != '-' || c == '_' || c == '.' || item.is_alphanum())
-//         },
-//         ErrorKind::AlphaNumeric,
-//     )
-// }
-
-// FIXME (changed) duplicated code from interpeter.rs - impl display?
-pub fn stringify_variable(
-    variable: &Variable,
-    locals: &HashMap<String, Variable>,
-) -> AstryxResult<String> {
-    match variable {
-        Variable::RelativePath(p) => Ok(p.clone()),
-        Variable::Reference(p) => {
-            // FIXME unsafe array index
-            let base_ref: &str = p.split(".").collect::<Vec<&str>>()[0];
-            let subref: &str = p.split(".").collect::<Vec<&str>>()[1];
-
-            if let Some(Variable::TemplateFile(template_file)) = locals.get(base_ref) {
-                if subref == "body" {
-                    Ok(template_file.body.clone())
-                } else {
-                    let yaml_var = template_file.metadata.clone().unwrap()[subref].clone();
-
-                    match yaml_var {
-                        Yaml::String(s) => Ok(s),
-                        _ => Err(AstryxError::new(&format!(
-                            "reference_not_found: {}",
-                            subref
-                        ))),
-                    }
-                }
-            } else {
-                locals
-                    .get(p)
-                    .ok_or(AstryxError::new(&format!(
-                        "reference_not_found: {} {:?}",
-                        &p, &locals
-                    )))
-                    .and_then(|v| stringify_variable(v, locals))
-            }
-        }
-        Variable::QuotedString(p) => Ok(p.clone()),
-        Variable::TemplateFile(t) => {
-            // a page object has been printed directly. use its body.
-            Ok(t.body.clone())
-        }
-    }
-}
-
-// FIXME dupe code from interpreter.rs
-pub fn get_required_variable(
-    i: &str,
-    attributes: &HashMap<String, Variable>,
-) -> AstryxResult<Variable> {
-    attributes
-        .get(&String::from(i.clone()))
-        .map(|v| v.clone().clone())
-        .ok_or(AstryxError::new(&format!(
-            "could not find variable: {} {:?}",
-            i,
-            attributes.keys()
-        )))
 }
