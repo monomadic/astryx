@@ -1,6 +1,5 @@
 use crate::interpreter::State;
 
-// TODO this should be GizmoResult or something
 pub type AstryxResult<T> = Result<T, AstryxError>;
 
 #[derive(Debug, Clone)]
