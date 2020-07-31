@@ -21,12 +21,20 @@ __NOTE: pre-production state, not even alpha yet. pushing updates regularly, che
 
 Looks too magical? Actually it tries to be extremely reasonable and logical.
 
+## Compiling / Running
+
+``` bash
+cargo run --package astryx-cli -- serve examples/general.astryx
+```
+
 ## Installation
 
 ### Cargo
 
 ``` bash
 cargo install --path https://github.com/monomadic/astryx
+# or, locally:
+cargo install --path cli
 ```
 
 ### NixOS / Nixpkgs (soon...)

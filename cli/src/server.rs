@@ -5,11 +5,15 @@ use std::path::PathBuf;
 pub(crate) fn start(file: PathBuf, port: u32) -> AstryxResult<()> {
     let host = "127.0.0.1";
     let port = port.to_string();
+    // let mut file = crate::filesystem::read_file(file)?;
 
     let mut server = Server::new(move |request, mut response| {
         // info!("Request received. {} {}", request.method(), request.uri());
         let path = request.uri().path();
-        let pages = astryx::render(file.clone());
+
+
+        let pages = crate::filesystem::read_file(&file)
+            .and_then(|file| astryx::render(&file));
 
         println!("{} {}", request.method(), path);
 

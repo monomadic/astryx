@@ -1,5 +1,5 @@
 use error::AstryxResult;
-use std::{collections::HashMap, path::PathBuf};
+use std::{collections::HashMap};
 
 pub mod error;
 mod filesystem;
@@ -14,9 +14,8 @@ mod variable;
 
 /// takes a path and returns a hashmap of rendered files
 // TODO: return a struct result? pages, files
-pub fn render(file: PathBuf) -> AstryxResult<HashMap<String, String>> {
+pub fn render(file: &String) -> AstryxResult<HashMap<String, String>> {
     let state = &mut interpreter::State::new();
-    let file = filesystem::read_file(file.clone())?;
     let tokens = parser::parse(&file)?;
     let _ = interpreter::__run(&tokens, state)?;
 
