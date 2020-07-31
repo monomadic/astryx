@@ -79,11 +79,12 @@ pub(crate) fn _run(
             match e.ident.as_str() {
                 "page" => {
                     let path = get_required("path", &locals)?;
+                    let stylesheet: String = locals.get("stylsheet").map(|v|v.clone()).unwrap_or(String::from("/style.css"));
 
                     // make a fresh node tree
                     let mut node = Node::new(HTMLNode::new_element("html"));
                     node.append(Node::new(HTMLNode::new_element("title")));
-                    node.append(Node::new(HTMLNode::new_stylesheet_element("/style.css")));
+                    node.append(Node::new(HTMLNode::new_stylesheet_element(stylesheet)));
                     let mut body = Some(Node::new(HTMLNode::new_element("body")));
 
                     for token in &e.children {
