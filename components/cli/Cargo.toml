@@ -1,5 +1,5 @@
 [package]
-name = "astryx-cli"
+name = "cli"
 version = "0.1.0"
 authors = ["monomadic <deathdisco@protonmail.com>"]
 edition = "2018"
@@ -11,4 +11,4 @@ path = "src/main.rs"
 [dependencies]
 simple-server = "0.4.0"
 structopt = "0.3"
-astryx = { path = ".." }
+astryx = { path = "../.." }

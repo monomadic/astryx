@@ -13,4 +13,4 @@ syntect = "4.2.0"
 rctree = "0.3.3"
 
 [workspace]
-members = ["cli"]
+members = ["components/cli", "components/search"]

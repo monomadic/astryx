@@ -3,9 +3,9 @@
 [![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Minimum rustc version](https://img.shields.io/badge/rustc-1.42.0+-green.svg)](#rust-version-requirements)
 
-Astryx is a programming language for generating static web content and web frontend applications. What's that you say? Another static generator? *But this time it's totally different!* No, really.
+Astryx is a declarative, pure, expressive static web content compiler..
 
-Why?
+## Why did I make this?
 
 Architecturally and practically, Astryx is quite different from other web generators. It is closer to a flutter or elm than other static tools, but much easier to use and rapidly produce content.
 
@@ -26,6 +26,10 @@ Looks too magical? Actually it tries to be extremely reasonable and logical.
 ``` bash
 cargo run --package astryx-cli -- serve examples/general.astryx
 ```
+
+### NixOS
+
+A NixOS shell has been provided for convenience.
 
 ## Installation
 
