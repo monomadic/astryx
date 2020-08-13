@@ -1,14 +1,16 @@
+* { box-sizing: border-box; }
+
 .fade-in-up {
   position: relative;
   animation: move-up 3s ease-out forwards;
 }
 
-.rows {
-  display: grid;
-  grid-template-rows: auto 1fr auto;
+.row {
+  display: flex;
+  flex-direction: row;
 }
 
-.columns {
+.column {
   display: flex;
   flex-direction: column;
 }
@@ -21,6 +23,11 @@
 .text-centered {
   text-align: center;
 }
+
+/* layouts */
+.layout--classic { display: grid; grid-template: auto 1fr auto / auto 1fr auto; }
+header { grid-column: 1 / 4; }
+.left-sidebar { grid-column: 1 / 2; }
 
 @keyframes move-up {
   from {

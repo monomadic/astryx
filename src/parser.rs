@@ -220,10 +220,12 @@ fn dotted_symbol(i: &str) -> IResult<&str, String> {
 }
 
 fn attribute_assignment(i: &str) -> IResult<&str, Attribute> {
-    let (input, (_, ident, _, variable, _)) = nom::sequence::tuple((
+    let (input, (_, ident, _, _, _, variable, _)) = nom::sequence::tuple((
         space0_with_early_terminators,
         symbolic1,
+        space0,
         char('='),
+        space0,
         variable,
         space0_with_early_terminators,
     ))(i)?;

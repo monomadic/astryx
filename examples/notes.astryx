@@ -1,0 +1,19 @@
+
+Header
+
+LeftSidebar
+
+Content
+
+RightSidebar
+
+Footer
+
+import .layouts # imports extra tags for layouts
+
+layout: .classic # layout enforces that certain rules are met
+header
+left-sidebar
+content
+right-sidebar
+footer

@@ -2,9 +2,13 @@ page \
 	path="/" \
 	title="monomadic"
 
-	rows @centered
-		row @text-centered style="width: 960px; max-width: 960px; min-width: 300px; padding: 60px 0"
-			embed path=./examples/public/monomadic.svg
+	rows direction="rows"
+		row \
+			text-align	= "centered" \
+			width				= "960px" \
+			max-width		= "960px" \
+			min-width		= "300px" \
+			padding			= "60px 0"
 
 			div style="font-weight: 900; font-size: 30px; letter-spacing: 0.15em; line-height: 80px;"
 				| MONOMADIC

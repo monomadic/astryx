@@ -1,0 +1,31 @@
+
+page route: "/", title: "monomadic" {
+  rect direction: .rows, align: .centered {
+
+    # top section
+    rect
+        text-align: centered,
+        width: 960px,
+        max-width: 960px,
+        min-width: 300px,
+        padding: 60px 0
+      {
+      embed path: ./examples/public/monomadic.svg;
+    }
+
+    # page list
+    rect {
+      for post in ./examples/posts/*.md {
+        span classes: [post padding-sm page-link] {
+          span classes: [title] {
+
+          }
+        }
+
+        page path=post.route title=post.title {
+
+        }
+      }
+    }
+  }
+}

@@ -24,7 +24,7 @@ Looks too magical? Actually it tries to be extremely reasonable and logical.
 ## Compiling / Running
 
 ``` bash
-cargo run --package astryx-cli -- serve examples/general.astryx
+cargo run --package cli -- serve examples/general.astryx
 ```
 
 ### NixOS
@@ -38,7 +38,7 @@ A NixOS shell has been provided for convenience.
 ``` bash
 cargo install --path https://github.com/monomadic/astryx
 # or, locally:
-cargo install --path cli
+cargo install --path components/cli
 ```
 
 ### NixOS / Nixpkgs (soon...)

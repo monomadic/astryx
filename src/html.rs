@@ -1,6 +1,6 @@
 // writes an xml graph to a html string
 
-use crate::error::{AstryxError, AstryxResult};
+use crate::{parser::Attribute, error::{AstryxError, AstryxResult}, variable::Variable};
 use rctree::Node;
 use std::{collections::HashMap, fmt::Write};
 
@@ -14,7 +14,52 @@ pub(crate) enum HTMLNode {
 pub(crate) struct HTMLElement {
     ident: String,
     attributes: HashMap<String, String>,
-    pub classes: Vec<String>,
+	pub classes: Vec<String>,
+	pub styles: Vec<String>, // should be type safe
+}
+
+impl HTMLElement {
+	pub(crate) fn apply_attribute(&mut self, attribute: &Attribute) -> AstryxResult<()> {
+		match attribute {
+		    Attribute::Symbol(s) => {
+				match s.as_str() {
+					"align.left" => {
+						self.styles.push(format!("grid-template-columns: {};", s));
+					}
+					_ => panic!("invalid symbol arg")
+				}
+			}
+		    Attribute::Decorator(_) => {}
+		    Attribute::Class(_) => {}
+		    Attribute::NamedAttribute { ident, variable } => {
+				match ident.as_str() {
+					"columns" => {
+						if let Variable::QuotedString(s) = variable.clone() {
+							self.styles.push(format!("grid-template-columns: {};", s));
+						} else {
+							panic!("invalid type dude");
+						}
+					}
+					"rows" => {
+						if let Variable::QuotedString(s) = variable.clone() {
+							self.styles.push(format!("grid-template-rows: {};", s));
+						} else {
+							panic!("invalid type dude");
+						}
+					}
+					"width" => {
+						if let Variable::QuotedString(width) = variable.clone() {
+							self.styles.push(format!("width: {};", width));
+						} else {
+							panic!("invalid type dude");
+						}
+					}
+					_ => {println!("ERROR UNKNOWN ATTRIBUTE: {:?}", (ident, variable))}
+				}
+			}
+		}
+		Ok(())
+	}
 }
 
 impl HTMLNode {
@@ -22,7 +67,8 @@ impl HTMLNode {
         HTMLNode::Element(HTMLElement {
             ident: ident.into(),
             attributes: HashMap::new(),
-            classes: Vec::new(),
+			classes: Vec::new(),
+			styles: Vec::new(),
         })
     }
 
@@ -42,7 +88,8 @@ impl HTMLNode {
         HTMLNode::Element(HTMLElement {
             ident: "link".into(),
             attributes: attributes,
-            classes: Vec::new(),
+			classes: Vec::new(),
+			styles: Vec::new(),
         })
     }
 }
@@ -70,11 +117,17 @@ pub(crate) fn render_page<W: Write>(node: &Node<HTMLNode>, writer: &mut W) -> As
 }
 
 fn html_tag(el: &HTMLElement) -> String {
-    let mut el = el.clone();
+	let mut el = el.clone();
+	
     if !el.classes.is_empty() {
         el.attributes.insert("class".into(), el.classes.join(" "));
+	}
+	
+	if !el.styles.is_empty() {
+        el.attributes.insert("style".into(), el.styles.join(" "));
     }
 
+	// format attributes
     let attribs = if !el.attributes.is_empty() {
         format!(
             " {}",
@@ -101,16 +154,18 @@ pub(crate) fn match_html_tag(
         return Ok(HTMLElement {
             ident: ident.into(),
             attributes: locals, // TODO filter this to type-check attributes against elements
-            classes: Vec::new(), // TODO check for 'class' local
+			classes: Vec::new(), // TODO check for 'class' local
+			styles: Vec::new(),
         });
     }
 
     match ident {
-        "rows" | "row" | "columns" | "column" => {
+        "row" | "column" | "grid" => {
             Ok(HTMLElement {
                 ident: "div".into(),
                 attributes: locals,
-                classes: vec![ident.into()]
+				classes: vec![ident.into()],
+				styles: vec![]
             })
         }
         _ => Err(AstryxError::new(&format!(
@@ -119,6 +174,10 @@ pub(crate) fn match_html_tag(
         ))),
     }
 }
+
+// fn create_style(locals: HashMap<String, String>) -> HashMap<String, String> {
+// 	HashMap::new()
+// }
 
 const HTML_TAGS: &'static [&'static str] = &[
 	"a",

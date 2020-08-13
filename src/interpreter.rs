@@ -1,7 +1,7 @@
 use crate::{
     error::*,
-    html::HTMLNode,
     parser::{Attribute, Token},
+    html::HTMLNode,
     variable::{stringify_variables, Variable},
 };
 use rctree::Node;
@@ -126,6 +126,12 @@ pub(crate) fn _run(
                 }
                 _ => {
                     let mut el = crate::html::match_html_tag(&e.ident, locals)?;
+
+                    for attr in &e.attributes {
+                        el.apply_attribute(&attr)?;
+                    }
+                    
+                    println!("el: {:?}", el);
                     el.classes.append(&mut classes.clone());
 
                     let mut node = Some(Node::new(HTMLNode::Element(el)));
@@ -171,6 +177,10 @@ pub(crate) fn _run(
 
     Ok(())
 }
+
+// fn apply_attribute(el: &HTMLElement, arg: &String, var: &Variable) {
+//     todo!()
+// }
 
 //                     _ => {
 //                         // tag was not found, lets check if it exists as an overlay
