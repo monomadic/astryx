@@ -52,51 +52,6 @@ impl HTMLElement {
 	pub(crate) fn add_style<S:ToString>(&mut self, class: S) {
 		self.styles.push(class.to_string())
 	}
-
-	// pub(crate) fn apply_attribute(&mut self, attribute: &Attribute) -> AstryxResult<()> {
-	// 	match attribute {
-	// 	    Attribute::Symbol(s) => {
-	// 			match s.as_str() {
-	// 				"align.left" => {
-	// 					self.styles.push(format!("grid-template-columns: {};", s));
-	// 				}
-	// 				"align.right" => {
-	// 					self.styles.push(format!("grid-template-columns: {};", s));
-	// 				}
-	// 				_ => panic!("invalid symbol arg {}", s)
-	// 			}
-	// 		}
-	// 	    Attribute::Decorator(_) => {}
-	// 	    Attribute::Class(_) => {}
-	// 	    Attribute::NamedAttribute { ident, variable } => {
-	// 			match ident.as_str() {
-	// 				"columns" => {
-	// 					if let Variable::QuotedString(s) = variable.clone() {
-	// 						self.styles.push(format!("grid-template-columns: {};", s));
-	// 					} else {
-	// 						panic!("invalid type dude");
-	// 					}
-	// 				}
-	// 				"rows" => {
-	// 					if let Variable::QuotedString(s) = variable.clone() {
-	// 						self.styles.push(format!("grid-template-rows: {};", s));
-	// 					} else {
-	// 						panic!("invalid type dude");
-	// 					}
-	// 				}
-	// 				"width" => {
-	// 					if let Variable::QuotedString(width) = variable.clone() {
-	// 						self.styles.push(format!("width: {};", width));
-	// 					} else {
-	// 						panic!("invalid type dude");
-	// 					}
-	// 				}
-	// 				_ => {println!("ERROR UNKNOWN ATTRIBUTE: {:?}", (ident, variable))}
-	// 			}
-	// 		}
-	// 	}
-	// 	Ok(())
-	// }
 }
 
 impl HTMLNode {
@@ -108,14 +63,6 @@ impl HTMLNode {
 			styles: Vec::new(),
         })
     }
-
-    // pub(crate) fn new_element_with_attributes(ident: &str, attributes: HashMap<String, String>) -> Self {
-    //     HTMLNode::Element(HTMLElement {
-    //         ident: ident.into(),
-    //         attributes: attributes,
-    //         classes: Vec::new(),
-    //     })
-    // }
 
     pub(crate) fn new_stylesheet_element<S: Into<String>>(path: S) -> Self {
         let mut attributes = HashMap::new();
@@ -180,44 +127,6 @@ fn html_tag(el: &HTMLElement) -> String {
 
     format!("<{}{}>", el.ident, attribs)
 }
-
-
-
-// pub(crate) fn match_html_tag(
-//     ident: &str,
-//     locals: HashMap<String, String>
-// ) -> AstryxResult<HTMLElement> {
-
-//     // TODO aliases here eg link -> a
-
-//     if HTML_TAGS.contains(&ident) {
-//         return Ok(HTMLElement {
-//             ident: ident.into(),
-//             attributes: locals, // TODO filter this to type-check attributes against elements
-// 			classes: Vec::new(), // TODO check for 'class' local
-// 			styles: Vec::new(),
-//         });
-//     }
-
-//     match ident {
-//         "row" | "column" | "grid" => {
-//             Ok(HTMLElement {
-//                 ident: "div".into(),
-//                 attributes: locals,
-// 				classes: vec![ident.into()],
-// 				styles: vec![]
-//             })
-//         }
-//         _ => Err(AstryxError::new(&format!(
-//             "interpreter error: node not found: {}",
-//             ident
-//         ))),
-//     }
-// }
-
-// fn create_style(locals: HashMap<String, String>) -> HashMap<String, String> {
-// 	HashMap::new()
-// }
 
 const HTML_TAGS: &'static [&'static str] = &[
 	"a",

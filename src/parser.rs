@@ -45,6 +45,26 @@ pub struct Element {
     pub children: Vec<Token>,
 }
 
+impl Element {
+    pub fn get_optional_attribute(&self, arg: &str) -> Option<Variable> {
+        for attribute in &self.attributes {
+            if let Attribute::NamedAttribute { ident, variable } = attribute {
+                if ident == arg {
+                    return Some(variable.clone());
+                }
+            }
+        };
+        None
+    }
+    pub fn get_required_attribute(&self, arg: &str) -> AstryxResult<Variable> {
+        self.get_optional_attribute(arg)
+            .ok_or(AstryxError::new(&format!(
+                "variable not found: {}",
+                arg
+            )))
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum Attribute {
     Symbol(String),
