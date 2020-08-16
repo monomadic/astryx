@@ -18,7 +18,6 @@ pub struct State {
     imports: Imports,
 
     // deprecated
-    overlays: HashMap<String, TagOverlay>,
     decorators: HashMap<String, TagDecorator>,
 }
 
@@ -30,7 +29,6 @@ impl State {
             imports: Imports::new(),
 
             // deprecated
-            overlays: TagOverlay::defaults(),
             decorators: TagDecorator::defaults(),
         }
     }
@@ -85,6 +83,7 @@ pub(crate) fn _run(
 
             match e.ident.as_str() {
                 // first check for system (static) functions
+
                 "page" => {
                     let path = get_required("path", &locals)?;
 
@@ -106,24 +105,7 @@ pub(crate) fn _run(
 
                     state.pages.insert(path.into(), node.clone().root());
                 }
-                // "element" => {
-                //     let ident = crate::interpolator::stringify_variable(
-                //         &get_required_argument("ident", &arguments)?,
-                //         &HashMap::new(),
-                //     )?;
 
-                //     let mut node = Some(Node::new(HTMLNode::new(&ident)));
-
-                //     for token in &e.children {
-                //         _run(token, state, &mut node)?;
-                //     }
-
-                //     if let Some(parent) = parent {
-                //         parent.append(Node::new(HTMLNode::new(&ident)));
-                //     } else {
-                //         return Err(AstryxError::new("tag found without page to assign to"));
-                //     }
-                // }
                 "embed" => {
                     let path = get_required("path", &locals)?;
                     let svgfile = crate::filesystem::read_file(std::path::PathBuf::from(path))?;
@@ -135,6 +117,7 @@ pub(crate) fn _run(
                         return Err(AstryxError::new("tag found without page to assign to"));
                     }
                 }
+
                 _ => {
                     // must be a tag, lets try to resolve it
 
@@ -163,11 +146,9 @@ pub(crate) fn _run(
                         }
                     }
 
-                    println!("el: {:?}", el);
-                    // el.classes.append(&mut classes.clone());
-
                     let mut node = Some(Node::new(HTMLNode::Element(el)));
 
+                    // interpret children
                     for token in &e.children {
                         _run(token, state, &mut node)?;
                     }
@@ -175,6 +156,7 @@ pub(crate) fn _run(
                     if let Some(parent) = parent {
                         parent.append(node.unwrap());
                     } else {
+                        // tag was found that isn't actually in any structure
                         return Err(AstryxError::new("tag found without page to assign to"));
                     }
                 }
@@ -210,42 +192,6 @@ pub(crate) fn _run(
     Ok(())
 }
 
-// fn apply_attribute(el: &HTMLElement, arg: &String, var: &Variable) {
-//     todo!()
-// }
-
-//                     _ => {
-//                         // tag was not found, lets check if it exists as an overlay
-//                         if let Some(overlay) = state.overlays.clone().get(&e.ident) {
-//                             // it was an overlay, lets resolve it and reparse
-//                             let current_el = Element {
-//                                 ident: overlay.ident.clone(),
-//                                 attributes: e.attributes.clone(),
-//                                 children: e.children.clone(), // ouch, we should try to find a way around cloning here
-//                             };
-//                             run(&vec![Token::Element(current_el)], state)?;
-//                         } else {
-//                             // ok it's really not found, return an error.
-//                             return Err(AstryxError::new(&format!(
-//                                 "interpreter error: node not found: {}",
-//                                 e.ident
-//                             )));
-//                         }
-//                     }
-//                 }
-//             }
-//             Token::Text(t) => {
-//                 let buffer = crate::interpolator::interpolate(t, &state.variables_in_scope)?;
-//                 state.write_to_current_buffer(&buffer)?;
-//             }
-//             Token::CodeBlock(cb) => {
-//                 state
-//                     .variables_in_scope
-//                     .insert(cb.ident.clone(), Variable::QuotedString(cb.content.clone()));
-//             }
-//         }
-//     }
-
 /// Takes attributes from a node (which can be @decorators or named=arguments) and returns
 /// a hashmap of local variables.
 fn convert_attributes_into_locals(
@@ -280,70 +226,6 @@ fn convert_attributes_into_locals(
     Ok(named_attributes)
 }
 
-// fn collect_classes(attributes: &Vec<Attribute>) -> Vec<String> {
-//     let mut classes = Vec::new();
-//     for attribute in attributes {
-//         if let Attribute::Class(c) = attribute {
-//             classes.push(c.clone());
-//         };
-//     }
-//     classes
-// }
-
-#[derive(Debug, Clone)]
-struct TagOverlay {
-    ident: String,
-    classes: Vec<String>,
-    // attributes: HashMap<String, Attribute>,
-}
-
-impl TagOverlay {
-    fn defaults() -> HashMap<String, TagOverlay> {
-        let mut overlays = HashMap::new();
-
-        overlays.insert(
-            "image".into(),
-            TagOverlay {
-                ident: "img".into(),
-                classes: vec![],
-            },
-        );
-
-        overlays.insert(
-            "h1".into(),
-            TagOverlay {
-                ident: "h1".into(),
-                classes: vec![],
-            },
-        );
-
-        overlays.insert(
-            "columns".into(),
-            TagOverlay {
-                ident: "div".into(),
-                classes: vec!["rows".into()],
-            },
-        );
-
-        overlays.insert(
-            "rows".into(),
-            TagOverlay {
-                ident: "div".into(),
-                classes: vec!["rows".into()],
-            },
-        );
-
-        overlays.insert(
-            "row".into(),
-            TagOverlay {
-                ident: "div".into(),
-                classes: vec!["row".into()],
-            },
-        );
-
-        overlays
-    }
-}
 #[derive(Debug, Clone)]
 struct TagDecorator {
     classes: Vec<String>,
