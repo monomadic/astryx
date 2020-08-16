@@ -1,28 +1,16 @@
 
-page path="/"
-
-  row style="background-color: white; color: black;" padding.0
-    header
-      | top
-    row
-      column align.left width="100px"
-        | left
-      column width="100%"
-        | content
-      column align.right width="100px"
-        | right
-    footer
-      | footer
-
-  row style="background-color: #F0F5FF; color: black;"
-    header
-      | top
-    row
-      column align.left width="100px"
-        | left
-      column width="100%"
-        | content
-      column align.right width="100px"
-        | right
-    footer
-      | footer
+page path="/" stylesheet="/style.css"
+  row background-color="blue"
+    | header
+  row
+    column
+      | I am a flex item
+    column
+      | I am a flex item
+  row background-color="blue"
+    | header
+  row
+    column
+      | I am a flex item
+    column
+      | I am a flex item

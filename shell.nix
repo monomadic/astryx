@@ -10,6 +10,8 @@ pkgs.mkShell {
     pkgconfig
   ];
 
+  RUST_SRC_PATH = "${pkgs.rustc}/bin/rustc";
+
   shellHook = ''
   '';
 }

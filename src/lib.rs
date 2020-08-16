@@ -20,6 +20,7 @@ mod interpreter;
 mod markdown;
 mod parser;
 mod variable;
+mod processors;
 
 /// takes a path and returns a hashmap of rendered files
 // TODO: return a struct result? pages, files

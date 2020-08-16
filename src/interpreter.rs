@@ -1,7 +1,11 @@
+// takes lexical output from the parser and produces
+// structured HTMLNode trees for each page
+
 use crate::{
     error::*,
-    parser::{Attribute, Token},
     html::HTMLNode,
+    parser::{Attribute, Token},
+    processors::Imports,
     variable::{stringify_variables, Variable},
 };
 use rctree::Node;
@@ -9,20 +13,25 @@ use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 pub struct State {
-    variables_in_scope: HashMap<String, Variable>,
+    local_variables: HashMap<String, Variable>,
+    pages: HashMap<String, Node<HTMLNode>>,
+    imports: Imports,
+
+    // deprecated
     overlays: HashMap<String, TagOverlay>,
     decorators: HashMap<String, TagDecorator>,
-    pages: HashMap<String, Node<HTMLNode>>,
 }
 
 impl State {
     pub fn new() -> Self {
         State {
-            variables_in_scope: HashMap::new(),
-            // page_buffers: HashMap::new(),
+            local_variables: HashMap::new(),
+            pages: HashMap::new(),
+            imports: Imports::new(),
+
+            // deprecated
             overlays: TagOverlay::defaults(),
             decorators: TagDecorator::defaults(),
-            pages: HashMap::new(),
         }
     }
 
@@ -37,12 +46,10 @@ impl State {
     }
 
     pub fn get_required_variable(&self, i: &str) -> AstryxResult<&Variable> {
-        self.variables_in_scope
-            .get(i)
-            .ok_or(AstryxError::new(&format!(
-                "variable not found: {}\nvariables in scope: {:?}",
-                i, self.variables_in_scope
-            )))
+        self.local_variables.get(i).ok_or(AstryxError::new(&format!(
+            "variable not found: {}\nlocal_variables: {:?}",
+            i, self.local_variables
+        )))
     }
 }
 
@@ -73,18 +80,22 @@ pub(crate) fn _run(
         Token::Element(e) => {
             let arguments = convert_attributes_into_locals(&e.attributes, &state.decorators)?;
             // let locals = resolve_references(&arguments, &state.variables_in_scope)?;
-            let locals = stringify_variables(&arguments, &state.variables_in_scope)?;
-            let classes = collect_classes(&e.attributes);
+            let locals = stringify_variables(&arguments, &state.local_variables)?;
+            // let classes = collect_classes(&e.attributes);
 
             match e.ident.as_str() {
+                // first check for system (static) functions
                 "page" => {
                     let path = get_required("path", &locals)?;
-                    let stylesheet: String = locals.get("stylesheet").map(|v|v.clone()).unwrap_or(String::from("/style.css"));
 
                     // make a fresh node tree
                     let mut node = Node::new(HTMLNode::new_element("html"));
                     node.append(Node::new(HTMLNode::new_element("title")));
-                    node.append(Node::new(HTMLNode::new_stylesheet_element(stylesheet)));
+
+                    if let Some(stylesheet) = locals.get("stylesheet") {
+                        node.append(Node::new(HTMLNode::new_stylesheet_element(stylesheet)));
+                    }
+
                     let mut body = Some(Node::new(HTMLNode::new_element("body")));
 
                     for token in &e.children {
@@ -125,14 +136,35 @@ pub(crate) fn _run(
                     }
                 }
                 _ => {
-                    let mut el = crate::html::match_html_tag(&e.ident, locals)?;
+                    // must be a tag, lets try to resolve it
 
-                    for attr in &e.attributes {
-                        el.apply_attribute(&attr)?;
+                    let mut el = state.imports.create_element(&e.ident)?;
+                    // println!("GENERATED EL: {:?}", html_el);
+
+                    // let mut el = crate::html::match_html_tag(&e.ident, locals)?;
+
+                    for attr in &e.attributes.clone() {
+                        // el.apply_attribute(&attr)?;
+                        match attr {
+                            Attribute::Class(class) => el.add_class(class),
+                            Attribute::Symbol(modifier) => {
+                                state.imports.modify_element(modifier, None, &mut el)?;
+                            }
+                            Attribute::NamedAttribute {ident, variable} => {
+                                match variable {
+                                    Variable::QuotedString(s) => {
+                                        state.imports.modify_element(ident, Some(s), &mut el)?;
+                                    },
+                                    _ => panic!("case not covered"),
+                                };
+                                
+                            },
+                            Attribute::Decorator(_) => panic!("decorators deprecated")
+                        }
                     }
-                    
+
                     println!("el: {:?}", el);
-                    el.classes.append(&mut classes.clone());
+                    // el.classes.append(&mut classes.clone());
 
                     let mut node = Some(Node::new(HTMLNode::Element(el)));
 
@@ -155,7 +187,7 @@ pub(crate) fn _run(
                 let mut new_state = state.clone();
 
                 new_state
-                    .variables_in_scope
+                    .local_variables
                     .insert(f.index.clone(), Variable::TemplateFile(file));
 
                 for token in &f.children {
@@ -168,7 +200,7 @@ pub(crate) fn _run(
         }
         Token::Text(t) => {
             if let Some(parent) = parent {
-                let buffer = crate::interpolator::interpolate(t, &state.variables_in_scope)?;
+                let buffer = crate::interpolator::interpolate(t, &state.local_variables)?;
                 parent.append(Node::new(HTMLNode::Text(buffer)));
             }
         }
@@ -248,15 +280,15 @@ fn convert_attributes_into_locals(
     Ok(named_attributes)
 }
 
-fn collect_classes(attributes: &Vec<Attribute>) -> Vec<String> {
-    let mut classes = Vec::new();
-    for attribute in attributes {
-        if let Attribute::Class(c) = attribute {
-            classes.push(c.clone());
-        };
-    }
-    classes
-}
+// fn collect_classes(attributes: &Vec<Attribute>) -> Vec<String> {
+//     let mut classes = Vec::new();
+//     for attribute in attributes {
+//         if let Attribute::Class(c) = attribute {
+//             classes.push(c.clone());
+//         };
+//     }
+//     classes
+// }
 
 #[derive(Debug, Clone)]
 struct TagOverlay {

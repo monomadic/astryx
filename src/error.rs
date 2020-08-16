@@ -16,6 +16,7 @@ pub enum AstryxErrorKind {
     InterpreterError,
     IOError,
     ServerError,
+    UnrecognisedElement(String)
 }
 
 impl AstryxError {
