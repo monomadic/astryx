@@ -1,11 +1,15 @@
 //! Astryx is a declarative, pure, expressive static web content compiler.
+//! It draws inspiration from projects like elm-ui, haml and svelte, with the
+//! type safety of rust and far, far easier setup and deployment.
 //!
 //! # Features
-//! * Simple, easy-to-use, batteries-included API
+//! * declarative, type-checked, intuitive ui language
+//! * clean separation of style, layout, and content
 //! * single binary (makes CI/CD into github/gitlab pages very simple)
-//! * declarative, safe, correct language
 //! * zero boilerplate
-//! * (optionally) a single astryx program generates an entire site of static content and files including html, css, images to a degree, and scripts.
+//! * zero orphans
+//! * smaller static sites than any other library, period.
+//! 
 
 use error::AstryxResult;
 use std::collections::HashMap;
