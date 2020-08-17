@@ -10,15 +10,15 @@ pub enum Variable {
     TemplateFile(TemplateFile),
 }
 
-impl Variable {
-    pub fn to_string(&self) -> AstryxResult<String> {
-        match self {
-            Variable::QuotedString(s) => Ok(s.clone()),
-            Variable::RelativePath(p) => Ok(p.clone()),
-            _ => Err(AstryxError::new(&format!("cannot to_string: {:?}", self))),
-        }
-    }
-}
+// impl Variable {
+//     pub fn to_string(&self) -> AstryxResult<String> {
+//         match self {
+//             Variable::QuotedString(s) => Ok(s.clone()),
+//             Variable::RelativePath(p) => Ok(p.clone()),
+//             _ => Err(AstryxError::new(&format!("cannot to_string: {:?}", self))),
+//         }
+//     }
+// }
 
 // caution: does not resolve references.
 impl std::fmt::Display for Variable {

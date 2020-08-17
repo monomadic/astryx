@@ -78,6 +78,17 @@ impl HTMLNode {
     }
 }
 
+pub(crate) fn render_as_string(nodes: &HashMap<String, Node<HTMLNode>>) -> AstryxResult<HashMap<String, String>> {
+	let mut pages: HashMap<String, String> = HashMap::new();
+
+	for (route, node) in nodes {
+		let buf = &mut String::new();
+		crate::html::render_page(&node, buf)?;
+		pages.insert(route.into(), buf.to_string());
+	}
+	Ok(pages)
+}
+
 pub(crate) fn render_page<W: Write>(node: &Node<HTMLNode>, writer: &mut W) -> AstryxResult<()> {
     // can we avoid a clone here?
     Ok(match node.borrow().clone() {

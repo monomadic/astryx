@@ -27,11 +27,9 @@ mod parser;
 mod variable;
 
 /// takes a path and returns a hashmap of rendered files
-// TODO: return a struct result? pages, files
-pub fn render(file: &String) -> AstryxResult<HashMap<String, String>> {
-    let state = &mut interpreter::State::new();
-    let tokens = parser::parse(&file)?;
-    let _ = interpreter::__run(&tokens, state)?;
+pub fn render_as_string<S: Into<String>>(file: S) -> AstryxResult<HashMap<String, String>> {
+    let tokens = parser::parse(&file.into())?;
+    let nodes = interpreter::run(&tokens)?;
 
-    state.render_pages()
+    html::render_as_string(&nodes)
 }

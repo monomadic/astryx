@@ -29,35 +29,20 @@ impl State {
             imports: Imports::new(),
         }
     }
-
-    pub fn render_pages(&self) -> AstryxResult<HashMap<String, String>> {
-        let mut pages = HashMap::new();
-        for (route, node) in &self.pages {
-            let buf = &mut String::new();
-            crate::html::render_page(&node, buf)?;
-            pages.insert(route.clone(), buf.clone());
-        }
-        Ok(pages)
-    }
-
-    pub fn get_required_variable(&self, i: &str) -> AstryxResult<&Variable> {
-        self.local_variables.get(i).ok_or(AstryxError::new(&format!(
-            "variable not found: {}\nlocal_variables: {:?}",
-            i, self.local_variables
-        )))
-    }
 }
 
-// TODO result should be meaningful, do not accept or leak state.
-pub fn __run(tokens: &Vec<Token>, state: &mut State) -> AstryxResult<()> {
+/// run the interpreter on an AST tree
+pub(crate) fn run(tokens: &Vec<Token>) -> AstryxResult<HashMap<String, Node<HTMLNode>>> {
+    let state = &mut State::new();
+
     for token in tokens {
         _run(token, state, &mut None)?;
     }
 
-    Ok(())
+    Ok(state.pages.clone())
 }
 
-pub(crate) fn _run(
+fn _run(
     token: &Token,
     state: &mut State,
     parent: &mut Option<Node<HTMLNode>>,

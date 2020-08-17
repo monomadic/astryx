@@ -13,7 +13,7 @@ pub(crate) fn start(file: PathBuf, port: u32) -> AstryxResult<()> {
 
 
         let pages = crate::filesystem::read_file(&file)
-            .and_then(|file| astryx::render(&file));
+            .and_then(|file| astryx::render_as_string(&file));
 
         println!("{} {}", request.method(), path);
 
