@@ -1,10 +1,13 @@
 use yaml_rust::{scanner::ScanError, Yaml, YamlLoader};
 
+// TODO consolidate these two functions
+/// parses a file and returns it as a string with optional separated yaml frontmatter
 pub(crate) fn parse(text: &str) -> Result<(Option<Yaml>, String), ScanError> {
     let (yaml, content) = parse_and_find_content(text)?;
     Ok((yaml, String::from(content)))
 }
 
+/// parses a file and returns it as a string with optional separated yaml frontmatter
 fn parse_and_find_content(text: &str) -> Result<(Option<Yaml>, &str), ScanError> {
     match find_yaml_block(text) {
         Some((fm_start, fm_end, content_start)) => {
@@ -18,7 +21,8 @@ fn parse_and_find_content(text: &str) -> Result<(Option<Yaml>, &str), ScanError>
     }
 }
 
-/// read a yaml frontmatter block at the start of any document
+// TODO support other frontmatter syntaxes
+/// return the location (start, end, content start) of yaml frontmatter inside a document
 fn find_yaml_block(text: &str) -> Option<(usize, usize, usize)> {
     match text.starts_with("---\n") {
         true => {

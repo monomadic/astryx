@@ -41,24 +41,24 @@ pub struct TemplateFile {
     pub metadata: Option<yaml_rust::Yaml>,
 }
 
-/// Converts a series of variables to strings
-pub(crate) fn stringify_variables(
-    variables: &HashMap<String, Variable>,
-    locals: &HashMap<String, Variable>,
-) -> AstryxResult<HashMap<String, String>> {
-    let mut stringified: HashMap<String, String> = HashMap::new();
+// /// Converts a series of variables to strings
+// pub(crate) fn stringify_variables(
+//     variables: &HashMap<String, Variable>,
+//     locals: &HashMap<String, Variable>,
+// ) -> AstryxResult<HashMap<String, String>> {
+//     let mut stringified: HashMap<String, String> = HashMap::new();
 
-    for (ident, variable) in variables {
-        stringified.insert(
-            ident.clone(),
-            stringify_variable(variable, locals)?,
-        );
-    }
+//     for (ident, variable) in variables {
+//         stringified.insert(
+//             ident.clone(),
+//             stringify_variable(variable, locals)?,
+//         );
+//     }
 
-    Ok(stringified)
-}
+//     Ok(stringified)
+// }
 
-// TODO move into Variable
+// TODO scope should not bleed from interpreter, ever.
 pub(crate) fn stringify_variable(
     variable: &Variable,
     locals: &HashMap<String, Variable>,

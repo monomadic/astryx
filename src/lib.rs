@@ -8,7 +8,7 @@
 //! * (optionally) a single astryx program generates an entire site of static content and files including html, css, images to a degree, and scripts.
 
 use error::AstryxResult;
-use std::{collections::HashMap};
+use std::collections::HashMap;
 
 pub mod error;
 mod filesystem;
@@ -18,9 +18,9 @@ mod html;
 mod interpolator;
 mod interpreter;
 mod markdown;
+mod modifiers;
 mod parser;
 mod variable;
-mod processors;
 
 /// takes a path and returns a hashmap of rendered files
 // TODO: return a struct result? pages, files

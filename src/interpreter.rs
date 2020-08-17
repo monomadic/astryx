@@ -1,11 +1,14 @@
-// takes lexical output from the parser and produces
-// structured HTMLNode trees for each page
+/*
+INTERPRETER
+- converts a graph of Nodes from a source tree into a set of rendered HTML pages
+- resolves variables and scope
+*/
 
 use crate::{
     error::*,
     html::HTMLNode,
+    modifiers::Imports,
     parser::{Attribute, Token},
-    processors::Imports,
     variable::{stringify_variable, Variable},
 };
 use rctree::Node;
@@ -61,11 +64,6 @@ pub(crate) fn _run(
 ) -> AstryxResult<()> {
     match token {
         Token::Element(e) => {
-            //let arguments = convert_attributes_into_locals(&e.attributes, &state.decorators)?;
-            // let locals = resolve_references(&arguments, &state.variables_in_scope)?;
-            //let locals = stringify_variables(&arguments, &state.local_variables)?;
-            // let classes = collect_classes(&e.attributes);
-
             match e.ident.as_str() {
                 // first check for system (static) functions
                 "page" => {
