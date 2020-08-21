@@ -5,3 +5,7 @@ major tasks
 - styles
   - collect into adt
 - applying modifiers
+
+tinysearch
+https://endler.dev/2019/tinysearch/
+https://github.com/tinysearch/tinysearch

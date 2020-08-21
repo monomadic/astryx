@@ -1,7 +1,7 @@
 // takes input from the parser and constructs a node graph
 // TODO convert to a tree adt
 
-use crate::{error::*, variable::{stringify_variable, Variable}};
+use crate::{error::*};
 use nom::branch::alt;
 use nom::bytes::complete::{tag, take_until};
 use nom::combinator::map;
@@ -12,6 +12,7 @@ use nom::{
     error::{ErrorKind, ParseError},
 };
 use std::collections::HashMap;
+use parser::variable::Variable;
 
 pub(crate) fn interpolate(i: &str, locals: &HashMap<String, Variable>) -> AstryxResult<String> {
     let (r, nodes) = run(i).expect("interpolation failed");
@@ -23,7 +24,8 @@ pub(crate) fn interpolate(i: &str, locals: &HashMap<String, Variable>) -> Astryx
                 output_buffer.push_str(&t);
             }
             InterpolationNode::Reference(r) => {
-                output_buffer.push_str(&stringify_variable(&Variable::Reference(r), locals)?);
+                // output_buffer.push_str(&stringify_variable(&Variable::Reference(r), locals)?);
+                unimplemented!();
             }
         }
     }

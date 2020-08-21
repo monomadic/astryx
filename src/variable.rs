@@ -2,13 +2,13 @@ use crate::error::{AstryxError, AstryxResult};
 use std::collections::HashMap;
 use yaml_rust::Yaml;
 
-#[derive(Debug, Clone)]
-pub enum Variable {
-    RelativePath(String),
-    QuotedString(String),
-    Reference(String),
-    TemplateFile(TemplateFile),
-}
+// #[derive(Debug, Clone)]
+// pub enum Variable {
+//     RelativePath(String),
+//     QuotedString(String),
+//     Reference(String),
+//     TemplateFile(TemplateFile),
+// }
 
 // impl Variable {
 //     pub fn to_string(&self) -> AstryxResult<String> {
@@ -21,16 +21,16 @@ pub enum Variable {
 // }
 
 // caution: does not resolve references.
-impl std::fmt::Display for Variable {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Variable::RelativePath(s) | Variable::QuotedString(s) | Variable::Reference(s) => {
-                f.write_str(s)
-            }
-            Variable::TemplateFile(t) => f.write_str(&t.body),
-        }
-    }
-}
+// impl std::fmt::Display for Variable {
+//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//         match self {
+//             Variable::RelativePath(s) | Variable::QuotedString(s) | Variable::Reference(s) => {
+//                 f.write_str(s)
+//             }
+//             Variable::TemplateFile(t) => f.write_str(&t.body),
+//         }
+//     }
+// }
 
 #[derive(Debug, Clone)]
 pub struct TemplateFile {

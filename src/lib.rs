@@ -12,6 +12,7 @@
 //! 
 
 use error::AstryxResult;
+use parser;
 use std::collections::HashMap;
 
 pub mod error;
@@ -23,13 +24,16 @@ mod interpolator;
 mod interpreter;
 mod markdown;
 mod modifiers;
-mod parser;
-mod variable;
+// mod parser;
+// mod variable;
 
 /// takes a path and returns a hashmap of rendered files
-pub fn render_as_string<S: Into<String>>(file: S) -> AstryxResult<HashMap<String, String>> {
+pub fn render_to_string_buffers<S: Into<String>>(file: S) -> AstryxResult<HashMap<String, String>> {
     let tokens = parser::parse(&file.into())?;
     let nodes = interpreter::run(&tokens)?;
 
     html::render_as_string(&nodes)
 }
+
+// pub(crate) fn render<W: Write>(node: &Node<HTMLNode>, writer: &mut W) -> AstryxResult<()> {
+// }

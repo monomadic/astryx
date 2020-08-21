@@ -4,16 +4,23 @@ INTERPRETER
 - resolves variables and scope
 */
 
-use crate::{
-    error::*,
-    html::HTMLNode,
-    modifiers::Imports,
-    parser::{Attribute, Token},
-    variable::{stringify_variable, Variable},
-};
+use crate::{error::*, html::HTMLNode, modifiers::Imports};
+use parser::{variable::Variable, Token};
 use rctree::Node;
 use std::collections::HashMap;
 
+/// run the interpreter on an AST tree and return a HTMLNode tree for each page
+pub(crate) fn run(tokens: &Vec<Token>) -> AstryxResult<HashMap<String, Node<HTMLNode>>> {
+    let state = &mut State::new();
+
+    for token in tokens {
+        _run(token, state, &mut None)?;
+    }
+
+    Ok(state.pages.clone())
+}
+
+// TODO make private type
 #[derive(Debug, Clone)]
 pub struct State {
     local_variables: HashMap<String, Variable>,
@@ -31,29 +38,59 @@ impl State {
     }
 }
 
-/// run the interpreter on an AST tree
-pub(crate) fn run(tokens: &Vec<Token>) -> AstryxResult<HashMap<String, Node<HTMLNode>>> {
-    let state = &mut State::new();
-
-    for token in tokens {
-        _run(token, state, &mut None)?;
-    }
-
-    Ok(state.pages.clone())
+#[derive(Debug, Clone)]
+enum Value {
+    String(String),
+    Document(Document),
 }
 
-fn _run(
-    token: &Token,
-    state: &mut State,
-    parent: &mut Option<Node<HTMLNode>>,
-) -> AstryxResult<()> {
+impl Value {
+    fn from_variable(
+        variable: &Variable,
+        local_variables: &HashMap<String, Variable>,
+    ) -> AstryxResult<Value> {
+        Ok(match variable {
+            Variable::QuotedString(s) => Value::String(s.clone()),
+            Variable::RelativePath(_) => {
+                // check file exists, load as document
+                unimplemented!();
+            }
+            Variable::Reference(_) => {
+                // resolve from local_variables
+                unimplemented!();
+            }
+            Variable::TemplateFile(_) => {
+                unimplemented!();
+            } // delete this from original model
+        })
+    }
+
+    fn to_string(&self) -> String {
+        match self {
+            Value::String(s) => s.clone(),
+            _ => panic!("oops"),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+struct Document {
+    // created_at: Date
+    pub body: String,
+    // pub filename: String,
+    // pub variables: HashMap<String, String>,
+    pub metadata: Option<yaml_rust::Yaml>,
+}
+
+fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -> AstryxResult<()> {
     match token {
         Token::Element(e) => {
             match e.ident.as_str() {
                 // first check for system (static) functions
                 "page" => {
                     let path: Variable = e.get_required_attribute("path")?;
-                    let path: String = stringify_variable(&path, &state.local_variables)?;
+                    let path: String =
+                        Value::from_variable(&path, &state.local_variables)?.to_string();
 
                     // make a fresh node tree
                     let mut node = Node::new(HTMLNode::new_element("html"));
@@ -61,7 +98,7 @@ fn _run(
 
                     if let Some(stylesheet) = e.get_optional_attribute("stylesheet") {
                         let stylesheet: String =
-                            stringify_variable(&stylesheet, &state.local_variables)?;
+                            Value::from_variable(&stylesheet, &state.local_variables)?.to_string();
                         node.append(Node::new(HTMLNode::new_stylesheet_element(stylesheet)));
                     }
 
@@ -77,8 +114,11 @@ fn _run(
                 }
 
                 "embed" => {
-                    let path: Variable = e.get_required_attribute("path")?;
-                    let path: String = stringify_variable(&path, &state.local_variables)?;
+                    let path: String = Value::from_variable(
+                        &e.get_required_attribute("path")?,
+                        &state.local_variables,
+                    )?
+                    .to_string();
 
                     let svgfile = crate::filesystem::read_file(std::path::PathBuf::from(path))?;
                     let node = Node::new(HTMLNode::Text(svgfile));
@@ -98,24 +138,25 @@ fn _run(
 
                     // let mut el = crate::html::match_html_tag(&e.ident, locals)?;
 
-                    for attr in &e.attributes.clone() {
-                        // el.apply_attribute(&attr)?;
-                        match attr {
-                            Attribute::Class(class) => el.add_class(class),
-                            Attribute::Symbol(modifier) => {
-                                state.imports.modify_element(modifier, None, &mut el)?;
-                            }
-                            Attribute::NamedAttribute { ident, variable } => {
-                                match variable {
-                                    Variable::QuotedString(s) => {
-                                        state.imports.modify_element(ident, Some(s), &mut el)?;
-                                    }
-                                    _ => panic!("case not covered"),
-                                };
-                            }
-                            Attribute::Decorator(_) => panic!("decorators deprecated"),
-                        }
-                    }
+                    // TODO we need this to execute modifiers
+                    // for attr in &e.attributes.clone() {
+                    //     // el.apply_attribute(&attr)?;
+                    //     match attr {
+                    //         Attribute::Class(class) => el.add_class(class),
+                    //         Attribute::Symbol(modifier) => {
+                    //             state.imports.modify_element(&modifier, None, &mut el)?;
+                    //         }
+                    //         Attribute::NamedAttribute { ident, variable } => {
+                    //             match variable {
+                    //                 Variable::QuotedString(s) => {
+                    //                     state.imports.modify_element(&ident, Some(&s), &mut el)?;
+                    //                 }
+                    //                 _ => panic!("case not covered"),
+                    //             };
+                    //         }
+                    //         Attribute::Decorator(_) => panic!("decorators deprecated"),
+                    //     }
+                    // }
 
                     let mut node = Some(Node::new(HTMLNode::Element(el)));
 

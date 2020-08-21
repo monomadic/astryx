@@ -11,6 +11,7 @@ yaml-rust = "0.4"
 pulldown-cmark = "*"
 syntect = "4.2.0"
 rctree = "0.3.3"
+parser = { path = "components/parser" }
 
 [workspace]
-members = ["components/cli", "components/search"]
+members = ["components/cli", "components/search", "components/parser"]

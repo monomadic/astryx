@@ -1,4 +1,5 @@
 use crate::interpreter::State;
+use parser::error::ParserError;
 
 pub type AstryxResult<T> = Result<T, AstryxError>;
 
@@ -25,6 +26,16 @@ impl AstryxError {
             kind: AstryxErrorKind::Unknown,
             state: None,
             msg: msg.into(),
+        }
+    }
+}
+
+impl From<ParserError> for AstryxError {
+    fn from(err: ParserError) -> Self {
+        AstryxError {
+            kind: AstryxErrorKind::ParseError,
+            state: None,
+            msg: err.msg,
         }
     }
 }
