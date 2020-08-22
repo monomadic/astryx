@@ -16,7 +16,7 @@
 use error::{ParserError, ParserResult};
 pub use parser::{run, Token};
 pub mod error;
-mod parser;
+pub mod parser;
 pub mod variable;
 
 /// returns a vector of ast nodes

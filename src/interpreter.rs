@@ -5,7 +5,7 @@ INTERPRETER
 */
 
 use crate::{error::*, html::HTMLNode, modifiers::Imports};
-use parser::{variable::Variable, Token};
+use parser::{variable::Variable, Token, parser::Attribute};
 use rctree::Node;
 use std::collections::HashMap;
 
@@ -138,25 +138,24 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
 
                     // let mut el = crate::html::match_html_tag(&e.ident, locals)?;
 
-                    // TODO we need this to execute modifiers
-                    // for attr in &e.attributes.clone() {
-                    //     // el.apply_attribute(&attr)?;
-                    //     match attr {
-                    //         Attribute::Class(class) => el.add_class(class),
-                    //         Attribute::Symbol(modifier) => {
-                    //             state.imports.modify_element(&modifier, None, &mut el)?;
-                    //         }
-                    //         Attribute::NamedAttribute { ident, variable } => {
-                    //             match variable {
-                    //                 Variable::QuotedString(s) => {
-                    //                     state.imports.modify_element(&ident, Some(&s), &mut el)?;
-                    //                 }
-                    //                 _ => panic!("case not covered"),
-                    //             };
-                    //         }
-                    //         Attribute::Decorator(_) => panic!("decorators deprecated"),
-                    //     }
-                    // }
+                    for attr in &e.attributes.clone() {
+                        // el.apply_attribute(&attr)?;
+                        match attr {
+                            Attribute::Class(class) => el.add_class(class),
+                            Attribute::Symbol(modifier) => {
+                                state.imports.modify_element(&modifier, None, &mut el)?;
+                            }
+                            Attribute::NamedAttribute { ident, variable } => {
+                                match variable {
+                                    Variable::QuotedString(s) => {
+                                        state.imports.modify_element(&ident, Some(&s), &mut el)?;
+                                    }
+                                    _ => unimplemented!(),
+                                };
+                            }
+                            Attribute::Decorator(_) => panic!("decorators deprecated"),
+                        }
+                    }
 
                     let mut node = Some(Node::new(HTMLNode::Element(el)));
 
