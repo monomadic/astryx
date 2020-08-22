@@ -39,6 +39,26 @@ impl State {
 }
 
 #[derive(Debug, Clone)]
+struct Variables {
+    values: HashMap<String, Value>
+}
+
+impl Variables {
+    fn new() -> Self {
+        Variables {
+            values: HashMap::new()
+        }
+    }
+
+    fn insert_from_attributes(&mut self, attributes: &Vec<Attribute>) -> Variables {
+        for attribute in attributes {
+            self.values.insert(attribute.ident, Value::from_)
+        }
+        Variables::new()
+    }
+}
+
+#[derive(Debug, Clone)]
 enum Value {
     String(String),
     Document(Document),
@@ -83,10 +103,12 @@ struct Document {
     pub metadata: Option<yaml_rust::Yaml>,
 }
 
-/// collect state and build a valid node tree
+/// recurse each token, resolve variables
 fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -> AstryxResult<()> {
     match token {
         Token::Element(e) => {
+            let locals = &e.attributes.map(|attribute| Value::)
+
             match e.ident.as_str() {
                 // first check for system (static) functions
                 "page" => {
