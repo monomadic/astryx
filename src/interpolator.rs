@@ -1,5 +1,5 @@
 // takes input from the parser and constructs a node graph
-// TODO convert to a tree adt
+// TODO move into parser
 
 use crate::{error::*};
 use nom::branch::alt;

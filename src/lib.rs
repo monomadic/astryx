@@ -24,8 +24,6 @@ mod interpolator;
 mod interpreter;
 mod markdown;
 mod modifiers;
-// mod parser;
-// mod variable;
 
 /// takes a path and returns a hashmap of rendered files
 pub fn render_to_string_buffers<S: Into<String>>(file: S) -> AstryxResult<HashMap<String, String>> {
