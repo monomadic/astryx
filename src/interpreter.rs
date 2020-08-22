@@ -1,10 +1,10 @@
 /*
-INTERPRETER
+POSTPROCESSOR
 - converts a graph of Nodes from a source tree into a set of rendered HTML pages
 - resolves variables and scope
 */
 
-use crate::{error::*, html::HTMLNode, modifiers::Imports};
+use crate::{error::*, html::HTMLNode, imports::Imports};
 use parser::{variable::Variable, Token, parser::Attribute};
 use rctree::Node;
 use std::collections::HashMap;
@@ -42,6 +42,7 @@ impl State {
 enum Value {
     String(String),
     Document(Document),
+    Array(Vec<Value>),
 }
 
 impl Value {
@@ -82,6 +83,7 @@ struct Document {
     pub metadata: Option<yaml_rust::Yaml>,
 }
 
+/// collect state and build a valid node tree
 fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -> AstryxResult<()> {
     match token {
         Token::Element(e) => {
@@ -150,7 +152,10 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
                                     Variable::QuotedString(s) => {
                                         state.imports.modify_element(&ident, Some(&s), &mut el)?;
                                     }
-                                    _ => unimplemented!(),
+                                    _ => {
+                                        println!("variable {:?}", variable);
+                                        unimplemented!();
+                                    },
                                 };
                             }
                             Attribute::Decorator(_) => panic!("decorators deprecated"),
