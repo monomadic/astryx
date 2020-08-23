@@ -5,8 +5,8 @@ enum Modifier {
     Function(String, Vec<String>),
 }
 
-impl Modifier {
-    pub(crate) fn from_argument(arg: Argument) -> Modifier {
+// impl Modifier {
+//     pub(crate) fn from_argument(arg: Argument) -> Modifier {
         
-    }
-}
+//     }
+// }

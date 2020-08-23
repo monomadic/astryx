@@ -4,10 +4,13 @@ POSTPROCESSOR
 - resolves variables and scope
 */
 
-use crate::{error::*, html::HTMLNode, imports::Imports};
+use crate::{error::*, html::HTMLNode};
 use parser::{variable::Variable, Token, parser::Attribute};
 use rctree::Node;
+use state::State;
 use std::collections::HashMap;
+
+mod state;
 
 /// run the interpreter on an AST tree and return a HTMLNode tree for each page
 pub(crate) fn run(tokens: &Vec<Token>) -> AstryxResult<HashMap<String, Node<HTMLNode>>> {
@@ -20,43 +23,27 @@ pub(crate) fn run(tokens: &Vec<Token>) -> AstryxResult<HashMap<String, Node<HTML
     Ok(state.pages.clone())
 }
 
-// TODO make private type
-#[derive(Debug, Clone)]
-pub struct State {
-    local_variables: HashMap<String, Variable>,
-    pages: HashMap<String, Node<HTMLNode>>,
-    imports: Imports,
-}
 
-impl State {
-    pub fn new() -> Self {
-        State {
-            local_variables: HashMap::new(),
-            pages: HashMap::new(),
-            imports: Imports::new(),
-        }
-    }
-}
 
-#[derive(Debug, Clone)]
-struct Variables {
-    values: HashMap<String, Value>
-}
+// #[derive(Debug, Clone)]
+// struct Variables {
+//     values: HashMap<String, Value>
+// }
 
-impl Variables {
-    fn new() -> Self {
-        Variables {
-            values: HashMap::new()
-        }
-    }
+// impl Variables {
+//     fn new() -> Self {
+//         Variables {
+//             values: HashMap::new()
+//         }
+//     }
 
-    fn insert_from_attributes(&mut self, attributes: &Vec<Attribute>) -> Variables {
-        for attribute in attributes {
-            self.values.insert(attribute.ident, Value::from_)
-        }
-        Variables::new()
-    }
-}
+//     fn insert_from_attributes(&mut self, attributes: &Vec<Attribute>) -> Variables {
+//         for attribute in attributes {
+//             self.values.insert(attribute.ident, Value::from_)
+//         }
+//         Variables::new()
+//     }
+// }
 
 #[derive(Debug, Clone)]
 enum Value {
@@ -107,7 +94,7 @@ struct Document {
 fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -> AstryxResult<()> {
     match token {
         Token::Element(e) => {
-            let locals = &e.attributes.map(|attribute| Value::)
+            // let locals = &e.attributes.map(|attribute| Value::)
 
             match e.ident.as_str() {
                 // first check for system (static) functions
@@ -161,6 +148,11 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
                     // println!("GENERATED EL: {:?}", html_el);
 
                     // let mut el = crate::html::match_html_tag(&e.ident, locals)?;
+
+
+                    // assemble modifiers from attributes
+                    
+
 
                     for attr in &e.attributes.clone() {
                         // el.apply_attribute(&attr)?;
