@@ -20,9 +20,10 @@ impl Imports {
         Self {}
     }
 
+    // TODO remove
     pub(crate) fn create_element(&self, ident: &str) -> AstryxResult<HTMLElement> {
         match ident {
-            "row" | "column" | "grid" => Ok(HTMLElement::new_with_class("div", ident)),
+            // "row" | "column" | "grid" => Ok(HTMLElement::new_with_class("div", ident)),
             _ => HTMLElement::new_from_html_tag(ident),
         }
     }

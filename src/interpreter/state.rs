@@ -33,9 +33,9 @@ impl State {
         Ok(match variable {
             Variable::QuotedString(s) => Value::String(s.clone()),
             Variable::Reference(r) => {
-                self.local_variables
+                self
                     .get(r)
-                    .map(|v| Value::String(v.to_string()))
+                    .map(|v| v.clone())
                     .ok_or(AstryxError::new(format!("no such variable in scope: {}. locals: {:#?}", r, self.local_variables)))?
             }
             Variable::RelativePath(p) => Value::Documents(crate::filesystem::read_documents(&p)?),
@@ -47,6 +47,20 @@ impl State {
 
     pub(crate) fn insert<S:ToString>(&mut self, ident: S, value: &Value) {
         self.local_variables.insert(ident.to_string(), value.clone());
+    }
+
+    pub(crate) fn get<S:ToString>(&self, ident: S) -> Option<&Value> {
+        let segments = ident.to_string();
+        let segments = segments.split(".").collect::<Vec<&str>>();
+
+        match segments.len() {
+            0 => self.local_variables.get(&ident.to_string()),
+            1 => None,
+            _ => {
+                self.local_variables.get(&segments[0].to_string())
+            },
+        }
+        
     }
 
     pub(crate) fn interpolate_string(&self, tokens: &Vec<StringToken>) -> AstryxResult<String> {

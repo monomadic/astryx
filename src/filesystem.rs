@@ -1,5 +1,5 @@
 use crate::{interpreter::Document, error::*};
-use parser::variable::TemplateFile;
+// use parser::variable::TemplateFile;
 
 pub(crate) fn read_file(pathbuf: std::path::PathBuf) -> AstryxResult<String> {
     use std::fs::File;
@@ -16,37 +16,38 @@ pub(crate) fn read_file(pathbuf: std::path::PathBuf) -> AstryxResult<String> {
     Ok(buffer)
 }
 
-pub(crate) fn read_content_metadata(pattern: &str) -> AstryxResult<Vec<TemplateFile>> {
-    let options = glob::MatchOptions {
-        case_sensitive: false,
-        require_literal_separator: false,
-        require_literal_leading_dot: false,
-    };
+// pub(crate) fn read_content_metadata(pattern: &str) -> AstryxResult<Vec<TemplateFile>> {
+//     let options = glob::MatchOptions {
+//         case_sensitive: false,
+//         require_literal_separator: false,
+//         require_literal_leading_dot: false,
+//     };
 
-    let mut files = Vec::new();
-    let globs = glob::glob_with(&format!("./{}", pattern), options)
-        .map_err(|_| AstryxError::new("error globbing file"))?;
+//     let mut files = Vec::new();
+//     let globs = glob::glob_with(&format!("./{}", pattern), options)
+//         .map_err(|_| AstryxError::new("error globbing file"))?;
 
-    for file in globs {
-        // let path = file.map_err(|_| CassetteError::ParseError("file not found".into()))?;
-        // let filename = file.pa
-        let file_content = read_file(file.expect("file to unwrap"))?;
+//     for file in globs {
+//         // let path = file.map_err(|_| CassetteError::ParseError("file not found".into()))?;
+//         // let filename = file.pa
+//         let file_content = read_file(file.expect("file to unwrap"))?;
 
-        let (yaml, markdown) = crate::frontmatter::parse(&file_content)
-            .map_err(|_| AstryxError::new("error reading metadata"))?;
+//         let (yaml, markdown) = crate::frontmatter::parse(&file_content)
+//             .map_err(|_| AstryxError::new("error reading metadata"))?;
 
-        files.push(TemplateFile {
-            body: crate::markdown::parse(&markdown)?,
-            // nodes:
-            // filename: format!("{:?}", file.unwrap()),
-            // variables: HashMap::new(),
-            metadata: yaml,
-        });
-    }
+//         files.push(TemplateFile {
+//             body: crate::markdown::parse(&markdown)?,
+//             // nodes:
+//             // filename: format!("{:?}", file.unwrap()),
+//             // variables: HashMap::new(),
+//             metadata: yaml,
+//         });
+//     }
 
-    Ok(files)
-}
+//     Ok(files)
+// }
 
+// TODO rewrite as map
 pub(crate) fn read_documents(pattern: &str) -> AstryxResult<Vec<Document>> {
     let options = glob::MatchOptions {
         case_sensitive: false,

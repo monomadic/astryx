@@ -167,8 +167,8 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
                                         state.imports.modify_element(&ident, Some(&s), &mut el)?;
                                     }
                                     _ => {
-                                        println!("variable {:?}", state.resolve(variable)?);
-                                        unimplemented!();
+                                        panic!("attempted to call modifier with {:?}", attr);
+                                        // unimplemented!();
                                     },
                                 };
                             }

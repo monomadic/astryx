@@ -2,5 +2,4 @@
 page path="/"
   for post in ./examples/*.md
     div .title
-      link path=post.route
-        | ${ post.title }
+      | ${ post.title }
