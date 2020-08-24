@@ -1,6 +1,6 @@
 // collection of imported functions into state
 
-use crate::{error::AstryxResult, html::HTMLElement};
+use crate::{error::{AstryxError, AstryxResult}, html::HTMLElement};
 
 #[derive(Debug, Clone)]
 pub(crate) struct Imports {
@@ -34,6 +34,18 @@ impl Imports {
         el: &mut HTMLElement,
     ) -> AstryxResult<()> {
         match modifier.into() {
+            "layout.vertical" => {
+                el.add_class("layout-vertical");
+            }
+            "layout.horizontal" => {
+                el.add_class("layout-horizontal");
+            }
+            "layout.columns" => {
+                el.add_class("layout-columns");
+            }
+            "layout.rows" => {
+                el.add_class("layout-rows");
+            }
             // check for the ident type
             "align.left" => {
                 // el.styles.push(format!("grid-template-columns: {};", s));
@@ -43,15 +55,19 @@ impl Imports {
                 // el.styles.push(format!("grid-template-columns: {};", s));
                 el.add_class("align-right");
             }
+            "width.full" => {
+                el.add_style("width: 100%;");
+            }
             "background-color" => el.add_style(format!(
                 "background-color: {};",
                 args.unwrap_or(&String::new())
             )),
+            "text.align.center" => el.add_style("text-align: center;"),
             // "padding" => el.add_style(format!(
             //     "background-color: {};",
             //     args.unwrap_or(&String::new())
             // )),
-            _ => panic!("cannot find modifier {}", modifier),
+            _ => { return Err(AstryxError::new(&format!("cannot find modifier {}", modifier)))},
         }
 
         Ok(())

@@ -1,12 +1,13 @@
 * { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, sans-serif; }
 
-.row {
+.row, .layout-horizontal, .layout-columns {
   display: flex;
   flex-direction: row;
   width: 100%;
 }
 
-.column {
+.column, .layout-vertical, .layout-rows {
   display: flex;
   flex-direction: column;
   width: 100%;

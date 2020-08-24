@@ -20,7 +20,7 @@ mod filesystem;
 mod frontmatter;
 mod highlighter;
 mod html;
-mod interpolator;
+// mod interpolator;
 mod interpreter;
 mod markdown;
 mod imports;
