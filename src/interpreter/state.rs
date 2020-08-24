@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use crate::{html::HTMLNode, imports::Imports, error::{AstryxError, AstryxResult}};
 use rctree::Node;
-use parser::variable::Variable;
+use parser::{parser::StringToken, variable::Variable};
 use super::Value;
 
 type LocalData = HashMap<String, Variable>;
@@ -25,11 +25,20 @@ impl State {
     }
 
     /// use local state to resolve variables into static constants at runtime.
-    pub(crate) fn resolve(&self, variable: Variable) -> AstryxResult<Value> {
+    pub(crate) fn resolve(&self, variable: &Variable) -> AstryxResult<Value> {
         Ok(match variable {
             Variable::QuotedString(s) => Value::String(s.clone()),
             Variable::RelativePath(p) => Value::String(p.clone()),
             _ => { return Err(AstryxError::new(&format!("cannot to_string: {:?}", self))); },
         })
+    }
+
+    pub(crate) fn interpolate_string(&self, tokens: &Vec<StringToken>) -> AstryxResult<String> {
+        tokens.iter().map(|token| {
+            match token {
+                StringToken::Text(s) => Ok(s.clone()),
+                StringToken::Variable(v) => self.resolve(v).map(|v| v.to_string())
+            }
+        }).collect()
     }
 }

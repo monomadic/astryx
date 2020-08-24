@@ -39,6 +39,15 @@ impl From<Value> for String {
     }
 }
 
+impl ToString for Value {
+    fn to_string(&self) -> String {
+        match self {
+            Value::String(s) => s.into(),
+            _ => unimplemented!()
+        }
+    }
+}
+
 // impl Value {
 //     fn from_variable(
 //         variable: &Variable,
@@ -94,7 +103,7 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
                 "page" => {
 
                     let path: Value = state.resolve(
-                        e.get_required_attribute("path")?
+                        &e.get_required_attribute("path")?
                     )?;
 
                     // let path: String =
@@ -108,7 +117,7 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
                         // let stylesheet: String =
                         //     Value::from_variable(&stylesheet, &state.local_variables)?.to_string();
                         let stylesheet = state.resolve(
-                            e.get_required_attribute("stylesheet")?
+                            &e.get_required_attribute("stylesheet")?
                         )?;
 
                         node.append(Node::new(HTMLNode::new_stylesheet_element(stylesheet)));
@@ -127,7 +136,7 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
 
                 "embed" => {
                     let path: Value = state.resolve(
-                        e.get_required_attribute("path")?
+                        &e.get_required_attribute("path")?
                     )?;
 
                     // let svgfile = crate::filesystem::read_file(std::path::PathBuf::from(path))?;
@@ -215,7 +224,7 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
             if let Some(parent) = parent {
                 // let buffer = crate::interpolator::interpolate(t, &state.local_variables)?;
                 parent.append(Node::new(HTMLNode::Text(
-                    format!("{:#?}", t)
+                    state.interpolate_string(t)?
                 )));
             }
         }

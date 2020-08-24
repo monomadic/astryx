@@ -27,7 +27,7 @@ pub enum Token {
 #[derive(Debug, Clone)]
 pub enum StringToken {
     Text(String),
-    Reference(String),
+    Variable(Variable),
 }
 
 #[derive(Debug, Clone)]
