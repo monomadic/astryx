@@ -5,7 +5,7 @@ POSTPROCESSOR
 */
 
 use crate::{error::*, html::HTMLNode};
-use parser::{variable::Variable, Token, parser::Attribute};
+use parser::{variable::Variable, Token};
 use rctree::Node;
 use state::State;
 use std::collections::HashMap;
@@ -22,28 +22,6 @@ pub(crate) fn run(tokens: &Vec<Token>) -> AstryxResult<HashMap<String, Node<HTML
 
     Ok(state.pages.clone())
 }
-
-
-
-// #[derive(Debug, Clone)]
-// struct Variables {
-//     values: HashMap<String, Value>
-// }
-
-// impl Variables {
-//     fn new() -> Self {
-//         Variables {
-//             values: HashMap::new()
-//         }
-//     }
-
-//     fn insert_from_attributes(&mut self, attributes: &Vec<Attribute>) -> Variables {
-//         for attribute in attributes {
-//             self.values.insert(attribute.ident, Value::from_)
-//         }
-//         Variables::new()
-//     }
-// }
 
 #[derive(Debug, Clone)]
 pub(crate) enum Value {
@@ -94,8 +72,6 @@ impl From<Value> for String {
 pub(crate) struct Document {
     // created_at: Date
     pub body: String,
-    // pub filename: String,
-    // pub variables: HashMap<String, String>,
     pub metadata: Option<yaml_rust::Yaml>,
 }
 
@@ -239,7 +215,7 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
             if let Some(parent) = parent {
                 // let buffer = crate::interpolator::interpolate(t, &state.local_variables)?;
                 parent.append(Node::new(HTMLNode::Text(
-                    format!("--{:#?}", &state.local_variables)
+                    format!("{:#?}", t)
                 )));
             }
         }

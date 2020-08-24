@@ -21,8 +21,13 @@ use crate::{variable::Variable, error::{ParserResult, ParserError}};
 pub enum Token {
     ForLoop(ForLoop),
     Element(Element),
-    Text(String),
+    Text(Vec<StringToken>),
     CodeBlock(CodeBlock),
+}
+#[derive(Debug, Clone)]
+pub enum StringToken {
+    Text(String),
+    Reference(String),
 }
 
 #[derive(Debug, Clone)]
@@ -92,7 +97,7 @@ fn node(i: &str) -> IResult<&str, Token> {
 
     alt((
         map(for_loop, |f| Token::ForLoop(f)),
-        map(piped_string, |s| Token::Text(String::from(s))),
+        map(piped_string, |s| Token::Text(vec![StringToken::Text(String::from(s))])),
         map(codeblock, |cb| Token::CodeBlock(cb)),
         map(element, |e| Token::Element(e)),
     ))(r)
