@@ -39,7 +39,7 @@ pub struct CodeBlock {
 #[derive(Debug, Clone)]
 pub struct ForLoop {
     pub index: String,
-    pub iterable: String,
+    pub iterable: Variable,
     pub children: Vec<Token>,
 }
 
@@ -153,7 +153,7 @@ fn for_loop(i: &str) -> IResult<&str, ForLoop> {
         r,
         ForLoop {
             index: ident.into(),
-            iterable: relative_path.into(),
+            iterable: Variable::RelativePath(relative_path.into()),
             children,
         },
     ))

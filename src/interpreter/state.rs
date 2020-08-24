@@ -1,10 +1,14 @@
-use std::collections::HashMap;
-use crate::{html::HTMLNode, imports::Imports, error::{AstryxError, AstryxResult}};
-use rctree::Node;
-use parser::{parser::StringToken, variable::Variable};
 use super::Value;
+use crate::{
+    error::{AstryxError, AstryxResult},
+    html::HTMLNode,
+    imports::Imports,
+};
+use parser::{parser::StringToken, variable::Variable};
+use rctree::Node;
+use std::collections::HashMap;
 
-type LocalData = HashMap<String, Variable>;
+type LocalData = HashMap<String, Value>;
 type Layouts = HashMap<String, Node<HTMLNode>>;
 
 // TODO make private type
@@ -28,17 +32,30 @@ impl State {
     pub(crate) fn resolve(&self, variable: &Variable) -> AstryxResult<Value> {
         Ok(match variable {
             Variable::QuotedString(s) => Value::String(s.clone()),
-            Variable::RelativePath(p) => Value::String(p.clone()),
-            _ => { return Err(AstryxError::new(&format!("cannot to_string: {:?}", self))); },
+            Variable::Reference(r) => {
+                self.local_variables
+                    .get(r)
+                    .map(|v| Value::String(v.to_string()))
+                    .ok_or(AstryxError::new(format!("no such variable in scope: {}. locals: {:#?}", r, self.local_variables)))?
+            }
+            Variable::RelativePath(p) => Value::Documents(crate::filesystem::read_documents(&p)?),
+            _ => {
+                return Err(AstryxError::new(&format!("cannot to_string: {:?}", variable)));
+            }
         })
     }
 
+    pub(crate) fn insert<S:ToString>(&mut self, ident: S, value: &Value) {
+        self.local_variables.insert(ident.to_string(), value.clone());
+    }
+
     pub(crate) fn interpolate_string(&self, tokens: &Vec<StringToken>) -> AstryxResult<String> {
-        tokens.iter().map(|token| {
-            match token {
+        tokens
+            .iter()
+            .map(|token| match token {
                 StringToken::Text(s) => Ok(s.clone()),
-                StringToken::Variable(v) => self.resolve(v).map(|v| v.to_string())
-            }
-        }).collect()
+                StringToken::Variable(v) => self.resolve(v).map(|v| v.to_string()),
+            })
+            .collect()
     }
 }

@@ -21,11 +21,11 @@ pub enum AstryxErrorKind {
 }
 
 impl AstryxError {
-    pub fn new(msg: &str) -> AstryxError {
+    pub fn new<S:ToString>(msg: S) -> AstryxError {
         Self {
             kind: AstryxErrorKind::Unknown,
             // state: None,
-            msg: msg.into(),
+            msg: msg.to_string(),
         }
     }
 }

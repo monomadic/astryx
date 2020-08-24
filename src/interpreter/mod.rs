@@ -27,6 +27,7 @@ pub(crate) fn run(tokens: &Vec<Token>) -> AstryxResult<HashMap<String, Node<HTML
 pub(crate) enum Value {
     String(String),
     Document(Document),
+    Documents(Vec<Document>),
     Array(Vec<Value>),
 }
 
@@ -166,7 +167,7 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
                                         state.imports.modify_element(&ident, Some(&s), &mut el)?;
                                     }
                                     _ => {
-                                        println!("variable {:?}", variable);
+                                        println!("variable {:?}", state.resolve(variable)?);
                                         unimplemented!();
                                     },
                                 };
@@ -192,21 +193,27 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
             }
         }
         Token::ForLoop(f) => {
-            let files = crate::filesystem::read_content_metadata(&f.iterable)?;
-            for file in files {
-                // create a new local state to pass down the tree
-                let mut new_state = state.clone();
+            // if the forloop iterator is a series of valid documents,
+            if let Value::Documents(documents) = state.resolve(&f.iterable)? {
+                for document in documents {
+                    // create a new local state to pass down the tree
+                    let mut new_state = state.clone();
 
-                new_state
-                    .local_variables
-                    .insert(f.index.clone(), Variable::TemplateFile(file));
+                    // new_state
+                    //     .local_variables
+                    //     .insert(f.index.clone(), Variable::TemplateFile(document));
 
-                for token in &f.children {
-                    _run(token, &mut new_state, parent)?;
+                    new_state.insert(&f.index, &Value::Document(document));
+
+                    for token in &f.children {
+                        _run(token, &mut new_state, parent)?;
+                    }
+
+                    // state.page_buffers = new_state.page_buffers; // kind of a dirty hack
+                    state.pages = new_state.pages;
                 }
-
-                // state.page_buffers = new_state.page_buffers; // kind of a dirty hack
-                state.pages = new_state.pages;
+            } else {
+                return Err(AstryxError::new(format!("iterable was not a document array: {}", f.iterable)));
             }
         }
         Token::Text(t) => {
