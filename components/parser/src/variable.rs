@@ -4,6 +4,7 @@ pub enum Variable {
     QuotedString(String),
     Reference(String),
     TemplateFile(TemplateFile),
+    // FunctionCall()
 }
 
 // impl Variable {

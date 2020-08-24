@@ -1,12 +1,23 @@
 
-enum Modifier {
-    AddClass(String),
-    AddID(String),
-    Function(String, Vec<String>),
+pub(crate) enum ModifierArgs {
+    Simple,
+    AnonArgs(Vec<Value>),
+    NamedArgs(HashMap<String, Value>),
 }
 
-// impl Modifier {
-//     pub(crate) fn from_argument(arg: Argument) -> Modifier {
-        
-//     }
-// }
+// note that .title and #title are aliases for the functions add-class("title") and set-id("title").
+// the parenthesis can be omitted in the syntax so width.expand and width.expand() are equivalent.
+
+pub(crate) struct ModifierLibrary {
+
+}
+
+impl ModifierLibrary {
+    pub(crate) fn new() -> Self {
+        Self
+    }
+
+    pub(crate) fn get(ident: &str, args: ModifierArgs) -> AstryxResult<Fn(&mut HTMLElement)> {
+
+    }
+}

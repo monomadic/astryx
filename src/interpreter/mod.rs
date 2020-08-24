@@ -46,43 +46,52 @@ pub(crate) fn run(tokens: &Vec<Token>) -> AstryxResult<HashMap<String, Node<HTML
 // }
 
 #[derive(Debug, Clone)]
-enum Value {
+pub(crate) enum Value {
     String(String),
     Document(Document),
     Array(Vec<Value>),
 }
 
-impl Value {
-    fn from_variable(
-        variable: &Variable,
-        local_variables: &HashMap<String, Variable>,
-    ) -> AstryxResult<Value> {
-        Ok(match variable {
-            Variable::QuotedString(s) => Value::String(s.clone()),
-            Variable::RelativePath(_) => {
-                // check file exists, load as document
-                unimplemented!();
-            }
-            Variable::Reference(_) => {
-                // resolve from local_variables
-                unimplemented!();
-            }
-            Variable::TemplateFile(_) => {
-                unimplemented!();
-            } // delete this from original model
-        })
-    }
-
-    fn to_string(&self) -> String {
-        match self {
-            Value::String(s) => s.clone(),
-            _ => panic!("oops"),
+impl From<Value> for String {
+    fn from(value: Value) -> Self {
+        match value {
+            Value::String(s) => s,
+            _ => unimplemented!()
         }
     }
 }
 
+// impl Value {
+//     fn from_variable(
+//         variable: &Variable,
+//         local_variables: &HashMap<String, Variable>,
+//     ) -> AstryxResult<Value> {
+//         Ok(match variable {
+//             Variable::QuotedString(s) => Value::String(s.clone()),
+//             Variable::RelativePath(_) => {
+//                 // check file exists, load as document
+//                 unimplemented!();
+//             }
+//             Variable::Reference(_) => {
+//                 // resolve from local_variables
+//                 unimplemented!();
+//             }
+//             Variable::TemplateFile(_) => {
+//                 unimplemented!();
+//             } // delete this from original model
+//         })
+//     }
+
+//     fn to_string(&self) -> String {
+//         match self {
+//             Value::String(s) => s.clone(),
+//             _ => panic!("oops"),
+//         }
+//     }
+// }
+
 #[derive(Debug, Clone)]
-struct Document {
+pub(crate) struct Document {
     // created_at: Date
     pub body: String,
     // pub filename: String,
@@ -94,22 +103,38 @@ struct Document {
 fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -> AstryxResult<()> {
     match token {
         Token::Element(e) => {
-            // let locals = &e.attributes.map(|attribute| Value::)
+
+            
+            // create the local modifiers chain.
+            // for attribute in &e.attributes {
+            //     match attribute {
+            //         Attribute::Class(s) => 
+            //     }
+            //     println!("a: {:?}", attribute);
+            // }
 
             match e.ident.as_str() {
-                // first check for system (static) functions
+                // TODO page should just be another element type or function.
                 "page" => {
-                    let path: Variable = e.get_required_attribute("path")?;
-                    let path: String =
-                        Value::from_variable(&path, &state.local_variables)?.to_string();
+
+                    let path: Value = state.resolve(
+                        e.get_required_attribute("path")?
+                    )?;
+
+                    // let path: String =
+                    //     Value::from_variable(&path, &state.local_variables)?.to_string();
 
                     // make a fresh node tree
                     let mut node = Node::new(HTMLNode::new_element("html"));
                     node.append(Node::new(HTMLNode::new_element("title")));
 
                     if let Some(stylesheet) = e.get_optional_attribute("stylesheet") {
-                        let stylesheet: String =
-                            Value::from_variable(&stylesheet, &state.local_variables)?.to_string();
+                        // let stylesheet: String =
+                        //     Value::from_variable(&stylesheet, &state.local_variables)?.to_string();
+                        let stylesheet = state.resolve(
+                            e.get_required_attribute("stylesheet")?
+                        )?;
+
                         node.append(Node::new(HTMLNode::new_stylesheet_element(stylesheet)));
                     }
 
@@ -121,24 +146,22 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
 
                     node.append(body.unwrap()); // unwrap is ok cause I just made it Some... rethink this though
 
-                    state.pages.insert(path, node.clone().root());
+                    state.pages.insert(path.into(), node.clone().root());
                 }
 
                 "embed" => {
-                    let path: String = Value::from_variable(
-                        &e.get_required_attribute("path")?,
-                        &state.local_variables,
-                    )?
-                    .to_string();
+                    let path: Value = state.resolve(
+                        e.get_required_attribute("path")?
+                    )?;
 
-                    let svgfile = crate::filesystem::read_file(std::path::PathBuf::from(path))?;
-                    let node = Node::new(HTMLNode::Text(svgfile));
+                    // let svgfile = crate::filesystem::read_file(std::path::PathBuf::from(path))?;
+                    // let node = Node::new(HTMLNode::Text(svgfile));
 
-                    if let Some(parent) = parent {
-                        parent.append(node);
-                    } else {
-                        return Err(AstryxError::new("tag found without page to assign to"));
-                    }
+                    // if let Some(parent) = parent {
+                    //     parent.append(node);
+                    // } else {
+                    //     return Err(AstryxError::new("tag found without page to assign to"));
+                    // }
                 }
 
                 _ => {
@@ -151,30 +174,32 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
 
 
                     // assemble modifiers from attributes
+
+
                     
 
 
-                    for attr in &e.attributes.clone() {
-                        // el.apply_attribute(&attr)?;
-                        match attr {
-                            Attribute::Class(class) => el.add_class(class),
-                            Attribute::Symbol(modifier) => {
-                                state.imports.modify_element(&modifier, None, &mut el)?;
-                            }
-                            Attribute::NamedAttribute { ident, variable } => {
-                                match variable {
-                                    Variable::QuotedString(s) => {
-                                        state.imports.modify_element(&ident, Some(&s), &mut el)?;
-                                    }
-                                    _ => {
-                                        println!("variable {:?}", variable);
-                                        unimplemented!();
-                                    },
-                                };
-                            }
-                            Attribute::Decorator(_) => panic!("decorators deprecated"),
-                        }
-                    }
+                    // for attr in &e.attributes.clone() {
+                    //     // el.apply_attribute(&attr)?;
+                    //     match attr {
+                    //         Attribute::Class(class) => el.add_class(class),
+                    //         Attribute::Symbol(modifier) => {
+                    //             state.imports.modify_element(&modifier, None, &mut el)?;
+                    //         }
+                    //         Attribute::NamedAttribute { ident, variable } => {
+                    //             match variable {
+                    //                 Variable::QuotedString(s) => {
+                    //                     state.imports.modify_element(&ident, Some(&s), &mut el)?;
+                    //                 }
+                    //                 _ => {
+                    //                     println!("variable {:?}", variable);
+                    //                     unimplemented!();
+                    //                 },
+                    //             };
+                    //         }
+                    //         Attribute::Decorator(_) => panic!("decorators deprecated"),
+                    //     }
+                    // }
 
                     let mut node = Some(Node::new(HTMLNode::Element(el)));
 
@@ -212,8 +237,10 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
         }
         Token::Text(t) => {
             if let Some(parent) = parent {
-                let buffer = crate::interpolator::interpolate(t, &state.local_variables)?;
-                parent.append(Node::new(HTMLNode::Text(buffer)));
+                // let buffer = crate::interpolator::interpolate(t, &state.local_variables)?;
+                parent.append(Node::new(HTMLNode::Text(
+                    format!("--{:#?}", &state.local_variables)
+                )));
             }
         }
         Token::CodeBlock(_) => {}
