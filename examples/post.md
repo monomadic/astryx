@@ -1,5 +1,5 @@
 ---
-title: "hello"
+title: "a title!"
 route: "/hello"
 ---
 

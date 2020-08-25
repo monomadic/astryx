@@ -5,7 +5,7 @@ POSTPROCESSOR
 */
 
 use crate::{error::*, html::HTMLNode};
-use parser::{variable::Variable, Token, parser::Attribute};
+use parser::{parser::Attribute, variable::Variable, Token};
 use rctree::Node;
 use state::State;
 use std::collections::HashMap;
@@ -35,19 +35,20 @@ impl From<Value> for String {
     fn from(value: Value) -> Self {
         match value {
             Value::String(s) => s,
-            _ => unimplemented!()
+            _ => unimplemented!(),
         }
     }
 }
 
-impl ToString for Value {
-    fn to_string(&self) -> String {
-        match self {
-            Value::String(s) => s.into(),
-            _ => unimplemented!()
-        }
-    }
-}
+// impl ToString for Value {
+//     fn to_string(&self) -> String {
+//         println!("--{:?}", self);
+//         match self {
+//             Value::String(s) => s.into(),
+//             _ => unimplemented!()
+//         }
+//     }
+// }
 
 // impl Value {
 //     fn from_variable(
@@ -85,16 +86,26 @@ pub(crate) struct Document {
     pub metadata: Option<yaml_rust::Yaml>,
 }
 
+impl Document {
+    pub(crate) fn get(&self, idents: &Vec<String>) -> Option<Value> {
+        // FIXME this awful awful awful rusty sin
+        Some(Value::String(
+            self.metadata.clone().expect("index fixme")[idents[0].as_str()]
+                .as_str()
+                .expect("oops")
+                .to_string(),
+        ))
+    }
+}
+
 /// recurse each token, resolve variables
 fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -> AstryxResult<()> {
     match token {
         Token::Element(e) => {
-
-            
             // create the local modifiers chain.
             // for attribute in &e.attributes {
             //     match attribute {
-            //         Attribute::Class(s) => 
+            //         Attribute::Class(s) =>
             //     }
             //     println!("a: {:?}", attribute);
             // }
@@ -102,10 +113,7 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
             match e.ident.as_str() {
                 // TODO page should just be another element type or function.
                 "page" => {
-
-                    let path: Value = state.resolve(
-                        &e.get_required_attribute("path")?
-                    )?;
+                    let path: Value = state.resolve(&e.get_required_attribute("path")?)?;
 
                     // let path: String =
                     //     Value::from_variable(&path, &state.local_variables)?.to_string();
@@ -117,9 +125,7 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
                     if let Some(stylesheet) = e.get_optional_attribute("stylesheet") {
                         // let stylesheet: String =
                         //     Value::from_variable(&stylesheet, &state.local_variables)?.to_string();
-                        let stylesheet = state.resolve(
-                            &e.get_required_attribute("stylesheet")?
-                        )?;
+                        let stylesheet = state.resolve(&e.get_required_attribute("stylesheet")?)?;
 
                         node.append(Node::new(HTMLNode::new_stylesheet_element(stylesheet)));
                     }
@@ -136,9 +142,7 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
                 }
 
                 "embed" => {
-                    let path: Value = state.resolve(
-                        &e.get_required_attribute("path")?
-                    )?;
+                    let path: Value = state.resolve(&e.get_required_attribute("path")?)?;
 
                     // let svgfile = crate::filesystem::read_file(std::path::PathBuf::from(path))?;
                     // let node = Node::new(HTMLNode::Text(svgfile));
@@ -169,7 +173,7 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
                                     _ => {
                                         panic!("attempted to call modifier with {:?}", attr);
                                         // unimplemented!();
-                                    },
+                                    }
                                 };
                             }
                             Attribute::Decorator(_) => panic!("decorators deprecated"),
@@ -213,15 +217,16 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
                     state.pages = new_state.pages;
                 }
             } else {
-                return Err(AstryxError::new(format!("iterable was not a document array: {}", f.iterable)));
+                return Err(AstryxError::new(format!(
+                    "iterable was not a document array: {}",
+                    f.iterable
+                )));
             }
         }
         Token::Text(t) => {
             if let Some(parent) = parent {
                 // let buffer = crate::interpolator::interpolate(t, &state.local_variables)?;
-                parent.append(Node::new(HTMLNode::Text(
-                    state.interpolate_string(t)?
-                )));
+                parent.append(Node::new(HTMLNode::Text(state.interpolate_string(t)?)));
             }
         }
         Token::CodeBlock(_) => {}

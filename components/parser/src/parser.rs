@@ -1,10 +1,5 @@
-// lexer
-// tokenises an astryx program
-
-// use crate::{
-//     error::{AstryxError, AstryxErrorKind, AstryxResult},
-//     variable::Variable,
-// };
+// Parser
+// Tokenises an astryx program into an AST
 
 use nom::*;
 use nom::{
@@ -97,7 +92,7 @@ fn node(i: &str) -> IResult<&str, Token> {
 
     alt((
         map(for_loop, |f| Token::ForLoop(f)),
-        map(piped_string, |s| Token::Text(vec![StringToken::Text(String::from(s))])),
+        map(piped_string, |string_tokens| Token::Text(string_tokens)),
         map(codeblock, |cb| Token::CodeBlock(cb)),
         map(element, |e| Token::Element(e)),
     ))(r)
@@ -247,12 +242,42 @@ fn quoted_string(i: &str) -> IResult<&str, &str> {
     trim(delimited(char('\"'), is_not("\""), char('\"')))(i)
 }
 
-fn piped_string(i: &str) -> IResult<&str, &str> {
+fn piped_string(i: &str) -> IResult<&str, Vec<StringToken>> {
     let (r, (_, _, value, _)) =
-        nom::sequence::tuple((multispace0, tag("| "), is_not("\n"), blank_lines))(i)?;
+        nom::sequence::tuple((multispace0, tag("| "), tokenised_string, blank_lines))(i)?;
 
     return Ok((r, value));
 }
+
+
+
+
+fn tokenised_string(i: &str) -> IResult<&str, Vec<StringToken>> {
+    nom::multi::many1(alt((
+        interpolated_variable,
+        map(raw_text, |s| StringToken::Text(s.into()))
+    )))(i)
+}
+
+fn raw_text(i: &str) -> IResult<&str, &str> {
+    take_until("$")(i)
+}
+
+fn interpolated_variable(i: &str) -> IResult<&str, StringToken> {
+    let (r, (_, _, _, var, _, _)) = nom::sequence::tuple((
+        multispace0,
+        tag("${"),
+        multispace0,
+        variable,
+        multispace0,
+        char('}'),
+    ))(i)?;
+
+    Ok((r, StringToken::Variable(var)))
+}
+
+
+
 
 fn relative_path(i: &str) -> IResult<&str, &str> {
     let (input, (_, path)) = nom::sequence::tuple((tag("./"), path_chars))(i)?;

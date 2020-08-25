@@ -49,18 +49,25 @@ impl State {
         self.local_variables.insert(ident.to_string(), value.clone());
     }
 
-    pub(crate) fn get<S:ToString>(&self, ident: S) -> Option<&Value> {
+    pub(crate) fn get<S:ToString>(&self, ident: S) -> Option<Value> {
         let segments = ident.to_string();
-        let segments = segments.split(".").collect::<Vec<&str>>();
+        let mut segments = segments.split(".").collect::<Vec<&str>>();
 
         match segments.len() {
-            0 => self.local_variables.get(&ident.to_string()),
+            0 => self.local_variables.get(&ident.to_string()).map(|v| v.clone()),
             1 => None,
             _ => {
-                self.local_variables.get(&segments[0].to_string())
+                let remaining_segments: Vec<String> = segments.drain(1..).map(|s| s.to_string()).collect();
+                // more than one segment, so 'get' the first segment
+                self.local_variables.get(&segments[0].to_string()).and_then({|v|
+                    // segment found, lets dig into it
+                    match v {
+                        Value::Document(doc) => doc.get(&remaining_segments),
+                        _ => None
+                    }
+                })
             },
         }
-        
     }
 
     pub(crate) fn interpolate_string(&self, tokens: &Vec<StringToken>) -> AstryxResult<String> {
@@ -68,8 +75,28 @@ impl State {
             .iter()
             .map(|token| match token {
                 StringToken::Text(s) => Ok(s.clone()),
-                StringToken::Variable(v) => self.resolve(v).map(|v| v.to_string()),
+                StringToken::Variable(v) => {
+                    self.resolve(v).map(|v| format!("{:?}", v)) // FIXME
+                },
             })
             .collect()
     }
 }
+
+// fn resolve_chain(idents: Vec<String>) -> AstryxResult<Value> {
+//     let mut idents = idents;
+//     let ident: String = idents.remove(0); // pop first element
+
+//     match v {
+//         Value::Document(doc) => {
+//             let index = doc.metadata.clone()?;
+//             let index: &str = index[segments[1]].as_str()?;
+//             self.local_variables.get(index)
+//         }, // FIXME: put a get() on docs
+//          // FIXME return error
+//         // Value::String(_) => {}
+//         // Value::Documents(_) => {}
+//         // Value::Array(_) => {} 
+//         _ => unimplemented!()
+//     }
+// }
