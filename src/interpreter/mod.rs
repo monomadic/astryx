@@ -9,6 +9,7 @@ use parser::{parser::Attribute, variable::Variable, Token};
 use rctree::Node;
 use state::State;
 use std::collections::HashMap;
+use std::fmt;
 
 mod state;
 
@@ -29,6 +30,17 @@ pub(crate) enum Value {
     Document(Document),
     Documents(Vec<Document>),
     Array(Vec<Value>),
+}
+
+impl fmt::Display for Value {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Value::Document(doc) => write!(f, "{}", doc.body),
+            Value::String(s) => write!(f, "{}", s),
+            Value::Documents(d) => write!(f, "{:?}", d),
+            Value::Array(a) => write!(f, "{:?}", a),
+        }
+    }
 }
 
 impl From<Value> for String {

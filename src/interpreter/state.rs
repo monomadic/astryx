@@ -76,7 +76,7 @@ impl State {
             .map(|token| match token {
                 StringToken::Text(s) => Ok(s.clone()),
                 StringToken::Variable(v) => {
-                    self.resolve(v).map(|v| format!("{:?}", v)) // FIXME
+                    self.resolve(v).map(|v| format!("{}", v)) // FIXME
                 },
             })
             .collect()
