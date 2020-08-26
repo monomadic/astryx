@@ -2,4 +2,6 @@
 page path="/"
   for post in ./examples/*.md
     div .title
-      | ${ post.title }
+      h1
+        | ${ post.title }
+      | ${ post }

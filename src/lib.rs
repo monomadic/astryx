@@ -29,8 +29,10 @@ mod imports;
 pub fn render_to_string_buffers<S: Into<String>>(file: S) -> AstryxResult<HashMap<String, String>> {
     let tokens = parser::parse(&file.into())?;
     let nodes = interpreter::run(&tokens)?;
-
-    html::render_as_string(&nodes)
+    let mut pages = html::render_as_string(&nodes)?;
+    pages.insert("/tokens".into(), format!("{:#?}", tokens));
+    pages.insert("/nodes".into(), format!("{:#?}", nodes));
+    Ok(pages)
 }
 
 // pub(crate) fn render<W: Write>(node: &Node<HTMLNode>, writer: &mut W) -> AstryxResult<()> {

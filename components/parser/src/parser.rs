@@ -11,6 +11,7 @@ use nom::{
     sequence::{delimited, preceded},
 };
 use crate::{variable::Variable, error::{ParserResult, ParserError}};
+use character::complete::line_ending;
 
 #[derive(Debug, Clone)]
 pub enum Token {
@@ -43,6 +44,7 @@ pub struct Element {
     pub ident: String,
     pub attributes: Vec<Attribute>,
     pub children: Vec<Token>,
+    // pub text: Option<Variable>
 }
 
 impl Element {
@@ -244,7 +246,7 @@ fn quoted_string(i: &str) -> IResult<&str, &str> {
 
 fn piped_string(i: &str) -> IResult<&str, Vec<StringToken>> {
     let (r, (_, _, value, _)) =
-        nom::sequence::tuple((multispace0, tag("| "), tokenised_string, blank_lines))(i)?;
+        nom::sequence::tuple((multispace0, tag("| "), tokenised_string, newline))(i)?;
 
     return Ok((r, value));
 }
@@ -254,16 +256,16 @@ fn piped_string(i: &str) -> IResult<&str, Vec<StringToken>> {
 
 fn tokenised_string(i: &str) -> IResult<&str, Vec<StringToken>> {
     nom::multi::many1(alt((
-        interpolated_variable,
+        map(interpolated_variable, |v| StringToken::Variable(v)),
         map(raw_text, |s| StringToken::Text(s.into()))
     )))(i)
 }
 
 fn raw_text(i: &str) -> IResult<&str, &str> {
-    take_until("$")(i)
+    is_not("\n")(i)
 }
 
-fn interpolated_variable(i: &str) -> IResult<&str, StringToken> {
+fn interpolated_variable(i: &str) -> IResult<&str, Variable> {
     let (r, (_, _, _, var, _, _)) = nom::sequence::tuple((
         multispace0,
         tag("${"),
@@ -273,7 +275,7 @@ fn interpolated_variable(i: &str) -> IResult<&str, StringToken> {
         char('}'),
     ))(i)?;
 
-    Ok((r, StringToken::Variable(var)))
+    Ok((r, var))
 }
 
 

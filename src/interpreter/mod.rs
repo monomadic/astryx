@@ -29,7 +29,7 @@ pub(crate) enum Value {
     String(String),
     Document(Document),
     Documents(Vec<Document>),
-    Array(Vec<Value>),
+    // Array(Vec<Value>),
 }
 
 impl fmt::Display for Value {
@@ -38,7 +38,7 @@ impl fmt::Display for Value {
             Value::Document(doc) => write!(f, "{}", doc.body),
             Value::String(s) => write!(f, "{}", s),
             Value::Documents(d) => write!(f, "{:?}", d),
-            Value::Array(a) => write!(f, "{:?}", a),
+            // Value::Array(a) => write!(f, "{:?}", a),
         }
     }
 }

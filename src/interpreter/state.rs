@@ -36,7 +36,7 @@ impl State {
                 self
                     .get(r)
                     .map(|v| v.clone())
-                    .ok_or(AstryxError::new(format!("no such variable in scope: {}. locals: {:#?}", r, self.local_variables)))?
+                    .ok_or(AstryxError::new(format!("no such variable in scope: {}\n\nlocals: {:#?}", r, self.local_variables)))?
             }
             Variable::RelativePath(p) => Value::Documents(crate::filesystem::read_documents(&p)?),
             _ => {
@@ -54,8 +54,8 @@ impl State {
         let mut segments = segments.split(".").collect::<Vec<&str>>();
 
         match segments.len() {
-            0 => self.local_variables.get(&ident.to_string()).map(|v| v.clone()),
-            1 => None,
+            0 => None,
+            1 => self.local_variables.get(&ident.to_string()).map(|v| v.clone()),
             _ => {
                 let remaining_segments: Vec<String> = segments.drain(1..).map(|s| s.to_string()).collect();
                 // more than one segment, so 'get' the first segment
