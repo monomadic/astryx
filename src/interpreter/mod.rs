@@ -52,45 +52,6 @@ impl From<Value> for String {
     }
 }
 
-// impl ToString for Value {
-//     fn to_string(&self) -> String {
-//         println!("--{:?}", self);
-//         match self {
-//             Value::String(s) => s.into(),
-//             _ => unimplemented!()
-//         }
-//     }
-// }
-
-// impl Value {
-//     fn from_variable(
-//         variable: &Variable,
-//         local_variables: &HashMap<String, Variable>,
-//     ) -> AstryxResult<Value> {
-//         Ok(match variable {
-//             Variable::QuotedString(s) => Value::String(s.clone()),
-//             Variable::RelativePath(_) => {
-//                 // check file exists, load as document
-//                 unimplemented!();
-//             }
-//             Variable::Reference(_) => {
-//                 // resolve from local_variables
-//                 unimplemented!();
-//             }
-//             Variable::TemplateFile(_) => {
-//                 unimplemented!();
-//             } // delete this from original model
-//         })
-//     }
-
-//     fn to_string(&self) -> String {
-//         match self {
-//             Value::String(s) => s.clone(),
-//             _ => panic!("oops"),
-//         }
-//     }
-// }
-
 #[derive(Debug, Clone)]
 pub(crate) struct Document {
     // created_at: Date
