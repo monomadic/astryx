@@ -21,3 +21,9 @@ impl ModifierLibrary {
 
     }
 }
+
+struct Modifier {
+    valid_tags: Vec<String>,
+    // required_args: ?
+    do_update: Fn(&mut HTMLElement) -> AstryxResult<HTMLElement>
+}

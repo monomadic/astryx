@@ -1,5 +1,5 @@
 
-page path="/"
+page path="/" stylesheet="style.css"
   for post in ./examples/*.md
     div .title
       h1
