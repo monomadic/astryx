@@ -142,7 +142,7 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
                                         state.imports.modify_element(&ident, Some(&s), &mut el)?;
                                     }
                                     _ => {
-                                        panic!("attempted to call modifier with {:?}", attr);
+                                        return Err(AstryxError::new(&format!("attempted to call modifier with {:?}", attr)));
                                         // unimplemented!();
                                     }
                                 };

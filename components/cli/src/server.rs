@@ -39,7 +39,7 @@ pub(crate) fn start(file: PathBuf, port: u32) -> AstryxResult<()> {
                 println!("ERROR: {:#?}", e);
 
                 Ok(response.body(
-                    format!("<html style='background-color: black;color: white;'><body><h1>Error :(</h1><pre>{}</pre>\n\n<pre>{:#?}</pre></body></html>", &e.msg, &e.msg)
+                    format!("<html style='background-color: black;color: white;'><body><h1>Error :(</h1><pre>{}</pre></body></html>", &e.msg)
                         .as_bytes()
                         .to_vec(),
                 )?)
