@@ -10,10 +10,12 @@ pub(crate) enum HTMLNode {
     Text(String),
 }
 
+type Attributes = HashMap<String, String>;
+
 #[derive(Debug, Clone)]
 pub(crate) struct HTMLElement {
     pub ident: String,
-    pub(crate) attributes: HashMap<String, String>,
+    pub(crate) attributes: Attributes,
 	pub classes: Vec<String>,
 	pub styles: Vec<String>, // should be type safe
 }
@@ -24,7 +26,7 @@ impl HTMLElement {
 		if HTML_TAGS.contains(&&(*ident.to_string())) {
 			Ok(HTMLElement {
 				ident: ident.to_string(),
-				attributes: HashMap::new(),
+				attributes: Attributes::new(),
 				classes: Vec::new(),
 				styles: Vec::new(),
 			})
@@ -58,7 +60,7 @@ impl HTMLNode {
     pub(crate) fn new_element(ident: &str) -> Self {
         HTMLNode::Element(HTMLElement {
             ident: ident.into(),
-            attributes: HashMap::new(),
+            attributes: Attributes::new(),
 			classes: Vec::new(),
 			styles: Vec::new(),
         })

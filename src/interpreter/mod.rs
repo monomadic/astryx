@@ -1,8 +1,6 @@
-/*
-POSTPROCESSOR
-- converts a graph of Nodes from a source tree into a set of rendered HTML pages
-- resolves variables and scope
-*/
+/// interpreter
+/// - converts a graph of Nodes from a source tree into a set of rendered HTML pages
+/// - resolves variables and scope
 
 use crate::{error::*, html::HTMLNode};
 use parser::{parser::Attribute, variable::Variable, Token};
@@ -96,9 +94,7 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
                     node.append(Node::new(HTMLNode::new_element("title")));
 
                     if let Some(stylesheet) = e.get_optional_attribute("stylesheet") {
-                        // let stylesheet: String =
-                        //     Value::from_variable(&stylesheet, &state.local_variables)?.to_string();
-                        let stylesheet = state.resolve(&e.get_required_attribute("stylesheet")?)?;
+                        let stylesheet = state.resolve(&stylesheet)?;
 
                         node.append(Node::new(HTMLNode::new_stylesheet_element(stylesheet)));
                     }
@@ -114,18 +110,18 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
                     state.pages.insert(path.into(), node.clone().root());
                 }
 
-                "embed" => {
-                    let path: Value = state.resolve(&e.get_required_attribute("path")?)?;
+                // "embed" => {
+                //     let path: Value = state.resolve(&e.get_required_attribute("path")?)?;
 
-                    // let svgfile = crate::filesystem::read_file(std::path::PathBuf::from(path))?;
-                    // let node = Node::new(HTMLNode::Text(svgfile));
+                //     // let svgfile = crate::filesystem::read_file(std::path::PathBuf::from(path))?;
+                //     // let node = Node::new(HTMLNode::Text(svgfile));
 
-                    // if let Some(parent) = parent {
-                    //     parent.append(node);
-                    // } else {
-                    //     return Err(AstryxError::new("tag found without page to assign to"));
-                    // }
-                }
+                //     // if let Some(parent) = parent {
+                //     //     parent.append(node);
+                //     // } else {
+                //     //     return Err(AstryxError::new("tag found without page to assign to"));
+                //     // }
+                // }
 
                 // "exec" => {}
 
