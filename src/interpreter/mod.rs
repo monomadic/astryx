@@ -133,7 +133,9 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
                     for attr in &e.attributes.clone() {
                         // note this is temporary until we fix the parser with new syntax
                         match attr {
+                            // class attribute eg .blah
                             Attribute::Class(class) => el.add_class(class),
+                            // symbol eg. centered align.center
                             Attribute::Symbol(modifier) => {
                                 state.imports.modify_element(&modifier, None, &mut el)?;
                             }
@@ -163,7 +165,7 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
                         parent.append(node.unwrap());
                     } else {
                         // tag was found that isn't actually in any structure
-                        return Err(AstryxError::new("tag found without page to assign to"));
+                        return Err(AstryxError::new(format!("tag found without page to assign to: {}", e.ident)));
                     }
                 }
             }
@@ -171,13 +173,17 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
         Token::ForLoop(f) => {
             // if the forloop iterator is a series of valid documents,
             if let Value::Documents(documents) = state.resolve(&f.iterable)? {
+
+                if documents.len() == 0 {
+                    return Err(AstryxError{
+                        kind: AstryxErrorKind::FilesNotFound(format!("{:?}", f.iterable)),
+                        msg: format!("Could not find any files at {:?}", f.iterable),
+                    });
+                }
+
                 for document in documents {
                     // create a new local state to pass down the tree
                     let mut new_state = state.clone();
-
-                    // new_state
-                    //     .local_variables
-                    //     .insert(f.index.clone(), Variable::TemplateFile(document));
 
                     new_state.insert(&f.index, &Value::Document(document));
 

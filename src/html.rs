@@ -261,3 +261,11 @@ const HTML_TAGS: &'static [&'static str] = &[
 	"video",
 	"wbr"
 ];
+
+
+pub(crate) enum HTMLElementType {
+	BlockElement(String),
+	InlineElement(String),
+	Anchor{ href: String }
+}
+

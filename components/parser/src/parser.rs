@@ -10,11 +10,10 @@ use nom::{
     branch::alt,
     bytes::complete::{is_not, tag, take_until},
     character::complete::{alphanumeric1, char, multispace0, newline, one_of, space0, space1},
-    combinator::{map, opt, value},
+    combinator::{map, opt},
     error::*,
-    sequence::{delimited, preceded},
+    sequence::{delimited, preceded, tuple},
 };
-// use character::complete::line_ending;
 
 #[derive(Debug, Clone)]
 pub enum Token {
@@ -24,6 +23,7 @@ pub enum Token {
     Text(Vec<StringToken>),
     CodeBlock(CodeBlock),
 }
+
 #[derive(Debug, Clone)]
 pub enum StringToken {
     Text(String),
@@ -87,10 +87,14 @@ pub fn run(i: &str) -> IResult<&str, Vec<Token>> {
     nom::multi::many0(node)(i)
 }
 
-// // preparse lines terminated in \ to not break
-// fn strip_terminators(i: &str) -> String {
-//   i.replace("\\n", "")
-// }
+#[test]
+fn test_run() {
+    assert!(run("").is_ok());
+    assert!(run("page").is_ok());
+    assert!(run("page\n").is_ok());
+    assert!(run("page\n\tdiv\n").is_ok());
+    assert_eq!(run("page\n\n\n").unwrap().0, "");
+}
 
 fn node(i: &str) -> IResult<&str, Token> {
     // knock out blank lines at start of doc
@@ -105,13 +109,33 @@ fn node(i: &str) -> IResult<&str, Token> {
     ))(r)
 }
 
-fn comment(i: &str) -> IResult<&str, &str> {
-    let (r, (_, c)) = nom::sequence::tuple((
-        char('#'),
-        take_until("\n")
-    ))(i)?;
+#[test]
+fn test_node() {
+    // test newline bounds of each node here (not nodes themselves)
+    assert!(node("").is_err());
+    assert_eq!(node("# comment\nelement\n").unwrap().0, "element\n");
+    assert_eq!(node("for x in ./file\n\tchild\nelement\n").unwrap().0, "element\n");
+}
 
-    Ok((r, c))
+fn comment(i: &str) -> IResult<&str, &str> {
+    trim(delimited(char('#'), is_not("\n"), char('\n')))(i)
+}
+
+#[test]
+fn test_comment() {
+    assert!(comment("").is_err());
+    assert_eq!(comment("# \n"), Ok(("", " ")));
+    assert_eq!(comment("# comment\n"), Ok(("", " comment")));
+    assert_eq!(
+        comment("# embed path=./assets/monomadic.svg\n"),
+        Ok(("", " embed path=./assets/monomadic.svg"))
+    );
+    assert_eq!(comment(" # comment\n"), Ok(("", " comment")));
+    assert_eq!(comment("\t# comment\n"), Ok(("", " comment")));
+    assert_eq!(
+        comment("\t# comment\n\tanother\n"),
+        Ok(("\tanother\n", " comment"))
+    );
 }
 
 fn codeblock(i: &str) -> IResult<&str, CodeBlock> {
@@ -137,6 +161,16 @@ fn codeblock(i: &str) -> IResult<&str, CodeBlock> {
             content: children.join("\n"),
         },
     ))
+}
+
+#[test]
+fn test_codeblock() {
+    assert!(codeblock("").is_err());
+
+    let (r, cb) = codeblock("css:\n\tstyle {}\n").unwrap();
+    assert_eq!(r, "\n");
+    assert_eq!(cb.ident, "css");
+    assert_eq!(cb.content, "\tstyle {}");
 }
 
 fn for_loop(i: &str) -> IResult<&str, ForLoop> {
@@ -289,9 +323,25 @@ fn interpolated_variable(i: &str) -> IResult<&str, Variable> {
     Ok((r, var))
 }
 
+fn path_characters(i: &str) -> IResult<&str, &str> {
+    nom::bytes::complete::is_a("./*-_abcdefghijklmnopqrstuvwxyz1234567890ABCDEF")(i)
+}
+
 /// match relative paths eg: ./test.txt and ../../test.txt
-fn relative_path(i: &str) -> IResult<&str, &str> {
-    value(i, nom::sequence::tuple((path_prefix, path_chars)))(i)
+fn relative_path(i: &str) -> IResult<&str, String> {
+    let (r, (prefix, pathname)) = trim(tuple((path_prefix, path_characters)))(i)?;
+
+    Ok((r, format!("{}{}", prefix, pathname)))
+}
+
+#[test]
+fn test_relative_path() {
+    assert!(relative_path("").is_err());
+    assert_eq!(relative_path("./file.txt"), Ok(("", "./file.txt".into())));
+    assert_eq!(
+        relative_path("./file.txt\nhello"),
+        Ok(("\nhello", "./file.txt".into()))
+    );
 }
 
 // match path prefixes ./ or ../
@@ -336,20 +386,20 @@ where
     preceded(opt(one_of(" \t\n\r")), inner)
 }
 
-/// match valid characters for file paths
-fn path_chars<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
-where
-    T: InputTakeAtPosition,
-    <T as InputTakeAtPosition>::Item: AsChar + Clone,
-{
-    input.split_at_position1_complete(
-        |item| {
-            let c = item.clone().as_char();
-            !(c == '-' || c == '/' || c == '.' || c == '_' || c == '*' || item.is_alphanum())
-        },
-        ErrorKind::AlphaNumeric,
-    )
-}
+// /// match valid characters for file paths
+// fn path_chars<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+// where
+//     T: InputTakeAtPosition,
+//     <T as InputTakeAtPosition>::Item: AsChar + Clone,
+// {
+//     input.split_at_position1_complete(
+//         |item| {
+//             let c = item.clone().as_char();
+//             !(c == '-' || c == '/' || c == '.' || c == '_' || c == '*' || item.is_alphanum())
+//         },
+//         ErrorKind::AlphaNumeric,
+//     )
+// }
 
 /// match blank lines including early terminators (\)
 fn space0_with_early_terminators(i: &str) -> IResult<&str, Vec<&str>> {
@@ -430,7 +480,7 @@ pub(crate) fn check_for_loop() {
     assert_eq!(r, "");
 
     let (r, res) = for_loop("for post in ./posts\n\tnode\n\tanother\n").unwrap();
-    assert_eq!(res.index, String::from("x"));
+    assert_eq!(res.index, String::from("post"));
     // assert_eq!(res.iterable, Variable::RelativePath(String::from("local")));
     assert_eq!(res.children.len(), 2);
     assert_eq!(r, "");
