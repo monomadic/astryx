@@ -1,17 +1,20 @@
 // Parser
 // Tokenises an astryx program into an AST
 
+use crate::{
+    error::{ParserError, ParserResult},
+    variable::Variable,
+};
 use nom::*;
 use nom::{
     branch::alt,
     bytes::complete::{is_not, tag, take_until},
     character::complete::{alphanumeric1, char, multispace0, newline, one_of, space0, space1},
-    combinator::{map, opt},
+    combinator::{map, opt, value},
     error::*,
     sequence::{delimited, preceded},
 };
-use crate::{variable::Variable, error::{ParserResult, ParserError}};
-use character::complete::line_ending;
+// use character::complete::line_ending;
 
 #[derive(Debug, Clone)]
 pub enum Token {
@@ -251,13 +254,10 @@ fn piped_string(i: &str) -> IResult<&str, Vec<StringToken>> {
     return Ok((r, value));
 }
 
-
-
-
 fn tokenised_string(i: &str) -> IResult<&str, Vec<StringToken>> {
     nom::multi::many1(alt((
         map(interpolated_variable, |v| StringToken::Variable(v)),
-        map(raw_text, |s| StringToken::Text(s.into()))
+        map(raw_text, |s| StringToken::Text(s.into())),
     )))(i)
 }
 
@@ -278,13 +278,14 @@ fn interpolated_variable(i: &str) -> IResult<&str, Variable> {
     Ok((r, var))
 }
 
-
-
-
+/// match relative paths eg: ./test.txt and ../../test.txt
 fn relative_path(i: &str) -> IResult<&str, &str> {
-    let (input, (_, path)) = nom::sequence::tuple((tag("./"), path_chars))(i)?;
+    value(i, nom::sequence::tuple((path_prefix, path_chars)))(i)
+}
 
-    return Ok((input, path));
+// match path prefixes ./ or ../
+fn path_prefix(i: &str) -> IResult<&str, &str> {
+    alt((tag("./"), tag("../")))(i)
 }
 
 fn variable(i: &str) -> IResult<&str, Variable> {
