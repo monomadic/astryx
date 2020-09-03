@@ -18,6 +18,7 @@ use nom::{
 
 #[derive(Debug, Clone)]
 pub enum Token {
+    Comment(String),
     ForLoop(ForLoop),
     Element(Element),
     Text(Vec<StringToken>),
@@ -96,11 +97,21 @@ fn node(i: &str) -> IResult<&str, Token> {
     let (r, _) = blank_lines(i)?;
 
     alt((
+        map(comment, |s| Token::Comment(String::from(s))),
         map(for_loop, |f| Token::ForLoop(f)),
         map(piped_string, |string_tokens| Token::Text(string_tokens)),
         map(codeblock, |cb| Token::CodeBlock(cb)),
         map(element, |e| Token::Element(e)),
     ))(r)
+}
+
+fn comment(i: &str) -> IResult<&str, &str> {
+    let (r, (_, c)) = nom::sequence::tuple((
+        char('#'),
+        take_until("\n")
+    ))(i)?;
+
+    Ok((r, c))
 }
 
 fn codeblock(i: &str) -> IResult<&str, CodeBlock> {

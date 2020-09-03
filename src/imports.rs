@@ -34,6 +34,19 @@ impl Imports {
         args: Option<&String>,
         el: &mut HTMLElement,
     ) -> AstryxResult<()> {
+        match &*el.ident { // fix this
+            "a" => {
+                match modifier.into() {
+                    "path" => {
+                        el.attributes.insert("href".into(), args.unwrap().into());
+                        return Ok(());
+                    }
+                    _ => ()
+                }
+            }
+            _ => {}
+        }
+    
         match modifier.into() {
             "layout.vertical" => {
                 el.add_class("layout-vertical");
@@ -70,7 +83,7 @@ impl Imports {
             // )),
             _ => { return Err(AstryxError::new(&format!("cannot find modifier {}", modifier)))},
         }
-
+        
         Ok(())
     }
 }

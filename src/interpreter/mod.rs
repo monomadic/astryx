@@ -72,6 +72,7 @@ impl Document {
 /// recurse each token, resolve variables
 fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -> AstryxResult<()> {
     match token {
+        Token::Comment(_) => {}
         Token::Element(e) => {
             // create the local modifiers chain.
             // for attribute in &e.attributes {
@@ -138,8 +139,8 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
                             }
                             Attribute::NamedAttribute { ident, variable } => {
                                 match variable {
-                                    Variable::QuotedString(s) => {
-                                        state.imports.modify_element(&ident, Some(&s), &mut el)?;
+                                    Variable::QuotedString(s) | Variable::RelativePath(s) => {
+                                        state.imports.modify_element(&ident, Some(s.into()), &mut el)?;
                                     }
                                     _ => {
                                         return Err(AstryxError::new(&format!("attempted to call modifier with {:?}", attr)));
