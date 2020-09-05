@@ -127,8 +127,23 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
                 // "exec" => {}
 
                 _ => {
+                    // TODO this whole process should be
+                    // - resolve references to values
+                    // - pass along entire thing, get back html element blind,
+                    // - I don't want to see the html element implementations
+                    // - should know it is valid on return.
+
+                    // when creating a htmlelement, should have knowledge of its own type and what it supports
+
                     // must be a tag, lets try to resolve it
                     let mut el = state.imports.create_element(&e.ident)?;
+
+                    // let arguments: HashMap<String, Value> = e.attributes
+                    //     .iter()
+                    //     .flat_map(|a| {
+                    //         Err(AstryxError::new(&format!("attempted to call modifier with {:?}", a)))
+                    //     })
+                    //     .collect();
 
                     for attr in &e.attributes.clone() {
                         // note this is temporary until we fix the parser with new syntax
@@ -146,7 +161,6 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
                                     }
                                     _ => {
                                         return Err(AstryxError::new(&format!("attempted to call modifier with {:?}", attr)));
-                                        // unimplemented!();
                                     }
                                 };
                             }

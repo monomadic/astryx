@@ -9,3 +9,16 @@ major tasks
 tinysearch
 https://endler.dev/2019/tinysearch/
 https://github.com/tinysearch/tinysearch
+
+
+
+
+TODO
+
+- elements and functions should be different.
+
+page(route: "/", method: .GET)
+
+vs
+
+div .title background.color(red) width(600px)

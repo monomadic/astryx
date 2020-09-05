@@ -19,7 +19,7 @@ enum Command {
     Serve {
         /// Input file
         #[structopt(parse(from_os_str))]
-        file: PathBuf,
+        file: Option<PathBuf>,
         port: Option<u32>,
     },
     /// build the project
@@ -44,7 +44,7 @@ fn run() -> AstryxResult<()> {
 
     match opt.command {
         Command::Serve{ file, port } => {
-            server::start(file, port.unwrap_or(8888))
+            server::start(file.unwrap_or(PathBuf::from("site.astryx")), port.unwrap_or(8888))
         },
         Command::Build{ .. } => Ok(()),
         Command::New => new_project(),
