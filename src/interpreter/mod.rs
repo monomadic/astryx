@@ -1,7 +1,6 @@
 /// interpreter
 /// - converts a graph of Nodes from a source tree into a set of rendered HTML pages
 /// - resolves variables and scope
-
 use crate::{error::*, html::HTMLNode};
 use parser::{parser::Attribute, variable::Variable, Token};
 use rctree::Node;
@@ -58,14 +57,16 @@ pub(crate) struct Document {
 }
 
 impl Document {
-    pub(crate) fn get(&self, idents: &Vec<String>) -> Option<Value> {
-        // FIXME this awful awful awful rusty sin
-        Some(Value::String(
-            self.metadata.clone().expect("index fixme")[idents[0].as_str()]
-                .as_str()
-                .expect("oops")
-                .to_string(),
-        ))
+    pub(crate) fn get(&self, ident: &str) -> Option<String> {
+        if ident == "body" {
+            return Some(self.body.clone());
+        }
+
+        self.metadata
+            .clone()
+            .map(move |metadata| metadata[ident].clone())
+            .and_then(|s| s.as_str().map(|s| s.to_string()))
+            .map(|s| s.to_string())
     }
 }
 
@@ -125,7 +126,6 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
                 // }
 
                 // "exec" => {}
-
                 _ => {
                     // TODO this whole process should be
                     // - resolve references to values
@@ -157,10 +157,17 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
                             Attribute::NamedAttribute { ident, variable } => {
                                 match variable {
                                     Variable::QuotedString(s) | Variable::RelativePath(s) => {
-                                        state.imports.modify_element(&ident, Some(s.into()), &mut el)?;
+                                        state.imports.modify_element(
+                                            &ident,
+                                            Some(s.into()),
+                                            &mut el,
+                                        )?;
                                     }
                                     _ => {
-                                        return Err(AstryxError::new(&format!("attempted to call modifier with {:?}", attr)));
+                                        return Err(AstryxError::new(&format!(
+                                            "attempted to call modifier with {:?}",
+                                            attr
+                                        )));
                                     }
                                 };
                             }
@@ -179,7 +186,10 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
                         parent.append(node.unwrap());
                     } else {
                         // tag was found that isn't actually in any structure
-                        return Err(AstryxError::new(format!("tag found without page to assign to: {}", e.ident)));
+                        return Err(AstryxError::new(format!(
+                            "tag found without page to assign to: {}",
+                            e.ident
+                        )));
                     }
                 }
             }
@@ -187,9 +197,8 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
         Token::ForLoop(f) => {
             // if the forloop iterator is a series of valid documents,
             if let Value::Documents(documents) = state.resolve(&f.iterable)? {
-
                 if documents.len() == 0 {
-                    return Err(AstryxError{
+                    return Err(AstryxError {
                         kind: AstryxErrorKind::FilesNotFound(format!("{:?}", f.iterable)),
                         msg: format!("Could not find any files at {:?}", f.iterable),
                     });
@@ -200,6 +209,8 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
                     let mut new_state = state.clone();
 
                     new_state.insert(&f.index, &Value::Document(document));
+
+                    println!("INDEX {:?}", f.index);
 
                     for token in &f.children {
                         _run(token, &mut new_state, parent)?;

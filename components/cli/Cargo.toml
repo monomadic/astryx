@@ -12,3 +12,4 @@ path = "src/main.rs"
 simple-server = "0.4.0"
 structopt = "0.3"
 astryx = { path = "../.." }
+parser = { path = "../parser" }

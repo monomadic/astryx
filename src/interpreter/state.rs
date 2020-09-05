@@ -33,40 +33,57 @@ impl State {
         Ok(match variable {
             Variable::QuotedString(s) => Value::String(s.clone()),
             Variable::Reference(r) => {
-                self
-                    .get(r)
-                    .map(|v| v.clone())
-                    .ok_or(AstryxError::new(format!("no such variable in scope: {}\n\nlocals: {:#?}", r, self.local_variables)))?
+                self.get(r).ok_or(AstryxError::new(format!(
+                    "no such variable in scope: {}\n\nlocals: {:#?}",
+                    r, self.local_variables
+                )))?
+                // .map(|v| v.clone())
+                // .unwrap_or(Value::String(String::from("f")))
             }
             Variable::RelativePath(p) => Value::Documents(crate::filesystem::read_documents(&p)?),
             _ => {
-                return Err(AstryxError::new(&format!("cannot to_string: {:?}", variable)));
+                return Err(AstryxError::new(&format!(
+                    "cannot to_string: {:?}",
+                    variable
+                )));
             }
         })
     }
 
-    pub(crate) fn insert<S:ToString>(&mut self, ident: S, value: &Value) {
-        self.local_variables.insert(ident.to_string(), value.clone());
+    pub(crate) fn insert<S: ToString>(&mut self, ident: S, value: &Value) {
+        self.local_variables
+            .insert(ident.to_string(), value.clone());
     }
 
-    pub(crate) fn get<S:ToString>(&self, ident: S) -> Option<Value> {
+    pub(crate) fn get<S: ToString>(&self, ident: S) -> Option<Value> {
         let segments = ident.to_string();
         let mut segments = segments.split(".").collect::<Vec<&str>>();
 
+        // println!("matching {} {:?} {:?}", ident.to_string(), self.local_variables, self.local_variables.get(&segments[0].to_string()));
+
         match segments.len() {
             0 => None,
-            1 => self.local_variables.get(&ident.to_string()).map(|v| v.clone()),
+            1 => self
+                .local_variables
+                .get(&ident.to_string())
+                .map(|v| v.clone()),
             _ => {
-                let remaining_segments: Vec<String> = segments.drain(1..).map(|s| s.to_string()).collect();
+                let remaining_segments: Vec<String> =
+                    segments.drain(1..).map(|s| s.to_string()).collect();
                 // more than one segment, so 'get' the first segment
-                self.local_variables.get(&segments[0].to_string()).and_then({|v|
+                self.local_variables
+                    .get(&segments[0].to_string())
+                    .and_then({
+                        |v|
                     // segment found, lets dig into it
                     match v {
-                        Value::Document(doc) => doc.get(&remaining_segments),
+                        Value::Document(doc) => doc
+                            .get(&remaining_segments.join(".")) // FIXME shouldn't join here, perhaps deal with multiple segments
+                            .map(|s| Value::String(s)),
                         _ => None
                     }
-                })
-            },
+                    })
+            }
         }
     }
 
@@ -77,7 +94,7 @@ impl State {
                 StringToken::Text(s) => Ok(s.clone()),
                 StringToken::Variable(v) => {
                     self.resolve(v).map(|v| format!("{}", v)) // FIXME
-                },
+                }
             })
             .collect()
     }
@@ -96,7 +113,7 @@ impl State {
 //          // FIXME return error
 //         // Value::String(_) => {}
 //         // Value::Documents(_) => {}
-//         // Value::Array(_) => {} 
+//         // Value::Array(_) => {}
 //         _ => unimplemented!()
 //     }
 // }

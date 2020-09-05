@@ -204,6 +204,35 @@ fn for_loop(i: &str) -> IResult<&str, ForLoop> {
     ))
 }
 
+
+#[test]
+pub(crate) fn test_for_loop() {
+    let (r, res) = for_loop("for x in ./local\n").unwrap();
+    assert_eq!(res.index, String::from("x"));
+    // assert_eq!(res.iterable, Variable::RelativePath(String::from("local")));
+    assert_eq!(res.children.len(), 0);
+    assert_eq!(r, "");
+
+    let (r, res) = for_loop("for post in ./posts\n\tnode\n\tanother\n").unwrap();
+    assert_eq!(res.index, String::from("post"));
+    // assert_eq!(res.iterable, Variable::RelativePath(String::from("local")));
+    assert_eq!(res.children.len(), 2);
+    assert_eq!(r, "");
+
+    let (r, res) = for_loop("for post in ./posts\n\tlink href=post\n").unwrap();
+    assert_eq!(res.index, String::from("post"));
+    // assert_eq!(res.iterable, Variable::RelativePath(String::from("local")));
+    assert_eq!(res.children.len(), 1);
+    assert_eq!(r, "");
+
+    let (r, res) = for_loop("for page in ./posts/*.md\n\tdiv .post .page-link .padding-sm\n\tlink href=post\n").unwrap();
+    assert_eq!(res.index, String::from("page"));
+    assert_eq!(res.iterable.to_string(), "./posts/*.md");
+    assert_eq!(res.children.len(), 2);
+    assert_eq!(r, "");
+}
+
+
 fn element(i: &str) -> IResult<&str, Element> {
     let (mut r, (pre, ident, _, attributes, _, _)) = nom::sequence::tuple((
         multispace0,
@@ -297,6 +326,12 @@ fn piped_string(i: &str) -> IResult<&str, Vec<StringToken>> {
         nom::sequence::tuple((multispace0, tag("| "), tokenised_string, newline))(i)?;
 
     return Ok((r, value));
+}
+
+#[test]
+fn test_piped_string() {
+    assert!(piped_string("| stringy\n").is_ok());
+    assert_eq!(piped_string("\t| stringy\n\n\tfor post in ./posts/*.md\n").unwrap().0, "\n\tfor post in ./posts/*.md\n");
 }
 
 fn tokenised_string(i: &str) -> IResult<&str, Vec<StringToken>> {
@@ -468,26 +503,5 @@ fn check_element() {
     // assert_eq!(res.iterable, Variable::RelativePath(String::from("local")));
     assert_eq!(res.attributes.len(), 2);
     assert_eq!(res.children.len(), 0);
-    assert_eq!(r, "");
-}
-
-#[test]
-pub(crate) fn check_for_loop() {
-    let (r, res) = for_loop("for x in ./local\n").unwrap();
-    assert_eq!(res.index, String::from("x"));
-    // assert_eq!(res.iterable, Variable::RelativePath(String::from("local")));
-    assert_eq!(res.children.len(), 0);
-    assert_eq!(r, "");
-
-    let (r, res) = for_loop("for post in ./posts\n\tnode\n\tanother\n").unwrap();
-    assert_eq!(res.index, String::from("post"));
-    // assert_eq!(res.iterable, Variable::RelativePath(String::from("local")));
-    assert_eq!(res.children.len(), 2);
-    assert_eq!(r, "");
-
-    let (r, res) = for_loop("for post in ./posts\n\tlink href=post\n").unwrap();
-    assert_eq!(res.index, String::from("post"));
-    // assert_eq!(res.iterable, Variable::RelativePath(String::from("local")));
-    assert_eq!(res.children.len(), 1);
     assert_eq!(r, "");
 }
