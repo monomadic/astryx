@@ -17,7 +17,7 @@ pub(crate) fn start(file: PathBuf, port: u32) -> AstryxResult<()> {
 
             match ast {
                 Ok(page) => Ok(response.body(page.as_bytes().to_vec())?),
-                Err(e) => Ok(response.body("page".as_bytes().to_vec())?),
+                Err(e) => Ok(response.body(format!("Error: {:?}", e).as_bytes().to_vec())?),
             }
         } else {
             let pages = crate::filesystem::read_file(&file)
