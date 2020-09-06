@@ -88,8 +88,13 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
                 "page" => {
                     let path: Value = state.resolve(&e.get_required_attribute("path")?)?;
 
-                    // let path: String =
-                    //     Value::from_variable(&path, &state.local_variables)?.to_string();
+                    // todo: fix this, create map of values
+                    // let arguments: HashMap<String, Value> = e.attributes
+                    //     .iter()
+                    //     .flat_map(|a| {
+                    //         Ok(("aaa", state.resolve(a)))
+                    //     })
+                    //     .collect();
 
                     // make a fresh node tree
                     let mut node = Node::new(HTMLNode::new_element("html"));
@@ -233,6 +238,9 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
             }
         }
         Token::CodeBlock(_) => {}
+        Token::FunctionCall(f) => {
+            println!("function called: {:?}", f);
+        }
     }
 
     Ok(())

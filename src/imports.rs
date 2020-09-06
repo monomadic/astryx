@@ -1,7 +1,7 @@
 // collection of imported functions into state
 
 use crate::{
-    error::{AstryxError, AstryxResult},
+    error::AstryxResult,
     html::HTMLElement,
 };
 

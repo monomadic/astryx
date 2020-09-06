@@ -1,0 +1,48 @@
+# https://eeyo.io/iro/
+# cheatsheet https://www.debuggex.com/
+
+name                   = astryx
+file_extensions []     = astryx;
+
+contexts[] {
+   main : context {
+      : pattern {
+         regex \= (^\s+for\s[a-zA-Z0-9]+\sin\b)
+         styles [] = .forloopfor;
+      }
+      
+      : pattern {
+         regex \= (^\s*[a-zA-Z-]+[_a-zA-Z0-9-]*\((.*)\))
+         styles [] = .function;
+      }
+      
+      : pattern {
+         regex \= (^\s+for\s[a-zA-Z0-9]+)
+         styles [] = .forloopvar;
+      }
+      
+      : pattern {
+         regex \= (^\s+[a-zA-Z0-9]+)
+         styles [] = .element;
+      }
+      
+      : pattern {
+         regex \= (\s\.-?[_a-zA-Z]+[_a-zA-Z0-9-]*\b)
+         styles [] = .class;
+      }
+      
+      : pattern {
+         regex \= (\s\.-?[_a-zA-Z\*\/\.]+[_a-zA-Z0-9-\*\/\.]*\b)
+         styles [] = .relativepath;
+      }
+   }
+}
+
+styles [] {
+   .class : style color = "purple";
+   .relativepath : style color = "orange";
+   .function : style color = "red";
+   .element : style color = "green";
+   .forloopfor : style color = "blue";
+   .forloopvar : style color = "orange";
+}

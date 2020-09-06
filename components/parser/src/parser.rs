@@ -17,11 +17,18 @@ use nom::{
 
 #[derive(Debug, Clone)]
 pub enum Token {
-    Comment(String),
-    ForLoop(ForLoop),
-    Element(Element),
-    Text(Vec<StringToken>),
     CodeBlock(CodeBlock),
+    Comment(String),
+    Element(Element),
+    ForLoop(ForLoop),
+    FunctionCall(FunctionCall),
+    Text(Vec<StringToken>),
+}
+
+#[derive(Debug, Clone)]
+pub struct FunctionCall {
+    pub ident: String,
+    pub arguments: Vec<(String, Variable)>,
 }
 
 #[derive(Debug, Clone)]
@@ -103,6 +110,7 @@ fn node(i: &str) -> IResult<&str, Token> {
     alt((
         map(comment, |s| Token::Comment(String::from(s))),
         map(for_loop, |f| Token::ForLoop(f)),
+        map(function_call, |f| Token::FunctionCall(f)),
         map(piped_string, |string_tokens| Token::Text(string_tokens)),
         map(codeblock, |cb| Token::CodeBlock(cb)),
         map(element, |e| Token::Element(e)),
@@ -202,6 +210,87 @@ fn for_loop(i: &str) -> IResult<&str, ForLoop> {
             children,
         },
     ))
+}
+
+fn function_call(i: &str) -> IResult<&str, FunctionCall> {
+    let (mut r, (pre, ident, _, _, arguments, _, _, _)) = nom::sequence::tuple((
+        multispace0,
+        symbolic1,
+        space0,
+        char('('),
+        nom::multi::many0(function_argument),
+        char(')'),
+        newline,
+        blank_lines,
+    ))(i)?;
+
+    let mut children = Vec::new();
+
+    while line_indent(r) > line_indent(pre) {
+        let (rem, child) = node(r)?;
+        children.push(child);
+        r = rem;
+    }
+
+    Ok((
+        r,
+        FunctionCall {
+            ident: ident.into(),
+            arguments: arguments,
+        },
+    ))
+}
+
+#[test]
+fn test_function_call() {
+    assert!(function_call("").is_err());
+
+    let (r, f) = function_call("print()\n").unwrap();
+    assert_eq!(r, "");
+    assert_eq!(f.ident, "print");
+    assert_eq!(f.arguments.len(), 0);
+
+    let (r, f) = function_call(r#"hello(world: "hi")\n"#).unwrap();
+    assert_eq!(r, "");
+    assert_eq!(f.ident, "page");
+    assert_eq!(f.arguments.len(), 0);
+
+    let (r, f) = function_call(r#"page(path: "/", title: "monomadic", stylesheet: "style.css")\n"#).unwrap();
+    assert_eq!(r, "");
+    assert_eq!(f.ident, "page");
+    assert_eq!(f.arguments.len(), 0);
+}
+
+fn function_argument(i: &str) -> IResult<&str, (String, Variable)> {
+    let (r, (_, ident, _, _, _, variable, _)) = nom::sequence::tuple((
+        space0,
+        symbolic1,
+        space0,
+        char(':'),
+        space0,
+        variable,
+        opt(char(','))
+    ))(i)?;
+
+    Ok((
+        r,
+        (ident.into(), variable),
+    ))
+}
+
+#[test]
+fn test_function_argument() {
+    assert!(function_argument("").is_err());
+
+    let (r, (ident, variable)) = function_argument(r#"path: "/""#).unwrap();
+    assert_eq!(r, "");
+    assert_eq!(ident, "path");
+    assert_eq!(variable.to_string(), "/".to_string());
+
+    let (r, (ident, variable)) = function_argument(r#"method: "GET","#).unwrap();
+    assert_eq!(r, "");
+    assert_eq!(ident, "method");
+    assert_eq!(variable.to_string(), "GET".to_string());
 }
 
 
@@ -319,6 +408,11 @@ fn attribute_assignment(i: &str) -> IResult<&str, Attribute> {
 
 fn quoted_string(i: &str) -> IResult<&str, &str> {
     trim(delimited(char('\"'), is_not("\""), char('\"')))(i)
+}
+
+#[test]
+fn test_quoted_string() {
+    assert_eq!(quoted_string("\"hi\""), Ok(("", "hi")));
 }
 
 fn piped_string(i: &str) -> IResult<&str, Vec<StringToken>> {
