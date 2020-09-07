@@ -56,15 +56,23 @@ impl HTMLElement {
 	}
 }
 
+pub(crate) fn new_node_with_text<S:Into<String>>(ident: S, content: S) -> AstryxResult<Node<HTMLNode>> {
+	let tag = HTMLNode::new_element(ident.into().as_str());
+	let mut node = Node::new(tag);
+	node.append(Node::new(HTMLNode::Text(content.into())));
+
+	Ok(node)
+}
+
 impl HTMLNode {
-    pub(crate) fn new_element(ident: &str) -> Self {
+    pub(crate) fn new_element(ident: &str) -> Self { // todo: check result, don't let this get out
         HTMLNode::Element(HTMLElement {
             ident: ident.into(),
             attributes: Attributes::new(),
 			classes: Vec::new(),
 			styles: Vec::new(),
         })
-    }
+	}
 
     pub(crate) fn new_stylesheet_element<S: Into<String>>(path: S) -> Self {
         let mut attributes = HashMap::new();

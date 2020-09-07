@@ -1,8 +1,8 @@
 /// interpreter
 /// - converts a graph of Nodes from a source tree into a set of rendered HTML pages
 /// - resolves variables and scope
-use crate::{error::*, html::HTMLNode};
-use parser::{parser::Attribute, variable::Variable, Token};
+use crate::{error::*, html::{new_node_with_text, HTMLNode}};
+use parser::{parser::Attribute, Token};
 use rctree::Node;
 use state::State;
 use std::collections::HashMap;
@@ -24,8 +24,6 @@ pub(crate) fn run(tokens: &Vec<Token>) -> AstryxResult<HashMap<String, Node<HTML
 
     Ok(state.pages.clone())
 }
-
-
 
 #[derive(Debug, Clone)]
 pub(crate) struct Document {
@@ -172,15 +170,19 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
                     // )?;
 
                     let route = arguments.get_required_string("route")?;
-                    let title = arguments.get_string("title");
                     let stylesheet = arguments.get_string("stylesheet");
 
                     // make a fresh node tree
                     let mut node = Node::new(HTMLNode::new_element("html"));
-                    node.append(Node::new(HTMLNode::new_element("title")));
 
+                    // <title>
+                    if let Some(title) = arguments.get_string("title") {
+                        node.append(new_node_with_text("title", &title)?);
+                    }
+
+                    // <link rel="stylesheet">
                     if let Some(stylesheet) = stylesheet {
-                        node.append(Node::new(HTMLNode::new_stylesheet_element(stylesheet)));
+                        node.append(Node::new(HTMLNode::new_stylesheet_element(format!("/{}", stylesheet))));
                     }
 
                     let mut body = Some(Node::new(HTMLNode::new_element("body")));
