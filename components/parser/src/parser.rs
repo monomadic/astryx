@@ -29,6 +29,7 @@ pub enum Token {
 pub struct FunctionCall {
     pub ident: String,
     pub arguments: Vec<(String, Variable)>,
+    pub children: Vec<Token>,
 }
 
 #[derive(Debug, Clone)]
@@ -235,8 +236,9 @@ fn function_call(i: &str) -> IResult<&str, FunctionCall> {
     Ok((
         r,
         FunctionCall {
-            ident: ident.into(),
-            arguments: arguments,
+            ident: String::from(ident),
+            arguments,
+            children
         },
     ))
 }

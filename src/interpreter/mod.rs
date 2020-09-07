@@ -7,8 +7,11 @@ use rctree::Node;
 use state::State;
 use std::collections::HashMap;
 use std::fmt;
+use arguments::{TypeGetters, NamedArguments};
 
 mod state;
+mod arguments;
+mod functions;
 
 /// run the interpreter on an AST tree and return a HTMLNode tree for each page
 pub(crate) fn run(tokens: &Vec<Token>) -> AstryxResult<HashMap<String, Node<HTMLNode>>> {
@@ -239,7 +242,43 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
         }
         Token::CodeBlock(_) => {}
         Token::FunctionCall(f) => {
-            println!("function called: {:?}", f);
+
+            // resolve any variables in function arguments
+            let arguments: NamedArguments = f.arguments
+                .iter()
+                .flat_map(|(ident, v)| {
+                    state
+                        .resolve(v)
+                        .map(|v| (ident.clone(), v.clone()))
+                })
+                .collect();
+
+            match f.ident.as_str() {
+                "page" => functions::page(
+                    arguments.get_required_string("route")?, 
+                    arguments.get_string("title")),
+                _ => unimplemented!()
+            }
+
+            // make a fresh node tree
+            let mut node = Node::new(HTMLNode::new_element("html"));
+            node.append(Node::new(HTMLNode::new_element("title")));
+
+            // if let Some(stylesheet) = e.get_optional_attribute("stylesheet") {
+            //     let stylesheet = state.resolve(&stylesheet)?;
+
+            //     node.append(Node::new(HTMLNode::new_stylesheet_element(stylesheet)));
+            // }
+
+            let mut body = Some(Node::new(HTMLNode::new_element("body")));
+
+            for token in &f.children {
+                _run(token, state, &mut body)?;
+            }
+
+            node.append(body.unwrap()); // unwrap is ok cause I just made it Some... rethink this though
+
+            state.pages.insert(arguments.get_required_string("route")?, node.clone().root());
         }
     }
 
