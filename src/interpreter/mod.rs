@@ -6,12 +6,13 @@ use parser::{parser::Attribute, variable::Variable, Token};
 use rctree::Node;
 use state::State;
 use std::collections::HashMap;
-use std::fmt;
 use arguments::{TypeGetters, NamedArguments};
+use value::Value;
 
 mod state;
 mod arguments;
 mod functions;
+mod value;
 
 /// run the interpreter on an AST tree and return a HTMLNode tree for each page
 pub(crate) fn run(tokens: &Vec<Token>) -> AstryxResult<HashMap<String, Node<HTMLNode>>> {
@@ -24,33 +25,7 @@ pub(crate) fn run(tokens: &Vec<Token>) -> AstryxResult<HashMap<String, Node<HTML
     Ok(state.pages.clone())
 }
 
-#[derive(Debug, Clone)]
-pub(crate) enum Value {
-    String(String),
-    Document(Document),
-    Documents(Vec<Document>),
-    // Array(Vec<Value>),
-}
 
-impl fmt::Display for Value {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Value::Document(doc) => write!(f, "{}", doc.body),
-            Value::String(s) => write!(f, "{}", s),
-            Value::Documents(d) => write!(f, "{:?}", d),
-            // Value::Array(a) => write!(f, "{:?}", a),
-        }
-    }
-}
-
-impl From<Value> for String {
-    fn from(value: Value) -> Self {
-        match value {
-            Value::String(s) => s,
-            _ => unimplemented!(),
-        }
-    }
-}
 
 #[derive(Debug, Clone)]
 pub(crate) struct Document {
@@ -78,62 +53,7 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
     match token {
         Token::Comment(_) => {}
         Token::Element(e) => {
-            // create the local modifiers chain.
-            // for attribute in &e.attributes {
-            //     match attribute {
-            //         Attribute::Class(s) =>
-            //     }
-            //     println!("a: {:?}", attribute);
-            // }
-
             match e.ident.as_str() {
-                // TODO page should just be another element type or function.
-                "page" => {
-                    let path: Value = state.resolve(&e.get_required_attribute("path")?)?;
-
-                    // todo: fix this, create map of values
-                    // let arguments: HashMap<String, Value> = e.attributes
-                    //     .iter()
-                    //     .flat_map(|a| {
-                    //         Ok(("aaa", state.resolve(a)))
-                    //     })
-                    //     .collect();
-
-                    // make a fresh node tree
-                    let mut node = Node::new(HTMLNode::new_element("html"));
-                    node.append(Node::new(HTMLNode::new_element("title")));
-
-                    if let Some(stylesheet) = e.get_optional_attribute("stylesheet") {
-                        let stylesheet = state.resolve(&stylesheet)?;
-
-                        node.append(Node::new(HTMLNode::new_stylesheet_element(stylesheet)));
-                    }
-
-                    let mut body = Some(Node::new(HTMLNode::new_element("body")));
-
-                    for token in &e.children {
-                        _run(token, state, &mut body)?;
-                    }
-
-                    node.append(body.unwrap()); // unwrap is ok cause I just made it Some... rethink this though
-
-                    state.pages.insert(path.into(), node.clone().root());
-                }
-
-                // "embed" => {
-                //     let path: Value = state.resolve(&e.get_required_attribute("path")?)?;
-
-                //     // let svgfile = crate::filesystem::read_file(std::path::PathBuf::from(path))?;
-                //     // let node = Node::new(HTMLNode::Text(svgfile));
-
-                //     // if let Some(parent) = parent {
-                //     //     parent.append(node);
-                //     // } else {
-                //     //     return Err(AstryxError::new("tag found without page to assign to"));
-                //     // }
-                // }
-
-                // "exec" => {}
                 _ => {
                     // TODO this whole process should be
                     // - resolve references to values
@@ -163,22 +83,12 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
                                 state.imports.modify_element(&modifier, None, &mut el)?;
                             }
                             Attribute::NamedAttribute { ident, variable } => {
-                                match variable {
-                                    Variable::QuotedString(s) | Variable::RelativePath(s) => {
-                                        state.imports.modify_element(
-                                            &ident,
-                                            Some(s.into()),
-                                            &mut el,
-                                        )?;
-                                    }
-                                    _ => {
-                                        // FIXME: error
-                                        // return Err(AstryxError::new(&format!(
-                                        //     "attempted to call modifier with {:?}",
-                                        //     attr
-                                        // )));
-                                    }
-                                };
+                                let value = state.resolve(variable)?;
+                                state.imports.modify_element(
+                                    &ident,
+                                    Some(&String::from(value)),
+                                    &mut el,
+                                )?;
                             }
                             Attribute::Decorator(_) => panic!("decorators deprecated"),
                         }
@@ -255,32 +165,51 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
                 .collect();
 
             match f.ident.as_str() {
-                "page" => functions::page(
-                    arguments.get_required_string("route")?, 
-                    arguments.get_string("title")),
-                // _ => unimplemented!()
-                _ => ()
+                "page" => {
+                    // let el = functions::page(
+                    //     arguments.get_required_string("route")?, 
+                    //     arguments.get_string("title")
+                    // )?;
+
+                    let route = arguments.get_required_string("route")?;
+                    let title = arguments.get_string("title");
+                    let stylesheet = arguments.get_string("stylesheet");
+
+                    // make a fresh node tree
+                    let mut node = Node::new(HTMLNode::new_element("html"));
+                    node.append(Node::new(HTMLNode::new_element("title")));
+
+                    if let Some(stylesheet) = stylesheet {
+                        node.append(Node::new(HTMLNode::new_stylesheet_element(stylesheet)));
+                    }
+
+                    let mut body = Some(Node::new(HTMLNode::new_element("body")));
+
+                    for token in &f.children {
+                        _run(token, state, &mut body)?;
+                    }
+
+                    node.append(body.unwrap()); // unwrap is ok cause I just made it Some... rethink this though
+
+                    state.pages.insert(route, node.clone().root());
+                }
+                "embed" => {
+                    let path = arguments.get_required_path("path")?;
+
+                    let svgfile = crate::filesystem::read_file(path)?;
+                    let node = Node::new(HTMLNode::Text(svgfile));
+
+                    if let Some(parent) = parent {
+                        parent.append(node);
+                    } else {
+                        return Err(AstryxError::new("tag found without page to assign to"));
+                    }
+                }
+                "exec" => unimplemented!(),
+                _ => unimplemented!()
             }
 
-            // make a fresh node tree
-            let mut node = Node::new(HTMLNode::new_element("html"));
-            node.append(Node::new(HTMLNode::new_element("title")));
 
-            // if let Some(stylesheet) = e.get_optional_attribute("stylesheet") {
-            //     let stylesheet = state.resolve(&stylesheet)?;
-
-            //     node.append(Node::new(HTMLNode::new_stylesheet_element(stylesheet)));
-            // }
-
-            let mut body = Some(Node::new(HTMLNode::new_element("body")));
-
-            for token in &f.children {
-                _run(token, state, &mut body)?;
-            }
-
-            node.append(body.unwrap()); // unwrap is ok cause I just made it Some... rethink this though
-
-            state.pages.insert(arguments.get_required_string("route")?, node.clone().root());
         }
     }
 

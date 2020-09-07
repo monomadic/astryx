@@ -18,6 +18,7 @@ pub enum AstryxErrorKind {
     IOError,
     ServerError,
     UndefinedVariable(String),
+    MissingRequiredArgument(String),
     FilesNotFound(String),
     UnrecognisedElement(String)
 }
