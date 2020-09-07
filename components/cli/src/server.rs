@@ -1,6 +1,7 @@
 use astryx::error::AstryxResult;
 use simple_server::{Server, StatusCode};
 use std::path::PathBuf;
+use crate::render::RenderErrorAsHTML;
 
 pub(crate) fn start(file: PathBuf, port: u32) -> AstryxResult<()> {
     let host = "127.0.0.1";
@@ -17,7 +18,7 @@ pub(crate) fn start(file: PathBuf, port: u32) -> AstryxResult<()> {
 
             match ast {
                 Ok(page) => Ok(response.body(page.as_bytes().to_vec())?),
-                Err(e) => Ok(response.body(format!("Error: {:#?}", e).as_bytes().to_vec())?),
+                Err(e) => Ok(response.body(format!("Error: {}", e.to_html()).as_bytes().to_vec())?),
             }
         } else {
             let pages = crate::filesystem::read_file(&file)
@@ -44,10 +45,10 @@ pub(crate) fn start(file: PathBuf, port: u32) -> AstryxResult<()> {
                 },
                 Err(e) => {
                     response.status(StatusCode::INTERNAL_SERVER_ERROR);
-                    println!("ERROR: {:#?}", e);
+                    println!("ERROR: {}", e);
 
                     Ok(response.body(
-                    format!("<html style='background-color: black;color: white;'><body><h1>Error :(</h1><pre>{:?}</pre></body></html>", &e)
+                    format!("<html style='background-color: black;color: white;'><body><h1>Error :(</h1><pre>{}</pre></body></html>", &e)
                         .as_bytes()
                         .to_vec(),
                 )?)

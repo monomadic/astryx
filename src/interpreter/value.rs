@@ -3,19 +3,21 @@ use std::fmt;
 
 #[derive(Debug, Clone)]
 pub(crate) enum Value {
-    String(String),
+    // Array(Vec<Value>),
     Document(Document),
     Documents(Vec<Document>),
-    // Array(Vec<Value>),
+    Path(String),
+    String(String),
 }
 
 impl fmt::Display for Value {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Value::Document(doc) => write!(f, "{}", doc.body),
-            Value::String(s) => write!(f, "{}", s),
-            Value::Documents(d) => write!(f, "{:?}", d),
             // Value::Array(a) => write!(f, "{:?}", a),
+            Value::Document(doc) => write!(f, "{}", doc.body),
+            Value::Documents(d) => write!(f, "{:?}", d),
+            Value::Path(p) => write!(f, "{:?}", p),
+            Value::String(s) => write!(f, "{}", s),
         }
     }
 }

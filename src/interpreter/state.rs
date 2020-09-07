@@ -40,7 +40,8 @@ impl State {
                 // .map(|v| v.clone())
                 // .unwrap_or(Value::String(String::from("f")))
             }
-            Variable::RelativePath(p) => Value::Documents(crate::filesystem::read_documents(&p)?),
+            // Variable::RelativePath(p) => Value::Documents(crate::filesystem::read_documents(&p)?),
+            Variable::RelativePath(p) => Value::Path(String::from(p)),
             _ => {
                 return Err(AstryxError::new(&format!(
                     "cannot to_string: {:?}",

@@ -4,6 +4,7 @@ use astryx::{self, error::AstryxResult};
 
 mod server;
 mod filesystem;
+mod render;
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "astryx")]
@@ -34,7 +35,7 @@ enum Command {
 pub fn main() {
     match run() {
         Ok(_) => println!("\n"),
-        Err(e) => println!("\n\nERROR: {:?}", e),
+        Err(e) => println!("\n\nERROR: {}", e.msg),
     }
 }
 

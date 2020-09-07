@@ -1,17 +1,20 @@
 /// interpreter
 /// - converts a graph of Nodes from a source tree into a set of rendered HTML pages
 /// - resolves variables and scope
-use crate::{error::*, html::{new_node_with_text, HTMLNode}};
+use crate::{
+    error::*,
+    html::{new_node_with_text, HTMLNode},
+};
+use arguments::{NamedArguments, TypeGetters};
 use parser::{parser::Attribute, Token};
 use rctree::Node;
 use state::State;
 use std::collections::HashMap;
-use arguments::{TypeGetters, NamedArguments};
 use value::Value;
 
-mod state;
 mod arguments;
 mod functions;
+mod state;
 mod value;
 
 /// run the interpreter on an AST tree and return a HTMLNode tree for each page
@@ -51,72 +54,56 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
     match token {
         Token::Comment(_) => {}
         Token::Element(e) => {
-            match e.ident.as_str() {
-                _ => {
-                    // TODO this whole process should be
-                    // - resolve references to values
-                    // - pass along entire thing, get back html element blind,
-                    // - I don't want to see the html element implementations
-                    // - should know it is valid on return.
+            let mut el = state.imports.create_element(&e.ident)?;
 
-                    // when creating a htmlelement, should have knowledge of its own type and what it supports
-
-                    // must be a tag, lets try to resolve it
-                    let mut el = state.imports.create_element(&e.ident)?;
-
-                    // let arguments: HashMap<String, Value> = e.attributes
-                    //     .iter()
-                    //     .flat_map(|a| {
-                    //         Err(AstryxError::new(&format!("attempted to call modifier with {:?}", a)))
-                    //     })
-                    //     .collect();
-
-                    for attr in &e.attributes.clone() {
-                        // note this is temporary until we fix the parser with new syntax
-                        match attr {
-                            // class attribute eg .blah
-                            Attribute::Class(class) => el.add_class(class),
-                            // symbol eg. centered align.center
-                            Attribute::Symbol(modifier) => {
-                                state.imports.modify_element(&modifier, None, &mut el)?;
-                            }
-                            Attribute::NamedAttribute { ident, variable } => {
-                                let value = state.resolve(variable)?;
-                                state.imports.modify_element(
-                                    &ident,
-                                    Some(&String::from(value)),
-                                    &mut el,
-                                )?;
-                            }
-                            Attribute::Decorator(_) => panic!("decorators deprecated"),
-                        }
+            for attr in &e.attributes.clone() {
+                match attr {
+                    // class attribute eg .blah
+                    Attribute::Class(class) => el.add_class(class),
+                    // symbol eg. centered align.center
+                    Attribute::Symbol(modifier) => {
+                        state.imports.modify_element(&modifier, None, &mut el)?;
                     }
-
-                    let mut node = Some(Node::new(HTMLNode::Element(el)));
-
-                    // interpret children
-                    for token in &e.children {
-                        _run(token, state, &mut node)?;
+                    // named attribute eg. href="/index.html"
+                    Attribute::NamedAttribute { ident, variable } => {
+                        let value = state.resolve(variable)?;
+                        state.imports.modify_element(
+                            &ident,
+                            Some(&String::from(value)),
+                            &mut el,
+                        )?;
                     }
-
-                    if let Some(parent) = parent {
-                        parent.append(node.unwrap());
-                    } else {
-                        // tag was found that isn't actually in any structure
-                        return Err(AstryxError::new(format!(
-                            "tag found without page to assign to: {}",
-                            e.ident
-                        )));
-                    }
+                    // anonymous attribute eg disabled
+                    Attribute::Decorator(_) => panic!("decorators deprecated"),
                 }
+            }
+
+            let mut node = Some(Node::new(HTMLNode::Element(el)));
+
+            // interpret children
+            for token in &e.children {
+                _run(token, state, &mut node)?;
+            }
+
+            if let Some(parent) = parent {
+                parent.append(node.unwrap());
+            } else {
+                // tag was found that isn't actually in any structure
+                return Err(AstryxError::new(format!(
+                    "tag found without page to assign to: {}",
+                    e.ident
+                )));
             }
         }
         Token::ForLoop(f) => {
-            // if the forloop iterator is a series of valid documents,
-            if let Value::Documents(documents) = state.resolve(&f.iterable)? {
+            let path: Value = state.resolve(&f.iterable)?;
+
+            if let Value::Path(path) = path {
+                let documents = crate::filesystem::read_documents(&path)?;
+
                 if documents.len() == 0 {
                     return Err(AstryxError {
-                        kind: AstryxErrorKind::FilesNotFound(format!("{:?}", f.iterable)),
+                        kind: AstryxErrorKind::FilesNotFound(path),
                         msg: format!("Could not find any files at {:?}", f.iterable),
                     });
                 }
@@ -151,21 +138,17 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
         }
         Token::CodeBlock(_) => {}
         Token::FunctionCall(f) => {
-
             // resolve any variables in function arguments
-            let arguments: NamedArguments = f.arguments
+            let arguments: NamedArguments = f
+                .arguments
                 .iter()
-                .flat_map(|(ident, v)| {
-                    state
-                        .resolve(v)
-                        .map(|v| (ident.clone(), v.clone()))
-                })
+                .flat_map(|(ident, v)| state.resolve(v).map(|v| (ident.clone(), v.clone())))
                 .collect();
 
             match f.ident.as_str() {
                 "page" => {
                     // let el = functions::page(
-                    //     arguments.get_required_string("route")?, 
+                    //     arguments.get_required_string("route")?,
                     //     arguments.get_string("title")
                     // )?;
 
@@ -182,7 +165,10 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
 
                     // <link rel="stylesheet">
                     if let Some(stylesheet) = stylesheet {
-                        node.append(Node::new(HTMLNode::new_stylesheet_element(format!("/{}", stylesheet))));
+                        node.append(Node::new(HTMLNode::new_stylesheet_element(format!(
+                            "/{}",
+                            stylesheet
+                        ))));
                     }
 
                     let mut body = Some(Node::new(HTMLNode::new_element("body")));
@@ -196,22 +182,23 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
                     state.pages.insert(route, node.clone().root());
                 }
                 "embed" => {
-                    let path = arguments.get_required_path("path")?;
-
-                    let svgfile = crate::filesystem::read_file(path)?;
-                    let node = Node::new(HTMLNode::Text(svgfile));
-
                     if let Some(parent) = parent {
+                        let path: String = arguments.get_required_path("path")?;
+                        println!("PATH: {:?}", path);
+                        let svgfile: String = crate::filesystem::read_file(&path)?;
+                        println!("NODE: {:?}", svgfile);
+                        let node: Node<HTMLNode> = Node::new(HTMLNode::Text(svgfile));
+
                         parent.append(node);
                     } else {
-                        return Err(AstryxError::new("tag found without page to assign to"));
+                        return Err(AstryxError::new_from(AstryxErrorKind::UnexpectedFunction(
+                            String::from("embed"),
+                        )));
                     }
                 }
                 "exec" => unimplemented!(),
-                _ => unimplemented!()
+                _ => unimplemented!(),
             }
-
-
         }
     }
 
