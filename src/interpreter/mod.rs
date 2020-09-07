@@ -172,10 +172,11 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
                                         )?;
                                     }
                                     _ => {
-                                        return Err(AstryxError::new(&format!(
-                                            "attempted to call modifier with {:?}",
-                                            attr
-                                        )));
+                                        // FIXME: error
+                                        // return Err(AstryxError::new(&format!(
+                                        //     "attempted to call modifier with {:?}",
+                                        //     attr
+                                        // )));
                                     }
                                 };
                             }
@@ -257,7 +258,8 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
                 "page" => functions::page(
                     arguments.get_required_string("route")?, 
                     arguments.get_string("title")),
-                _ => unimplemented!()
+                // _ => unimplemented!()
+                _ => ()
             }
 
             // make a fresh node tree

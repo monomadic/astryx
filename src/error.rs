@@ -17,6 +17,7 @@ pub enum AstryxErrorKind {
     InterpreterError,
     IOError,
     ServerError,
+    UndefinedVariable(String),
     FilesNotFound(String),
     UnrecognisedElement(String)
 }
@@ -27,6 +28,13 @@ impl AstryxError {
             kind: AstryxErrorKind::Unknown,
             // state: None,
             msg: msg.to_string(),
+        }
+    }
+
+    pub fn new_from(kind: AstryxErrorKind) -> AstryxError {
+        Self {
+            kind,
+            msg: String::new(),
         }
     }
 }
