@@ -1,7 +1,6 @@
 use super::Value;
 use crate::error::{AstryxError, AstryxErrorKind, AstryxResult};
 use std::collections::HashMap;
-use std::path::PathBuf;
 
 pub(crate) type NamedArguments = HashMap<String, Value>;
 

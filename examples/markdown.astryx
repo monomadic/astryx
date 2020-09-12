@@ -1,6 +1,6 @@
 
-page path="/" stylesheet="style.css"
-  for post in ./examples/*.md
+page(route: "/", stylesheet: "style.css")
+  for post in ./*.md
     div .title
       h1
         | ${ post.title }

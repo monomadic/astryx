@@ -10,10 +10,9 @@ use parser::{parser::Attribute, Token};
 use rctree::Node;
 use state::State;
 use std::collections::HashMap;
-use value::Value;
+use value::{Document, Value};
 
 mod arguments;
-mod functions;
 mod state;
 mod value;
 
@@ -26,27 +25,6 @@ pub(crate) fn run(tokens: &Vec<Token>) -> AstryxResult<HashMap<String, Node<HTML
     }
 
     Ok(state.pages.clone())
-}
-
-#[derive(Debug, Clone)]
-pub(crate) struct Document {
-    // created_at: Date
-    pub body: String,
-    pub metadata: Option<yaml_rust::Yaml>,
-}
-
-impl Document {
-    pub(crate) fn get(&self, ident: &str) -> Option<String> {
-        if ident == "body" {
-            return Some(self.body.clone());
-        }
-
-        self.metadata
-            .clone()
-            .map(move |metadata| metadata[ident].clone())
-            .and_then(|s| s.as_str().map(|s| s.to_string()))
-            .map(|s| s.to_string())
-    }
 }
 
 /// recurse each token, resolve variables
@@ -101,7 +79,8 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
             let path: Value = state.resolve(&f.iterable)?;
 
             if let Value::Path(path) = path {
-                let documents = crate::filesystem::read_documents(&path)?;
+                // this should eventually return an array type, not a vec<document>
+                let documents = Document::read_from_glob(&path)?;
 
                 if documents.len() == 0 {
                     return Err(AstryxError {
@@ -110,19 +89,17 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
                     });
                 }
 
+                // for loops should not assume documents in future...
                 for document in documents {
                     // create a new local state to pass down the tree
                     let mut new_state = state.clone();
 
                     new_state.insert(&f.index, &Value::Document(document));
 
-                    println!("INDEX {:?}", f.index);
-
                     for token in &f.children {
                         _run(token, &mut new_state, parent)?;
                     }
 
-                    // state.page_buffers = new_state.page_buffers; // kind of a dirty hack
                     state.pages = new_state.pages;
                 }
             } else {
