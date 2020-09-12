@@ -38,6 +38,10 @@ impl HTMLElement {
 		}
 	}
 
+	// pub(crate) fn new<S:ToString>(ident: S, classes: Vec<String>, attributes: Vec<(String, Value)>) -> AstryxResult<HTMLElement> {
+		 
+	// }
+
 	// pub(crate) fn new_with_class<S:Into<String>>(ident: S, class: S) -> HTMLElement {
 	// 	HTMLElement {
 	// 		ident: ident.into(),
@@ -48,12 +52,12 @@ impl HTMLElement {
 	// }
 
 	pub(crate) fn add_class<S:ToString>(&mut self, class: S) {
-		self.classes.push(class.to_string())
+		self.classes.push(class.to_string());
 	}
 
-	pub(crate) fn add_style<S:ToString>(&mut self, class: S) {
-		self.styles.push(class.to_string())
-	}
+	// pub(crate) fn add_style<S:ToString>(mut self, class: S) {
+	// 	self.styles.push(class.to_string());
+	// }
 }
 
 pub(crate) fn new_node_with_text<S:Into<String>>(ident: S, content: S) -> AstryxResult<Node<HTMLNode>> {
@@ -271,9 +275,9 @@ const HTML_TAGS: &'static [&'static str] = &[
 ];
 
 
-pub(crate) enum HTMLElementType {
-	BlockElement(String),
-	InlineElement(String),
-	Anchor{ href: String }
-}
+// pub(crate) enum HTMLElementType {
+// 	BlockElement(String),
+// 	InlineElement(String),
+// 	Anchor{ href: String }
+// }
 

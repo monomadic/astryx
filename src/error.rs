@@ -1,6 +1,4 @@
-// use crate::interpreter::State;
 use parser::error::ParserError;
-use std::path::PathBuf;
 
 pub type AstryxResult<T> = Result<T, AstryxError>;
 

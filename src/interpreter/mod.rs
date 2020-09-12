@@ -61,8 +61,10 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
                     // class attribute eg .blah
                     Attribute::Class(class) => el.add_class(class),
                     // symbol eg. centered align.center
-                    Attribute::Symbol(modifier) => {
-                        state.imports.modify_element(&modifier, None, &mut el)?;
+                    Attribute::Symbol(_) => {
+                        // state.imports.modify_element(&modifier, None, &mut el)?;
+                        // ()
+                        unimplemented!();
                     }
                     // named attribute eg. href="/index.html"
                     Attribute::NamedAttribute { ident, variable } => {
@@ -90,7 +92,7 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
             } else {
                 // tag was found that isn't actually in any structure
                 return Err(AstryxError::new(format!(
-                    "tag found without page to assign to: {}",
+                    "Anonymous tag: html tags must be part of a page or partial: {}",
                     e.ident
                 )));
             }
