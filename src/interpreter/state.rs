@@ -17,14 +17,16 @@ pub(crate) struct State {
     pub(crate) local_variables: LocalData,
     pub(crate) pages: Layouts,
     pub(crate) imports: Imports,
+    pub(crate) pwd: String,
 }
 
 impl State {
-    pub(crate) fn new() -> Self {
+    pub(crate) fn new(pwd: &str) -> Self {
         State {
             local_variables: LocalData::new(),
             pages: Layouts::new(),
             imports: Imports::new(),
+            pwd: String::from(pwd),
         }
     }
 

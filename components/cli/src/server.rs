@@ -12,7 +12,7 @@ pub(crate) fn start(file: PathBuf, port: u32) -> AstryxResult<()> {
         // info!("Request received. {} {}", request.method(), request.uri());
         let path = request.uri().path();
 
-        if path == "/debug" {
+        if path == "/ast" {
             let ast = crate::filesystem::read_file(&file)
                 .map(|file| format!("{:#?}", parser::parse(&file)));
 
@@ -21,8 +21,7 @@ pub(crate) fn start(file: PathBuf, port: u32) -> AstryxResult<()> {
                 Err(e) => Ok(response.body(format!("Error: {}", e.to_html()).as_bytes().to_vec())?),
             }
         } else {
-            let pages = crate::filesystem::read_file(&file)
-                .and_then(|file| astryx::render_to_string_buffers(&file));
+            let pages = astryx::render(&file);
 
             println!("{} {}", request.method(), path);
 

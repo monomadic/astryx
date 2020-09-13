@@ -25,15 +25,18 @@ mod interpreter;
 mod markdown;
 mod imports;
 
-/// takes a path and returns a hashmap of rendered files
-pub fn render_to_string_buffers<S: Into<String>>(file: S) -> AstryxResult<HashMap<String, String>> {
-    let tokens = parser::parse(&file.into())?;
-    let nodes = interpreter::run(&tokens)?;
-    let mut pages = html::render_as_string(&nodes)?;
-    pages.insert("/tokens".into(), format!("{:#?}", tokens));
-    pages.insert("/nodes".into(), format!("{:#?}", nodes));
-    Ok(pages)
+/// takes a path and returns a hashmap of rendered files. uses PWD for all files (paths are not relative to file)
+/// deprecated
+pub fn render_to_string_buffers<S: Into<String>>(file_content: S) -> AstryxResult<HashMap<String, String>> {
+    filesystem::read_file(file_content.into())
+        .and_then(|file_content| parser::parse(&file_content).map_err(|e| e.into()))
+        .and_then(|ast| interpreter::run(&ast, None))
+        .and_then(|html_nodes| html::render_as_string(&html_nodes))
 }
 
-// pub(crate) fn render<W: Write>(node: &Node<HTMLNode>, writer: &mut W) -> AstryxResult<()> {
-// }
+pub fn render<S: Copy + Into<String>>(path: S) -> AstryxResult<HashMap<String, String>> {
+    filesystem::read_file(path.into())
+        .and_then(|file_content| parser::parse(&file_content).map_err(|e| e.into()))
+        .and_then(|ast| interpreter::run(&ast, Some(&path.into())))
+        .and_then(|html_nodes| html::render_as_string(&html_nodes))
+}

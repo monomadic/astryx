@@ -17,7 +17,7 @@ pub enum AstryxErrorKind {
     InterpreterError,
     IOError(std::io::Error),
     MissingRequiredArgument(String),
-    ParseError,
+    ParseError(ParserError),
     ServerError,
     UndefinedVariable(String),
     UnexpectedFunction(String),
@@ -50,7 +50,7 @@ impl std::fmt::Display for AstryxError {
             AstryxErrorKind::InterpreterError => unimplemented!(),
             AstryxErrorKind::IOError(e) => write!(f, "I/O Error: {}", e),
             AstryxErrorKind::MissingRequiredArgument(ident) => write!(f, "Missing Required Argument: {}", ident),
-            AstryxErrorKind::ParseError => unimplemented!(),
+            AstryxErrorKind::ParseError(p) => unimplemented!(),
             AstryxErrorKind::ServerError => unimplemented!(),
             AstryxErrorKind::UndefinedVariable(_) => unimplemented!(),
             AstryxErrorKind::UnexpectedFunction(_) => unimplemented!(),
@@ -70,9 +70,9 @@ impl From<std::io::Error> for AstryxError {
 impl From<ParserError> for AstryxError {
     fn from(err: ParserError) -> Self {
         AstryxError {
-            kind: AstryxErrorKind::ParseError,
+            kind: AstryxErrorKind::ParseError(err),
             // state: None,
-            msg: err.msg,
+            msg: "".into(),
         }
     }
 }

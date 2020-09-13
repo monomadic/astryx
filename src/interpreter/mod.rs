@@ -17,8 +17,8 @@ mod state;
 mod value;
 
 /// run the interpreter on an AST tree and return a HTMLNode tree for each page
-pub(crate) fn run(tokens: &Vec<Token>) -> AstryxResult<HashMap<String, Node<HTMLNode>>> {
-    let state = &mut State::new();
+pub(crate) fn run(tokens: &Vec<Token>, pwd: Option<&str>) -> AstryxResult<HashMap<String, Node<HTMLNode>>> {
+    let state = &mut State::new(pwd.unwrap_or("."));
 
     for token in tokens {
         _run(token, state, &mut None)?;
