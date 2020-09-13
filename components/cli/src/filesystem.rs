@@ -2,7 +2,7 @@ use astryx::error::*;
 use std::fs::File;
 use std::io::prelude::*;
 
-pub(crate) fn read_file(pathbuf: &std::path::PathBuf) -> AstryxResult<String> {
+pub(crate) fn read_file(pathbuf: &str) -> AstryxResult<String> {
     let mut buffer = String::new();
 
     File::open(pathbuf)?

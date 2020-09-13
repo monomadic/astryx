@@ -1,9 +1,8 @@
 use astryx::error::AstryxResult;
 use simple_server::{Server, StatusCode};
-use std::path::PathBuf;
 use crate::render::RenderErrorAsHTML;
 
-pub(crate) fn start(file: PathBuf, port: u32) -> AstryxResult<()> {
+pub(crate) fn start(file: String, port: u32) -> AstryxResult<()> {
     let host = "127.0.0.1";
     let port = port.to_string();
     // let mut file = crate::filesystem::read_file(file)?;
