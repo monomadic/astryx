@@ -79,12 +79,13 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
             let path: Value = state.resolve(&f.iterable)?;
 
             if let Value::Path(path) = path {
+                let project_relative_path = state.get_state_relative_path(&path);
                 // this should eventually return an array type, not a vec<document>
-                let documents = Document::read_from_glob(&path)?;
+                let documents = Document::read_from_glob(&project_relative_path)?;
 
                 if documents.len() == 0 {
                     return Err(AstryxError {
-                        kind: AstryxErrorKind::FilesNotFound(path),
+                        kind: AstryxErrorKind::FilesNotFound(project_relative_path),
                         msg: format!("Could not find any files at {:?}", f.iterable),
                     });
                 }

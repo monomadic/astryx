@@ -50,7 +50,7 @@ impl std::fmt::Display for AstryxError {
             AstryxErrorKind::InterpreterError => unimplemented!(),
             AstryxErrorKind::IOError(e) => write!(f, "I/O Error: {}", e),
             AstryxErrorKind::MissingRequiredArgument(ident) => write!(f, "Missing Required Argument: {}", ident),
-            AstryxErrorKind::ParseError(p) => unimplemented!(),
+            AstryxErrorKind::ParseError(_p) => unimplemented!(),
             AstryxErrorKind::ServerError => unimplemented!(),
             AstryxErrorKind::UndefinedVariable(_) => unimplemented!(),
             AstryxErrorKind::UnexpectedFunction(_) => unimplemented!(),

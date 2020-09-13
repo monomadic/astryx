@@ -9,9 +9,10 @@
 //! * zero boilerplate
 //! * zero orphans
 //! * smaller static sites than any other library, period.
-//! 
+//!
 
 use error::AstryxResult;
+use filesystem::get_folder_from_filename;
 use parser;
 use std::collections::HashMap;
 
@@ -21,13 +22,15 @@ mod frontmatter;
 mod highlighter;
 mod html;
 // mod interpolator;
+mod imports;
 mod interpreter;
 mod markdown;
-mod imports;
 
 /// takes a path and returns a hashmap of rendered files. uses PWD for all files (paths are not relative to file)
 /// deprecated
-pub fn render_to_string_buffers<S: Into<String>>(file_content: S) -> AstryxResult<HashMap<String, String>> {
+pub fn render_to_string_buffers<S: Into<String>>(
+    file_content: S,
+) -> AstryxResult<HashMap<String, String>> {
     filesystem::read_file(file_content.into())
         .and_then(|file_content| parser::parse(&file_content).map_err(|e| e.into()))
         .and_then(|ast| interpreter::run(&ast, None))
@@ -35,8 +38,8 @@ pub fn render_to_string_buffers<S: Into<String>>(file_content: S) -> AstryxResul
 }
 
 pub fn render<S: Copy + Into<String>>(path: S) -> AstryxResult<HashMap<String, String>> {
-    filesystem::read_file(path.into())
+    filesystem::read_file(&path.into())
         .and_then(|file_content| parser::parse(&file_content).map_err(|e| e.into()))
-        .and_then(|ast| interpreter::run(&ast, Some(&path.into())))
+        .and_then(|ast| interpreter::run(&ast, get_folder_from_filename(&path.into())))
         .and_then(|html_nodes| html::render_as_string(&html_nodes))
 }

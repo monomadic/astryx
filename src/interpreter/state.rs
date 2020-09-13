@@ -53,6 +53,10 @@ impl State {
         })
     }
 
+    pub(crate) fn get_state_relative_path(&self, path: &str) -> String {
+        format!("{}/{}", self.pwd, path)
+    }
+
     pub(crate) fn insert<S: ToString>(&mut self, ident: S, value: &Value) {
         self.local_variables
             .insert(ident.to_string(), value.clone());

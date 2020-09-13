@@ -1,4 +1,3 @@
-use std::path::PathBuf;
 use structopt::StructOpt;
 use astryx::{self, error::AstryxResult};
 
