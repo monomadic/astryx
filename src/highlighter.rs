@@ -11,6 +11,7 @@ pub struct SyntaxHighlighter {
     syntax: String, // todo: enum
     syntaxes: SyntaxSet,
     themes: ThemeSet,
+    pub is_highlighting: bool,
 }
 
 impl SyntaxHighlighter {
@@ -19,6 +20,7 @@ impl SyntaxHighlighter {
             themes: ThemeSet::load_defaults(),
             syntaxes: SyntaxSet::load_defaults_newlines(),
             syntax: String::from("rs"),
+            is_highlighting: false,
         }
     }
 
@@ -28,9 +30,14 @@ impl SyntaxHighlighter {
 
     // fn set_theme(theme: &str)
 
-    pub fn start_highlight(&self) -> String {
+    pub fn start_highlight(&mut self) {
         let snippet = start_highlighted_html_snippet(&self.themes.themes["base16-ocean.dark"]);
-        snippet.0
+        // snippet.0
+        self.is_highlighting = true;
+    }
+
+    pub fn stop_highlight(&mut self) {
+        self.is_highlighting = false;
     }
 
     pub fn highlight_line(&self, i: &str) -> String {
