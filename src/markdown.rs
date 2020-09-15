@@ -9,14 +9,14 @@ pub fn parse(i: &str) -> AstryxResult<String> {
         Event::Start(Tag::CodeBlock(ref kind)) => match kind {
             CodeBlockKind::Fenced(info) => {
                 h.set_syntax_by_file_extension(info);
-                h.start_highlight();
-                Event::Html("<pre>".into())
+                let html = h.start_highlight();
+                Event::Html(html.into())
             }
             _ => Event::Html("<pre>".into()),
         },
         Event::End(Tag::CodeBlock(_)) => {
-            h.stop_highlight();
-            Event::Html("</pre>".into())
+            let html = h.stop_highlight();
+            Event::Html(html.into())
         }
         Event::Text(text) => {
             if h.is_highlighting {

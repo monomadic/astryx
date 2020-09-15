@@ -28,16 +28,15 @@ impl SyntaxHighlighter {
         self.syntax = ext.into();
     }
 
-    // fn set_theme(theme: &str)
-
-    pub fn start_highlight(&mut self) {
-        let snippet = start_highlighted_html_snippet(&self.themes.themes["base16-ocean.dark"]);
-        // snippet.0
+    pub fn start_highlight(&mut self) -> String {
         self.is_highlighting = true;
+        let (html, _) = start_highlighted_html_snippet(&self.themes.themes["base16-ocean.dark"]);
+        html
     }
 
-    pub fn stop_highlight(&mut self) {
+    pub fn stop_highlight(&mut self) -> String {
         self.is_highlighting = false;
+        String::from("</pre>")
     }
 
     pub fn highlight_line(&self, i: &str) -> String {
