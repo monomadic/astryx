@@ -33,12 +33,19 @@ fn test_get_extension_from_filename() {
 pub(crate) fn get_folder_from_filename(filename: &str) -> Option<&str> {
     use std::path::Path;
 
-    Path::new(filename).parent().and_then(|p| p.to_str())
+    Path::new(filename)
+        .parent()
+        .and_then(|p| p.to_str())
+        .filter(|p| { p.len() != 0}) // blank strings should be None
 }
 
 #[test]
 fn test_get_folder_from_filename() {
+    assert_eq!(get_folder_from_filename("b.zip"), None);
     assert_eq!(get_folder_from_filename("/a/b.zip"), Some("/a"));
     assert_eq!(get_folder_from_filename("../output.txt"), Some(".."));
-    assert_eq!(get_folder_from_filename("examples/new/output.astryx"), Some("examples/new"));
+    assert_eq!(
+        get_folder_from_filename("examples/new/output.astryx"),
+        Some("examples/new")
+    );
 }

@@ -21,12 +21,12 @@ pub(crate) struct State {
 }
 
 impl State {
-    pub(crate) fn new(pwd: &str) -> Self {
+    pub(crate) fn new(pwd: Option<&str>) -> Self {
         State {
             local_variables: LocalData::new(),
             pages: Layouts::new(),
             imports: Imports::new(),
-            pwd: String::from(pwd),
+            pwd: String::from(pwd.map(|p| format!("./{}/", p)).unwrap_or(String::new())),
         }
     }
 
@@ -54,7 +54,7 @@ impl State {
     }
 
     pub(crate) fn get_state_relative_path(&self, path: &str) -> String {
-        format!("{}/{}", self.pwd, path)
+        format!("{}{}", self.pwd, path)
     }
 
     pub(crate) fn insert<S: ToString>(&mut self, ident: S, value: &Value) {

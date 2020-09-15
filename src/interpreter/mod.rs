@@ -18,7 +18,7 @@ mod value;
 
 /// run the interpreter on an AST tree and return a HTMLNode tree for each page
 pub(crate) fn run(tokens: &Vec<Token>, pwd: Option<&str>) -> AstryxResult<HashMap<String, Node<HTMLNode>>> {
-    let state = &mut State::new(pwd.unwrap_or("."));
+    let state = &mut State::new(pwd);
 
     for token in tokens {
         _run(token, state, &mut None)?;
@@ -164,10 +164,9 @@ fn _run(token: &Token, state: &mut State, parent: &mut Option<Node<HTMLNode>>) -
                 "embed" => {
                     if let Some(parent) = parent {
                         let path: String = arguments.get_required_path("path")?;
-                        println!("PATH: {:?}", path);
-                        let svgfile: String = crate::filesystem::read_file(&path)?;
-                        println!("NODE: {:?}", svgfile);
-                        let node: Node<HTMLNode> = Node::new(HTMLNode::Text(svgfile));
+                        let project_relative_path = state.get_state_relative_path(&path);
+                        let file_content: String = crate::filesystem::read_file(&project_relative_path)?;
+                        let node: Node<HTMLNode> = Node::new(HTMLNode::Text(file_content));
 
                         parent.append(node);
                     } else {
