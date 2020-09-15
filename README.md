@@ -20,7 +20,7 @@ __NOTE: pre-production state, not even alpha yet. pushing updates regularly, che
 ## Compiling / Running
 
 ``` bash
-cargo run --package cli -- serve examples/general.astryx
+cargo run --package components/cli -- serve examples/general.astryx
 ```
 
 ### NixOS
