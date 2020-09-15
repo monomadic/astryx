@@ -1,9 +1,7 @@
-page \
-	path="/" \
-	title="monomadic"
+page(route: "/", title: "monomadic")
 
-	rows direction="rows"
-		row \
+	div .rows
+		div \
 			text-align	= "centered" \
 			width				= "960px" \
 			max-width		= "960px" \
@@ -13,8 +11,8 @@ page \
 			div style="font-weight: 900; font-size: 30px; letter-spacing: 0.15em; line-height: 80px;"
 				| MONOMADIC
 			
-		row
-			for post in ./examples/posts/*.md
+		div
+			for post in ./*.md
 				div class="post padding-sm page-link"
 					div class="title"
 						link path=post.route
@@ -22,7 +20,7 @@ page \
 					div class="description"
 							| ${ post.description }
 
-				page path=post.route title=post.title
+				page(route: post.route, title: post.title)
 					link path=.//
 						embed path=./examples/public/monomadic-small.svg
 						strong
