@@ -14,9 +14,6 @@ use nom::{
     error::*,
     sequence::{delimited, preceded, tuple},
 };
-use nom_locate::{position, LocatedSpan};
-
-type Span<'a> = LocatedSpan<&'a str>;
 
 #[derive(Debug, Clone)]
 pub enum Token {
@@ -95,8 +92,7 @@ pub struct Decorator {
 
 /// returns a nom combinator version of the parser
 pub fn run(i: &str) -> IResult<&str, Vec<Token>> {
-    let s = Span::new(i);
-    nom::multi::many0(node)(s)
+    nom::multi::many0(node)(i)
 }
 
 #[test]
@@ -108,23 +104,7 @@ fn test_run() {
     assert_eq!(run("page\n\n\n").unwrap().0, "");
 }
 
-fn node(s: Span) -> IResult<Span, Token> {
-    // // knock out blank lines at start of doc
-    // let (r, _) = blank_lines(s)?;
-
-    let (s, t) = alt((
-        map(comment, |s| Token::Comment(String::from(s))),
-        map(for_loop, |f| Token::ForLoop(f)),
-        map(function_call, |f| Token::FunctionCall(f)),
-        map(piped_string, |string_tokens| Token::Text(string_tokens)),
-        map(codeblock, |cb| Token::CodeBlock(cb)),
-        map(element, |e| Token::Element(e)),
-    ))(s)?;
-
-    Ok((s, t))
-}
-
-fn nnode(i: &str) -> IResult<&str, Token> {
+fn node(i: &str) -> IResult<&str, Token> {
     // knock out blank lines at start of doc
     let (r, _) = blank_lines(i)?;
 

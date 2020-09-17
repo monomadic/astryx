@@ -9,3 +9,5 @@ edition = "2018"
 [dependencies]
 nom = { version = "5.1.1", features = ["std"] }
 yaml-rust = "0.4"
+nom-tracable = "0.6.2"
+nom_locate = "2.0.0"
