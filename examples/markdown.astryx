@@ -1,7 +1,7 @@
 
 page(route: "/", stylesheet: "style.css")
   for post in ./*.md
-    div .title
+    aiv .title
       h1
         | ${ post.title }
       | ${ post }
