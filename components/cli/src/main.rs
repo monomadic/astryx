@@ -4,6 +4,7 @@ use astryx::{self, error::AstryxResult};
 mod server;
 mod filesystem;
 mod render;
+mod errorpage;
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "astryx")]

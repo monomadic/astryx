@@ -1,6 +1,6 @@
 use astryx::error::AstryxResult;
 use simple_server::{Server, StatusCode};
-use crate::render::RenderErrorAsHTML;
+use crate::{errorpage::error_page};
 
 pub(crate) fn start(file: String, port: u32) -> AstryxResult<()> {
     let host = "127.0.0.1";
@@ -17,7 +17,7 @@ pub(crate) fn start(file: String, port: u32) -> AstryxResult<()> {
 
             match ast {
                 Ok(page) => Ok(response.body(page.as_bytes().to_vec())?),
-                Err(e) => Ok(response.body(format!("Error: {}", e.to_html()).as_bytes().to_vec())?),
+                Err(e) => Ok(response.body(error_page(e))?),
             }
         } else {
             let pages = astryx::render(&file);
