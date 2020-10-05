@@ -1,8 +1,11 @@
-//! This crate parses astryx source into an AST (abstract syntax tree).
+//! This crate parses astryx source and emits an AST (abstract syntax tree).
 //!
 //! There are a few stages to this:
 //! 1. Lexical analysis: breaks up the raw text into tokens
 //! 2. Parsing: transforms tokens into the AST
+//! 
+//! If you wanted to add or change the syntax (language) of astryx,
+//! everything you need is in this crate.
 //!
 //! ## Usage
 //! ```
@@ -13,32 +16,28 @@
 //!
 //! ```
 
+use nom::IResult;
+use nom_locate::LocatedSpan;
+
+type Span<'a> = LocatedSpan<&'a str>;
+
 pub mod error;
 pub mod parser;
 pub mod variable;
 pub mod models;
-pub use crate::parser::run;
+pub use crate::parser::Token;
 pub use crate::error::{ParserError, ParserResult};
 
-// /// returns a vector of ast nodes
-// /// 
-// /// ``` rust
-// /// use parser;
-// /// 
-// /// let source = "page\n";
-// /// let ast = parser::parse(source);
-// /// 
-// /// assert_eq!(ast.is_ok(), true);
-// /// ```
-// pub fn parse(i: &str) -> ParserResult<Vec<Token>> {
-//     let (r, nodes) = run(i).map_err(|e| ParserError::new(&format!("error parsing: {:?}", e)))?;
+/// returns a nom combinator version of the parser
+pub fn run<'a, S: Into<&'a str>>(i: S) -> IResult<Span<'a>, Vec<Token>> {
+    nom::multi::many0(parser::node)(Span::new(&i.into()))
+}
 
-//     if !r.is_empty() {
-//         return Err(ParserError::new(&format!(
-//             "file did not fully parse.\n\nRemainder:\n{}\n\nNodes:\n{:#?}",
-//             r, nodes
-//         )));
-//     };
-
-//     Ok(nodes)
-// }
+#[test]
+fn test_run() {
+    assert!(run("").is_ok());
+    assert!(run("page").is_ok());
+    assert!(run("page\n").is_ok());
+    assert!(run("page\n\tdiv\n").is_ok());
+    assert_eq!(run("page\n\n\n").unwrap().0.get_column(), 1);
+}

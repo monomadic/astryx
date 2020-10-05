@@ -41,9 +41,9 @@ name = "astryx"
 version = "0.1.0"
 dependencies = [
  "glob",
+ "interpreter",
  "nom",
  "parser",
- "pulldown-cmark",
  "rctree",
  "syntect",
  "yaml-rust",
@@ -359,6 +359,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c398b2b113b55809ceb9ee3e753fcbac793f1956663f3c36549c1346015c2afe"
 dependencies = [
  "autocfg",
+]
+
+[[package]]
+name = "interpreter"
+version = "0.1.0"
+dependencies = [
+ "glob",
+ "parser",
+ "pulldown-cmark",
+ "rctree",
+ "syntect",
+ "yaml-rust",
 ]
 
 [[package]]
@@ -756,9 +768,9 @@ dependencies = [
 
 [[package]]
 name = "pulldown-cmark"
-version = "0.7.2"
+version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ca36dea94d187597e104a5c8e4b07576a8a45aa5db48a65e12940d3eb7461f55"
+checksum = "ffade02495f22453cd593159ea2f59827aae7f53fa8323f756799b670881dcf8"
 dependencies = [
  "bitflags",
  "getopts",

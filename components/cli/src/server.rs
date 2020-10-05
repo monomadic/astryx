@@ -13,7 +13,7 @@ pub(crate) fn start(file: String, port: u32) -> AstryxResult<()> {
 
         if path == "/ast" {
             let ast = crate::filesystem::read_file(&file)
-                .map(|file| format!("{:#?}", parser::parse(&file)));
+                .map(|file| format!("{:#?}", parser::run(&*file)));
 
             match ast {
                 Ok(page) => Ok(response.body(page.as_bytes().to_vec())?),

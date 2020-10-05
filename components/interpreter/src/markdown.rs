@@ -2,7 +2,7 @@ use crate::error::*;
 use crate::highlighter::SyntaxHighlighter;
 use pulldown_cmark::{html, CodeBlockKind, Event, Options, Parser, Tag};
 
-pub fn parse(i: &str) -> AstryxResult<String> {
+pub fn parse(i: &str) -> InterpreterResult<String> {
     let mut h = SyntaxHighlighter::new();
 
     let tokens = Parser::new_ext(i, Options::empty()).map(|event| match event.clone() {
