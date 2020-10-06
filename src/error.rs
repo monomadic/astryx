@@ -1,18 +1,18 @@
 // use parser::error::ParserError;
 
+use parser::{ParserError};
+
 pub type AstryxResult<T> = Result<T, AstryxError>;
 
 #[derive(Debug)]
-pub struct Span {
-    pub line: u32,
-    pub position: u32,
-    pub offset: u32,
+pub enum AstryxError {
+    ParserError(ParserError)
 }
 
-#[derive(Debug)]
-pub struct AstryxError {
-    pub kind: AstryxErrorKind,
-    pub pos: Span,
+impl From<ParserError> for AstryxError {
+    fn from(e: ParserError) -> AstryxError {
+        AstryxError::ParserError(e)
+    }
 }
 
 #[derive(Debug)]
@@ -43,20 +43,21 @@ impl AstryxError {
 
 impl std::fmt::Display for AstryxError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match &self.kind {
-            AstryxErrorKind::FileNotFound(s) => write!(f, "File Not Found: {}", s),  
-            AstryxErrorKind::FilesNotFound(s) => write!(f, "Files Not Found: {}", s),
-            AstryxErrorKind::InterpreterError => unimplemented!(),
-            AstryxErrorKind::IOError(e) => write!(f, "I/O Error: {}", e),
-            AstryxErrorKind::MissingRequiredArgument(ident) => write!(f, "Missing Required Argument: {}", ident),
-            AstryxErrorKind::ParserError => unimplemented!(),
-            AstryxErrorKind::ServerError => unimplemented!(),
-            AstryxErrorKind::UndefinedVariable(_) => unimplemented!(),
-            AstryxErrorKind::UnexpectedFunction(_) => unimplemented!(),
-            AstryxErrorKind::Unknown => write!(f, "Unknown Error"),
-            AstryxErrorKind::UnrecognisedElement(_) => unimplemented!(),
-            _ => unimplemented!()
-        }
+        unimplemented!()
+        // match &self.kind {
+        //     AstryxErrorKind::FileNotFound(s) => write!(f, "File Not Found: {}", s),  
+        //     AstryxErrorKind::FilesNotFound(s) => write!(f, "Files Not Found: {}", s),
+        //     AstryxErrorKind::InterpreterError => unimplemented!(),
+        //     AstryxErrorKind::IOError(e) => write!(f, "I/O Error: {}", e),
+        //     AstryxErrorKind::MissingRequiredArgument(ident) => write!(f, "Missing Required Argument: {}", ident),
+        //     AstryxErrorKind::ParserError => unimplemented!(),
+        //     AstryxErrorKind::ServerError => unimplemented!(),
+        //     AstryxErrorKind::UndefinedVariable(_) => unimplemented!(),
+        //     AstryxErrorKind::UnexpectedFunction(_) => unimplemented!(),
+        //     AstryxErrorKind::Unknown => write!(f, "Unknown Error"),
+        //     AstryxErrorKind::UnrecognisedElement(_) => unimplemented!(),
+        //     _ => unimplemented!()
+        // }
     }
 }
 

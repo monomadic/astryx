@@ -74,8 +74,9 @@ impl Element {
         None
     }
     pub fn get_required_attribute(&self, arg: &str) -> ParserResult<Variable> {
-        self.get_optional_attribute(arg)
-            .ok_or(ParserError::new(&format!("variable not found: {}", arg)))
+        unimplemented!();
+        // self.get_optional_attribute(arg)
+        //     .ok_or(ParserError::new(&format!("variable not found: {}", arg)))
     }
 }
 
