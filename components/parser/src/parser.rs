@@ -8,7 +8,7 @@ use crate::{
 use nom::*;
 use nom::{
     branch::alt,
-    bytes::complete::{is_not, tag, take_until},
+    bytes::complete::{is_not, tag},
     character::complete::{alphanumeric1, char, multispace0, newline, one_of, space0, space1},
     combinator::{map, opt},
     error::*,
@@ -142,16 +142,26 @@ pub(crate) fn node(s: Span) -> IResult<Span, Token> {
 fn test_node() {
     // test newline bounds of each node here (not nodes themselves)
     assert!(node(LocatedSpan::new("")).is_err());
-    assert_eq!(
-        node(LocatedSpan::new("# comment\nelement\n")).unwrap().0,
-        LocatedSpan::new("element\n")
-    );
-    assert_eq!(
-        node(LocatedSpan::new("for x in ./file\n\tchild\nelement\n"))
-            .unwrap()
-            .0,
-        LocatedSpan::new("element\n")
-    );
+    // assert_eq!(
+    //     node(LocatedSpan::new("# comment\nelement\n")).unwrap().0,
+    //     LocatedSpan::new("element\n")
+    // );
+
+    let (span, token) = node(LocatedSpan::new("for x in ./file\n\tchild\nelement\n")).unwrap();
+
+    assert_eq!(&format!("{:?}", token), "ForLoop(ForLoop { index: \"x\", iterable: RelativePath(\"./file\"), children: [Element(Element { ident: \"child\", attributes: [], children: [] })] })");
+    // assert_eq!(span.location_offset(), 0); 23
+    // assert_eq!(span.location_line(), 1);
+    // assert_eq!(span.get_column(), 1);
+    assert_eq!(span.fragment(), &&"element\n"[..]);
+
+    // errors
+
+    // let Err(_e) = node(LocatedSpan::new("44"));
+    // let err = node(LocatedSpan::new("44")).unwrap_err().position;
+    // assert!(err.is_incomplete());
+    // let (span, e) = err.unwrap();
+    // assert_eq!(&format!("{:?}", err), "Error((LocatedSpan { offset: 2, line: 1, fragment: \"\", extra: () }, Char))");
 }
 
 fn comment(i: Span) -> IResult<Span, Span> {

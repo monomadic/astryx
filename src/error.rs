@@ -1,15 +1,21 @@
-use parser::error::ParserError;
+// use parser::error::ParserError;
 
 pub type AstryxResult<T> = Result<T, AstryxError>;
 
-// #[derive(Debug, Clone)]
-pub struct AstryxError {
-    pub kind: AstryxErrorKind,
-    // pub state: Option<State>,
-    pub msg: String,
+#[derive(Debug)]
+pub struct Span {
+    pub line: u32,
+    pub position: u32,
+    pub offset: u32,
 }
 
-// #[derive(Debug, Clone)]
+#[derive(Debug)]
+pub struct AstryxError {
+    pub kind: AstryxErrorKind,
+    pub pos: Span,
+}
+
+#[derive(Debug)]
 pub enum AstryxErrorKind {
     FileNotFound(String),
     FilesNotFound(String),
@@ -17,7 +23,7 @@ pub enum AstryxErrorKind {
     InterpreterError,
     IOError(std::io::Error),
     MissingRequiredArgument(String),
-    ParseError(ParserError),
+    ParserError,
     ServerError,
     UndefinedVariable(String),
     UnexpectedFunction(String),
@@ -27,18 +33,11 @@ pub enum AstryxErrorKind {
 
 impl AstryxError {
     pub fn new<S:ToString>(msg: S) -> AstryxError {
-        Self {
-            kind: AstryxErrorKind::Unknown,
-            // state: None,
-            msg: msg.to_string(),
-        }
+        unimplemented!()
     }
 
     pub fn new_from(kind: AstryxErrorKind) -> AstryxError {
-        Self {
-            kind,
-            msg: String::new(),
-        }
+        unimplemented!()
     }
 }
 
@@ -50,11 +49,11 @@ impl std::fmt::Display for AstryxError {
             AstryxErrorKind::InterpreterError => unimplemented!(),
             AstryxErrorKind::IOError(e) => write!(f, "I/O Error: {}", e),
             AstryxErrorKind::MissingRequiredArgument(ident) => write!(f, "Missing Required Argument: {}", ident),
-            AstryxErrorKind::ParseError(_p) => unimplemented!(),
+            AstryxErrorKind::ParserError => unimplemented!(),
             AstryxErrorKind::ServerError => unimplemented!(),
             AstryxErrorKind::UndefinedVariable(_) => unimplemented!(),
             AstryxErrorKind::UnexpectedFunction(_) => unimplemented!(),
-            AstryxErrorKind::Unknown => write!(f, "Unknown Error: {}", self.msg),
+            AstryxErrorKind::Unknown => write!(f, "Unknown Error"),
             AstryxErrorKind::UnrecognisedElement(_) => unimplemented!(),
             _ => unimplemented!()
         }
@@ -67,12 +66,12 @@ impl From<std::io::Error> for AstryxError {
     }
 }
 
-impl From<ParserError> for AstryxError {
-    fn from(err: ParserError) -> Self {
-        AstryxError {
-            kind: AstryxErrorKind::ParseError(err),
-            // state: None,
-            msg: "".into(),
-        }
-    }
-}
+// impl From<ParserError> for AstryxError {
+//     fn from(err: ParserError) -> Self {
+//         AstryxError {
+//             kind: AstryxErrorKind::ParserError,
+//             // state: None,
+//             msg: "".into(),
+//         }
+//     }
+// }

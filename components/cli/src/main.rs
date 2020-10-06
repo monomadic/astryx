@@ -5,6 +5,7 @@ mod server;
 mod filesystem;
 mod render;
 mod errorpage;
+mod build;
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "astryx")]
@@ -25,7 +26,7 @@ enum Command {
     /// build the project
     Build {
         /// Input file
-        file: String,
+        file: Option<String>,
     },
     New,
 }
@@ -33,7 +34,7 @@ enum Command {
 pub fn main() {
     match run() {
         Ok(_) => println!("\n"),
-        Err(e) => println!("\n\nERROR: {}", e.msg),
+        Err(e) => println!("\n\nERROR: {:?}", e),
     }
 }
 
@@ -42,10 +43,9 @@ fn run() -> AstryxResult<()> {
     let opt = Opt::from_args();
 
     match opt.command {
-        Command::Serve{ file, port } => {
-            server::start(file.unwrap_or(String::from("site.astryx")), port.unwrap_or(8888))
-        },
-        Command::Build{ .. } => Ok(()),
+        Command::Serve{ file, port } =>
+            server::start(file.unwrap_or(String::from("site.astryx")), port.unwrap_or(8888)),
+        Command::Build{ file } => build::build(file.unwrap_or(String::from("site.astryx"))),
         Command::New => new_project(),
     }
 }

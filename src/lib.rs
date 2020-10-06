@@ -11,7 +11,7 @@
 //! * smaller static sites than any other library, period.
 //!
 
-use error::{AstryxError, AstryxResult};
+use error::{AstryxError, AstryxResult, AstryxErrorKind, Span};
 use filesystem::get_folder_from_filename;
 use interpreter::{self, html};
 use parser::{self, Token};
@@ -39,11 +39,24 @@ mod filesystem;
 //         .and_then(|html_nodes| html::render_as_string(&html_nodes))
 // }
 
+fn convert_error(err: nom::Err) -> AstryxError {
+    match err {
+        _ => println!("{:?}", err)
+    }
+}
+
 pub fn render<'a, S: Copy + Into<String>>(path: S) -> AstryxResult<HashMap<String, String>> {
     let file: &str = &std::fs::read_to_string(&path.into())?;
 
     parser::run(file)
-        .map_err(|_| AstryxError::new("file"))
+        .map_err(|e| {
+            convert_error(e);
+            AstryxError{ kind: AstryxErrorKind::ParserError, pos: Span {
+            line: e.unwrap_err(),
+            position: 0,
+            offset: 0,
+        } }
+        })
         .and_then(|(_span, ast)| {
             interpreter::run(&ast, get_folder_from_filename(&path.into()))
                 .map_err(|_| AstryxError::new("file"))
