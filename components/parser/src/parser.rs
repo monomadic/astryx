@@ -5,16 +5,17 @@ use crate::{
     error::{ParserError, ParserResult},
     variable::Variable,
 };
-use nom::*;
+// use nom::*;
 use nom::{
     branch::alt,
-    bytes::complete::{is_not, tag},
+    bytes::complete::{is_not, tag, take_until},
     character::complete::{alphanumeric1, char, multispace0, newline, one_of, space0, space1},
-    combinator::{map, opt},
+    combinator::{map, opt, complete},
     error::*,
-    sequence::{delimited, preceded, tuple},
+    sequence::{delimited, preceded, tuple}, IResult, AsChar, InputTakeAtPosition,
 };
 use nom_locate::LocatedSpan;
+use nom::combinator::{cut, all_consuming};
 
 type Span<'a> = LocatedSpan<&'a str>;
 
@@ -110,19 +111,14 @@ pub struct Decorator {
 // }
 
 pub(crate) fn node(s: Span) -> IResult<Span, Token> {
-    // // knock out blank lines at start of doc
-    // let (r, _) = blank_lines(s)?;
-
-    let (s, t) = alt((
+    alt((
         map(comment, |s| Token::Comment(String::from(*s.fragment()))),
         map(for_loop, |f| Token::ForLoop(f)),
         map(function_call, |f| Token::FunctionCall(f)),
         map(piped_string, |string_tokens| Token::Text(string_tokens)),
         // map(codeblock, |cb| Token::CodeBlock(cb)),
         map(element, |e| Token::Element(e)),
-    ))(s)?;
-
-    Ok((s, t))
+    ))(s)
 }
 
 // fn nnode(i: &str) -> IResult<&str, Token> {
@@ -166,7 +162,10 @@ fn test_node() {
 }
 
 fn comment(i: Span) -> IResult<Span, Span> {
-    preceded(multispace0, delimited(char('#'), is_not("\n"), char('\n')))(i)
+    preceded(
+        multispace0, 
+        delimited(char('#'), is_not("\n"), char('\n')))
+    (i)
 }
 
 #[test]
@@ -264,7 +263,41 @@ fn for_loop(i: Span) -> IResult<Span, ForLoop> {
     ))
 }
 
+fn function_call_arguments(i: Span) -> IResult<Span, Vec<(Span, Variable)>> {
+    println!("checking {:?}", i);
+    // cut | all_consuming | complete
+    // cut(all_consuming(nom::multi::many0(function_argument)))(i)
+    nom::multi::many0(function_argument)(i)
+}
+
+// fn function_call_header(i: Span) -> IResult<Span, Vec<(Span, Variable)>> {
+//     nom::sequence::tuple((
+//         multispace0,
+//         symbolic1,
+//         space0,
+//         char('('),
+//         take_until("\n"),
+//         newline,
+//     ))(i)
+// }
+
+
+
 fn function_call(i: Span) -> IResult<Span, FunctionCall> {
+    let (r, (pre, ident, _, _, arguments, _)) = nom::sequence::tuple((
+        multispace0,
+        symbolic1,
+        space0,
+        char('('),
+        take_until("\n"),
+        newline,
+    ))(i)?;
+
+    let (_, arguments) = function_call_arguments(arguments)?;
+
+    println!("finished.");
+
+
     let (mut r, (pre, ident, _, _, arguments, _, _, _)) = nom::sequence::tuple((
         multispace0,
         symbolic1,
@@ -288,7 +321,10 @@ fn function_call(i: Span) -> IResult<Span, FunctionCall> {
         r,
         FunctionCall {
             ident: String::from(*ident.fragment()),
-            arguments: arguments.into_iter().map(|(k, v)| (String::from(*k.fragment()), v)).collect(),
+            arguments: arguments
+                .into_iter()
+                .map(|(k, v)| (String::from(*k.fragment()), v))
+                .collect(),
             children,
         },
     ))
@@ -473,11 +509,6 @@ fn test_quoted_string() {
 }
 
 fn piped_string(i: Span) -> IResult<Span, Vec<StringToken>> {
-    // let (r, (_, _, value, _)) =
-    //     nom::sequence::tuple((multispace0, tag("| "), tokenised_string, newline))(i)?;
-
-    // return Ok((r, value));
-
     nom::sequence::tuple((multispace0, tag("| "), tokenised_string, newline))(i)
         .map(|(r, (_, _, value, _))| (r, value))
 }
@@ -551,9 +582,13 @@ fn variable(i: Span) -> IResult<Span, Variable> {
     alt((
         // map(hash, JsonValue::Object),
         // map(array, JsonValue::Array),
-        map(quoted_string, |s: Span| Variable::QuotedString(String::from(*s.fragment()))),
+        map(quoted_string, |s: Span| {
+            Variable::QuotedString(String::from(*s.fragment()))
+        }),
         map(relative_path, |s: String| Variable::RelativePath(s)),
-        map(symbolic1, |s: Span| Variable::Reference(String::from(*s.fragment()))),
+        map(symbolic1, |s: Span| {
+            Variable::Reference(String::from(*s.fragment()))
+        }),
         // map(argument_idx,   |i| Property::ArgumentIndex(i.parse::<usize>().unwrap())),
         // map(double,         |f| Property::Float(f)),
         // map(digit1,         |i:&str| Property::Number(i.parse::<i64>().unwrap_or(0))),

@@ -22,15 +22,7 @@ pub struct Position {
 
 impl From<Err<(nom_locate::LocatedSpan<&str>, nom::error::ErrorKind)>> for ParserError {
     fn from(err: Err<(nom_locate::LocatedSpan<&str>, nom::error::ErrorKind)>) -> ParserError {
-        // ParserError {
-        //     kind: ParserErrorKind::SyntaxError,
-        //     pos: Position {
-        //         line: err.0.span.location_line(),
-        //         offset: err.0.span.location_offset(),
-        //         column:err.0.span.get_column(),
-        //     }
-        // }
-
+        println!("err: {:?}", err);
         match err {
             Err::Error((span, _kind)) |
             Err::Failure((span, _kind)) => ParserError {
@@ -42,7 +34,7 @@ impl From<Err<(nom_locate::LocatedSpan<&str>, nom::error::ErrorKind)>> for Parse
                 },
                 context: String::from(*span.fragment())
             },
-            _ => unimplemented!(),
+            nom::Err::Incomplete(_) => unreachable!(),
         }
     }
 }

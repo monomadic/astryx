@@ -3,7 +3,7 @@ use parser::{error::{ParserErrorKind, Position}};
 
 pub(crate) fn build(file: String) -> AstryxResult<()> {
     match astryx::render(&file) {
-        Ok(_) => println!("ok."),
+        Ok(buffers) => println!("ok. {:?}", buffers),
         Err(e) => display_error(e)
     }
     Ok(())
