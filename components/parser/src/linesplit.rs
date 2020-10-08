@@ -2,7 +2,7 @@ use crate::Span;
 use nom::{character::complete::{newline, one_of}, IResult, bytes::complete::take_until, sequence::tuple, multi::many0, combinator::cut};
 
 /// whitespace significant linesplit
-/// 
+/// see: map_while
 
 #[derive(Debug)]
 pub struct Line<'a> {
@@ -16,6 +16,7 @@ fn take_children(i: Span) -> IResult<Span, Line> {
 
     // println!("indents: {:?}, {:?}, {}, {}", line, r, line_indent(r.fragment()), line_indent(line.fragment()));
 
+    // see map_while
     while line_indent(r.fragment()) > indent {
         let (rem, child) = take_children(r)?;
         children.push(child);

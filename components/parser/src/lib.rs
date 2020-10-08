@@ -16,9 +16,8 @@
 //!
 //! ```
 
-use error::{ParserErrorKind, Position};
 use nom::{
-    branch::alt, character::complete::multispace1, error::VerboseError, sequence::tuple, IResult,
+    branch::alt, character::complete::multispace1, IResult, sequence::tuple, Err,
 };
 use nom_locate::LocatedSpan;
 
@@ -33,39 +32,42 @@ pub use crate::parser::Token;
 mod eof;
 mod linesplit;
 
-/// returns a nom combinator version of the parser
-pub fn _run(i: &str) -> IResult<Span, Vec<Token>> {
-    // pub fn run<'a, S: Into<&'a str>>(i: S) -> IResult<Span<'a>, Vec<Token>> {
-    tuple((
-        nom::multi::many0(parser::node),
-        alt((eof::eof, multispace1)),
-    ))(Span::new(i))
-    .map(|(r, (a, _))| (r, a))
-}
+// /// returns a nom combinator version of the parser
+// pub fn _run(i: &str) -> IResult<Span, Vec<Token>> {
+//     // pub fn run<'a, S: Into<&'a str>>(i: S) -> IResult<Span<'a>, Vec<Token>> {
+//     tuple((
+//         nom::multi::many0(parser::node),
+//         alt((eof::eof, multispace1)),
+//     ))(Span::new(i))
+//     .map(|(r, (a, _))| (r, a))
+// }
 
-pub fn __run(i: &str) -> ParserResult<Vec<Token>> {
-    tuple((
-        nom::multi::many0(parser::node),
-        alt((eof::eof, multispace1)),
-    ))(Span::new(i))
-    .map(|(_, (a, _))| a)
-    .map_err(|e| e.into())
-}
+// pub fn __run(i: &str) -> ParserResult<Vec<Token>> {
+//     tuple((
+//         nom::multi::many0(parser::node),
+//         alt((eof::eof, multispace1)),
+//     ))(Span::new(i))
+//     .map(|(_, (a, _))| a)
+//     .map_err(|e| e.into())
+// }
 
 pub fn run(i: &str) -> ParserResult<Vec<Token>> {
-    let (_, lines) = linesplit::take_lines(i)?;
-
-    let tokens: Vec<Token> = lines
-        .iter()
-        .flat_map(|line| {
-            println!("sending {:?}", line);
-            parser::node(line.content)
+    linesplit::take_lines(i) // break document up by whitespace indentation
+        .map(|(_, lines)| lines)? // rem will always be empty as we use cut()
+        .into_iter()
+        .map(|line| {
+            println!("sending {:?}", line.content);
+            parser::node(line.content) // parse a line into a statement
+                .map(|(_, token)| token)
+                // .map_err(|e:Err<_>| match e {
+                //     Err::Error(e) | Err::Failure(e) => e.convert(),
+                //     Err::Incomplete(_) => Err::convert
+                // })
+                // .map_err(|e| Err::convert::<ParserError>(e))
+                // .unwrap_err()
+                .map_err(ParserError::from)
         })
-        .map(|(_, token)| token)
-        .collect();
-
-    println!("{:?}", tokens);
-    Ok(tokens)
+        .collect()
 }
 
 #[test]

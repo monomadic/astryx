@@ -2,8 +2,8 @@
 // Tokenises an astryx program into an AST
 
 use crate::{
-    error::{ParserError, ParserResult},
-    variable::Variable,
+    error::{ParserError, ParserResult, ParserErrorKind},
+    variable::Variable, eof::eof,
 };
 // use nom::*;
 use nom::{
@@ -12,10 +12,10 @@ use nom::{
     character::complete::{alphanumeric1, char, multispace0, newline, one_of, space0, space1},
     combinator::{map, opt, complete},
     error::*,
-    sequence::{delimited, preceded, tuple}, IResult, AsChar, InputTakeAtPosition,
+    sequence::{delimited, preceded, tuple, terminated}, IResult, AsChar, InputTakeAtPosition,
 };
 use nom_locate::LocatedSpan;
-use nom::combinator::{cut, all_consuming};
+use nom::{multi::many_till, combinator::{cut, all_consuming}};
 
 type Span<'a> = LocatedSpan<&'a str>;
 
@@ -114,7 +114,7 @@ pub(crate) fn node(s: Span) -> IResult<Span, Token> {
     alt((
         map(comment, |s| Token::Comment(String::from(*s.fragment()))),
         map(for_loop, |f| Token::ForLoop(f)),
-        map(function_call, |f| Token::FunctionCall(f)),
+        // map(function_call, |f| Token::FunctionCall(f)),
         map(piped_string, |string_tokens| Token::Text(string_tokens)),
         // map(codeblock, |cb| Token::CodeBlock(cb)),
         map(element, |e| Token::Element(e)),
@@ -233,6 +233,21 @@ fn test_comment() {
 // }
 
 fn for_loop(i: Span) -> IResult<Span, ForLoop> {
+
+    let x = tag("for")(i)
+        .and_then(|(r, _)| tuple((
+            space1,
+            alphanumeric1,
+            space0,
+            tag("in"),
+            space1,
+            relative_path,
+        ))(r))?;
+    
+    println!("x: {:?}", x);
+
+
+
     let (mut r, (pre, _, _, ident, _, _, _, relative_path, _)) = nom::sequence::tuple((
         multispace0,
         tag("for"),
@@ -263,11 +278,36 @@ fn for_loop(i: Span) -> IResult<Span, ForLoop> {
     ))
 }
 
-fn function_call_arguments(i: Span) -> IResult<Span, Vec<(Span, Variable)>> {
-    println!("checking {:?}", i);
+// use crate::error::*;
+use nom::Err::{self, Error};
+
+fn function_call_arguments(i: Span) -> IResult<Span, Vec<(Span, Variable)>, ParserError> {
     // cut | all_consuming | complete
-    // cut(all_consuming(nom::multi::many0(function_argument)))(i)
-    nom::multi::many0(function_argument)(i)
+    cut(all_consuming(nom::multi::many0(function_argument)))(i)
+        // .map_err(|e| e.map(|(span, _kind)| ParserError {
+        //     context: span.to_string(),
+        //     kind: ParserErrorKind::SyntaxError,
+        //     pos: span.into(),
+        // }))
+        .map_err(Err::convert)
+        // .map_err(|e| Err::Failure(ParserError {
+        //     context: span.to_string(),
+        //     kind: ParserErrorKind::SyntaxError,
+        //     pos: span.into(),
+        // }))
+}
+
+#[test]
+fn test_function_call_arguments() {
+    assert!(function_call_arguments(Span::new("")).is_ok());
+    assert!(function_call_arguments(Span::new(",")).is_err());
+    assert!(function_call_arguments(Span::new("a")).is_err());
+
+    let err = function_call_arguments(Span::new("some bad arguments")).unwrap_err();
+    match err {
+      nom::Err::Failure(e) => assert_eq!(e.kind, crate::error::ParserErrorKind::SyntaxError),
+      _ => panic!("Unexpected error: {:?}", err),
+    }
 }
 
 // fn function_call_header(i: Span) -> IResult<Span, Vec<(Span, Variable)>> {
@@ -283,41 +323,17 @@ fn function_call_arguments(i: Span) -> IResult<Span, Vec<(Span, Variable)>> {
 
 
 
-fn function_call(i: Span) -> IResult<Span, FunctionCall> {
-    let (r, (pre, ident, _, _, arguments, _)) = nom::sequence::tuple((
-        multispace0,
+fn function_call(i: Span) -> IResult<Span, FunctionCall, ParserError> {
+    nom::sequence::tuple((
         symbolic1,
-        space0,
-        char('('),
-        take_until("\n"),
-        newline,
-    ))(i)?;
-
-    let (_, arguments) = function_call_arguments(arguments)?;
-
-    println!("finished.");
-
-
-    let (mut r, (pre, ident, _, _, arguments, _, _, _)) = nom::sequence::tuple((
-        multispace0,
-        symbolic1,
-        space0,
-        char('('),
+        // delimited(
+        terminated(multispace0, char('(')),
         nom::multi::many0(function_argument),
-        char(')'),
-        newline,
-        blank_lines,
-    ))(i)?;
-
-    let mut children = Vec::new();
-
-    while line_indent(r) > line_indent(pre) {
-        let (rem, child) = node(r)?;
-        children.push(child);
-        r = rem;
-    }
-
-    Ok((
+        terminated(multispace0, char(')')),
+        // ),
+        terminated(multispace0, eof),
+    ))(i)
+    .map(|(r, (ident, _, arguments, _, _))| (
         r,
         FunctionCall {
             ident: String::from(*ident.fragment()),
@@ -325,10 +341,27 @@ fn function_call(i: Span) -> IResult<Span, FunctionCall> {
                 .into_iter()
                 .map(|(k, v)| (String::from(*k.fragment()), v))
                 .collect(),
-            children,
+            children: Vec::new(),
         },
     ))
+    .map_err(Err::convert)
 }
+
+#[test]
+fn test_function_call() {
+    let err = function_call(Span::new("not a (function)")).unwrap_err();
+    match err {
+      nom::Err::Error(e) => assert_eq!(e.kind, crate::error::ParserErrorKind::SyntaxError),
+      _ => panic!("Expected Error, got error: {:?}", err),
+    }
+
+    let err = function_call(Span::new("function(bad argument)")).unwrap_err();
+    match err {
+      nom::Err::Failure(e) => assert_eq!(e.kind, crate::error::ParserErrorKind::SyntaxError),
+      _ => panic!("Expected Failure, got error: {:?}", err),
+    }
+}
+
 
 // #[test]
 // fn test_function_call() {
@@ -351,8 +384,17 @@ fn function_call(i: Span) -> IResult<Span, FunctionCall> {
 //     assert_eq!(f.arguments.len(), 0);
 // }
 
+fn function_argument_ident(i: Span) -> IResult<Span, Span, ParserError> {
+    symbolic1(i)
+    .map_err(|e| e.map(|(span, _kind)| ParserError {
+        context: span.to_string(),
+        kind: ParserErrorKind::SyntaxError,
+        pos: span.into(),
+    }))
+}
+
 fn function_argument(i: Span) -> IResult<Span, (Span, Variable)> {
-    let (r, (_, ident, _, _, _, variable, _)) = nom::sequence::tuple((
+    tuple((
         space0,
         symbolic1,
         space0,
@@ -360,9 +402,10 @@ fn function_argument(i: Span) -> IResult<Span, (Span, Variable)> {
         space0,
         variable,
         opt(char(',')),
-    ))(i)?;
-
-    Ok((r, (ident.into(), variable)))
+    ))(i)
+    .map(|(r, (_, ident, _, _, _, variable, _))| {
+        (r, (ident.into(), variable))
+    })
 }
 
 #[test]

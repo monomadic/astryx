@@ -12,7 +12,7 @@ pub(crate) fn build(file: String) -> AstryxResult<()> {
 fn display_error(err: AstryxError) {
     // println!("error: {:?}", err);
     match &err {
-        AstryxError::ParserError(e) => println!("{}", error_with_line("test.src", &e.pos, &e.context, &error_reason(&err)))
+        AstryxError::ParserError(e) => println!("{}", error_with_line("test.src", &e.pos, &e.context, "--"))
     }
 }
 
@@ -25,12 +25,12 @@ fn error_with_line(filename: &str, pos: &Position, context: &str, reason: &str) 
     ].join("\n")
 }
 
-fn error_reason(e: &AstryxError) -> String {
-    match e {
-        AstryxError::ParserError(e) => {
-            match e.kind {
-                ParserErrorKind::SyntaxError => "syntax error."
-            }
-        }
-    }.into()
-}
+// fn error_reason(e: &AstryxError) -> String {
+//     match e {
+//         AstryxError::ParserError(e) => {
+//             match e.kind {
+//                 ParserErrorKind::SyntaxError => "syntax error."
+//             }
+//         }
+//     }.into()
+// }
