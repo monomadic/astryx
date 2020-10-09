@@ -52,9 +52,9 @@ impl<I> ParseError<I> for ParserError<I> {
     }
 }
 
-impl<I> ContextError<I> for ParserError<I> {
-    fn add_context(_input: I, ctx: &'static str, _other: Self) -> Self {
-        panic!("add_context:{}", ctx);
+impl<I:std::fmt::Display> ContextError<I> for ParserError<I> {
+    fn add_context(input: I, ctx: &'static str, other: Self) -> Self {
+        panic!("add_context: {}{}", ctx, input);
         other
     }
 }

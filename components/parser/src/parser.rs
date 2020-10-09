@@ -45,7 +45,7 @@ pub(crate) fn statement<'a>(i: &'a str) -> IResult<&str, Vec<Token>, ParserError
 #[test]
 fn test_statement() {
     let input = "za z z%";
-
+ 
     // let e = statement(input).unwrap_err();
     // println!(
     //     "verbose errors - `root::<VerboseError>(data)`:\n{}",
@@ -53,7 +53,7 @@ fn test_statement() {
     // );
 
     match statement(input) {
-        Err(Err::Error(e)) => println!("Error {:?}", nom::error::context("mycon", statement)(input)),
+        Err(Err::Error(e)) => println!("Error {:?}", nom::error::context("expected statement, found ", statement)(input)),
         Err(Err::Failure(e)) => println!("Failure {:?}", e),
         Ok(s) => println!("statement ok - {:?}", s),
         _ => (),
