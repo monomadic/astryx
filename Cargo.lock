@@ -42,7 +42,7 @@ version = "0.1.0"
 dependencies = [
  "glob",
  "interpreter",
- "nom 5.1.2",
+ "nom",
  "parser",
  "rctree",
  "syntect",
@@ -87,18 +87,6 @@ name = "bitflags"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf1de2fe8c75bc145a2f577add951f8134889b4795d47466a54a5c846d691693"
-
-[[package]]
-name = "bitvec"
-version = "0.19.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "11593270830d9b037fbead730bb0c05ef6fbf6be55537a1e8e5892edef7e1f03"
-dependencies = [
- "funty",
- "radium",
- "tap",
- "wyz",
-]
 
 [[package]]
 name = "bytecount"
@@ -292,12 +280,6 @@ name = "fnv"
 version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1"
-
-[[package]]
-name = "funty"
-version = "1.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0ba62103ce691c2fd80fbae2213dfdda9ce60804973ac6b6e97de818ea7f52c8"
 
 [[package]]
 name = "getopts"
@@ -589,24 +571,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "nom"
-version = "6.0.0-alpha3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "acfdb15f1bbe80f55976605acfd7ee58424bac92f04ba96361cc3c7cacafb045"
-dependencies = [
- "bitvec",
- "lexical-core",
- "memchr",
- "version_check",
-]
-
-[[package]]
 name = "nom-tracable"
 version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1875762c6bd471741e093a85fd66f6b9b93b14203b592b66ec7b41b31f553559"
 dependencies = [
- "nom 5.1.2",
+ "nom",
  "nom-tracable-macros",
  "nom_locate 1.0.0",
  "nom_locate 2.0.0",
@@ -630,7 +600,7 @@ checksum = "f932834fd8e391fc7710e2ba17e8f9f8645d846b55aa63207e17e110a1e1ce35"
 dependencies = [
  "bytecount 0.3.2",
  "memchr",
- "nom 5.1.2",
+ "nom",
 ]
 
 [[package]]
@@ -641,7 +611,7 @@ checksum = "1e4726500a3d0297dd38edc169d919ad997a9931b4645b59ce0231e88536e213"
 dependencies = [
  "bytecount 0.6.0",
  "memchr",
- "nom 5.1.2",
+ "nom",
 ]
 
 [[package]]
@@ -699,7 +669,7 @@ dependencies = [
 name = "parser"
 version = "0.1.0"
 dependencies = [
- "nom 6.0.0-alpha3",
+ "nom",
  "nom-tracable",
  "nom_locate 2.0.0",
  "yaml-rust",
@@ -822,12 +792,6 @@ checksum = "aa563d17ecb180e500da1cfd2b028310ac758de548efdd203e18f283af693f37"
 dependencies = [
  "proc-macro2",
 ]
-
-[[package]]
-name = "radium"
-version = "0.5.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "941ba9d78d8e2f7ce474c015eea4d9c6d25b6a3327f9832ee29a4de27f91bbb8"
 
 [[package]]
 name = "rand"
@@ -1099,12 +1063,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "tap"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "36474e732d1affd3a6ed582781b3683df3d0563714c59c39591e8ff707cf078e"
-
-[[package]]
 name = "textwrap"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1231,12 +1189,6 @@ name = "winapi-x86_64-pc-windows-gnu"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
-
-[[package]]
-name = "wyz"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "85e60b0d1b5f99db2556934e21937020776a5d31520bf169e851ac44e6420214"
 
 [[package]]
 name = "xml-rs"

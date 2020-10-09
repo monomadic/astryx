@@ -7,7 +7,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-nom = { version = "6.0.0-alpha3", features = ["std"] }
+nom = { version = "5.1.2", features = ["std"] }
 yaml-rust = "0.4"
 nom-tracable = "0.6.2"
 nom_locate = "2.0.0"

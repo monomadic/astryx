@@ -3,7 +3,7 @@
 
 use crate::Span;
 use nom::{
-    error::{ErrorKind, ParseError, ContextError},
+    error::{ErrorKind, ParseError},
     Err,
 };
 
@@ -52,24 +52,24 @@ impl<I> ParseError<I> for ParserError<I> {
     }
 }
 
-impl<I:std::fmt::Display> ContextError<I> for ParserError<I> {
-    fn add_context(input: I, ctx: &'static str, other: Self) -> Self {
-        panic!("add_context: {}{}", ctx, input);
-        other
-    }
-}
+// impl<I:std::fmt::Display> ContextError<I> for ParserError<I> {
+//     fn add_context(input: I, ctx: &'static str, other: Self) -> Self {
+//         panic!("add_context: {}{}", ctx, input);
+//         other
+//     }
+// }
 
 // this is selfish and a perf hit, but I don't want to expose Span
 // it's not that bad as these aren't heap allocated
-// impl<'a> From<Span<'a>> for Position {
-//     fn from(span: Span) -> Position {
-//         Position {
-//             line: span.location_line(),
-//             offset: span.location_offset(),
-//             column: span.get_column(),
-//         }
-//     }
-// }
+impl<'a> From<Span<'a>> for Position {
+    fn from(span: Span) -> Position {
+        Position {
+            line: span.location_line(),
+            offset: span.location_offset(),
+            column: span.get_column(),
+        }
+    }
+}
 
 // impl From<Span<'_>> for Position {
 //     fn from(span: Span) -> Position {
