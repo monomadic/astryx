@@ -54,8 +54,8 @@ mod linesplit;
 //     .map_err(|e| e.into())
 // }
 
-pub fn parse_line<'a>(i: &'a str) -> Result<Statement<'a>, ParserError<Span>> {
-    parser::statement(Span::new(i))
+pub fn parse_line<'a>(i: Span<'a>) -> Result<Statement<'a>, ParserError<Span>> {
+    parser::statement(i)
         .map(|(r, result)| result)
         .map_err(|e| match e {
             Err::Error(e) | Err::Failure(e) => e,
@@ -65,38 +65,17 @@ pub fn parse_line<'a>(i: &'a str) -> Result<Statement<'a>, ParserError<Span>> {
 
 #[test]
 fn test_parse_line() {
-    assert!(parse_line("func()").is_ok());
-    assert!(parse_line("func()").is_ok());
+    assert!(parse_line(Span::new("func()")).is_ok());
+    assert!(parse_line(Span::new("func(a:1)")).is_ok());
 }
 
-// pub fn run(i: &str) -> ParserResult<Span, Span> {
-//     linesplit::take_lines(i) // break document up by whitespace indentation
-//         .unwrap().1
-//         // .map(|(_, lines)| lines) // rem will always be empty as we use cut()
-//         // .collect::<Vec<Line>>()
-//         .into_iter().map(|line:Line| parse_line(&line.content.to_string()))
-//         .collect()
-// }
+pub fn run<'a>(i: &'a str) -> Result<Vec<Statement<'a>>, ParserError<Span<'a>>> {
+    let (_, lines) = linesplit::take_lines(i).expect("linesplit fail (fix)"); // break document up by whitespace indentation
 
-// pub fn run(i: &str) -> ParserResult<Span, ParserError<Span>> {
-//     // linesplit::take_lines(i) // break document up by whitespace indentation
-//     //     // .map(|(_, lines)| lines) // rem will always be empty as we use cut()
-//     //     .map(|(_, lines)| {
-//     //         // println!("sending {:?}", line.content);
-//     //         lines.iter().map(|line| {
-//     //             parser::statement(line.content) // parse a line into a statement
-//     //             .map(|(_, token)| token)
-//     //             .map_err(|e:Err<_>| e.into())
-//     //             // .map_err(|e| Err::convert::<ParserError>(e))
-//     //             // .unwrap_err()
-//     //             // .map_err(ParserError::from)
-                
-//     //         }).collect()
-//     //     })
-//     //     .map_err(|e| e.into())
-//     //     // .collect()
-
-// }
+    lines.into_iter()
+        .map(|line:Line| parse_line(line.content))
+        .collect()
+}
 
 // #[test]
 // fn test_run() {
@@ -110,25 +89,6 @@ fn test_parse_line() {
 //     println!("{:?}", result);
 
 //     // assert!(run("44").is_err());
-// }
-
-// pub fn run(i: &str) -> ParserResult<Vec<Token>> {
-//     linesplit::take_lines(i) // break document up by whitespace indentation
-//         .map(|(_, lines)| lines)? // rem will always be empty as we use cut()
-//         .into_iter()
-//         .map(|line| {
-//             println!("sending {:?}", line.content);
-//             parser::node(&line.content.to_string()) // parse a line into a statement
-//                 .map(|(_, token)| token)
-//                 // .map_err(|e:Err<_>| match e {
-//                 //     Err::Error(e) | Err::Failure(e) => e.convert(),
-//                 //     Err::Incomplete(_) => Err::convert
-//                 // })
-//                 // .map_err(|e| Err::convert::<ParserError>(e))
-//                 // .unwrap_err()
-//                 // .map_err(ParserError::from)
-//         })
-//         .collect()
 // }
 
 // #[test]
