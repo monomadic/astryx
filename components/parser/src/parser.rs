@@ -58,6 +58,7 @@ fn array<'a>(i: Span) -> IResult<Span, Span, ParserError<Span>> {
         })
 }
 
+
 fn function_call<'a>(i: Span) -> IResult<Span, Span, ParserError<Span>> {
     // fn letter(i: &str) -> IResult<&str, Token, ParserError> {
     tuple((alpha1, char('('), cut(alpha0), cut(char(')'))))(i)
@@ -70,6 +71,24 @@ fn function_call<'a>(i: Span) -> IResult<Span, Span, ParserError<Span>> {
             })
         })
 }
+
+#[test]
+fn test_function_call() {
+    assert!(function_call(Span::new("g()")).is_ok());
+
+    let e = function_call(Span::new("g"));
+    match e {
+        Err(Err::Error(_)) => (),
+        _ => panic!("expected Error, got {:?}", e),
+    };
+
+    let e = function_call(Span::new("g(1)"));
+    match e {
+        Err(Err::Failure(_)) => (),
+        _ => panic!("expected Failure, got {:?}", e),
+    };
+}
+
 
 pub(crate) fn statement<'a>(i: Span) -> IResult<Span, Span, ParserError<Span>> {
     all_consuming(alt((
