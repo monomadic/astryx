@@ -1,15 +1,16 @@
 use crate::{
     error::{ParserErrorKind, Position},
-    ParserError,
+    ParserError, models::{Statement, FunctionCall},
 };
 use nom::{
     branch::alt,
-    character::complete::{alpha1, alphanumeric1, space1, char, alpha0},
-    combinator::{all_consuming, map, cut},
+    character::complete::{alpha0, alpha1, alphanumeric1, char, space1},
+    combinator::{all_consuming, cut, map},
+    error::ParseError,
     error::{convert_error, VerboseError},
-    error::{ ParseError},
-    multi::{many1, many0},
-    Err, IResult, sequence::tuple,
+    multi::{many0, many1},
+    sequence::tuple,
+    Err, IResult,
 };
 use nom_locate::LocatedSpan;
 
@@ -57,12 +58,18 @@ fn array<'a>(i: Span) -> IResult<Span, Span, ParserError<Span>> {
             })
         })
 }
+#[test]
+fn test_array() {
+    assert!(array(Span::new("[g]")).is_ok());
+}
 
-
-fn function_call<'a>(i: Span) -> IResult<Span, Span, ParserError<Span>> {
+fn function_call<'a>(i: Span<'a>) -> IResult<Span, FunctionCall<'a>, ParserError<Span>> {
     // fn letter(i: &str) -> IResult<&str, Token, ParserError> {
     tuple((alpha1, char('('), cut(alpha0), cut(char(')'))))(i)
-        .map(|(r, (ident, _, _, _))| (r, ident))
+        .map(|(r, (ident, _, _, _))| (r, FunctionCall {
+            ident,
+            arguments: Vec::new(),
+        }))
         .map_err(|e| {
             e.map(|(span, _kind)| ParserError {
                 context: span,
@@ -89,25 +96,16 @@ fn test_function_call() {
     };
 }
 
-
-pub(crate) fn statement<'a>(i: Span) -> IResult<Span, Span, ParserError<Span>> {
+pub(crate) fn statement<'a>(i: Span<'a>) -> IResult<Span, Statement<'a>, ParserError<Span>> {
     all_consuming(alt((
-        function_call,
-        array,
+        map(function_call, |f| Statement::FunctionCall(f)),
+        map(function_call, |f| Statement::FunctionCall(f)),
     )))(i)
 }
 
-#[test]
+#[test] 
 fn test_statement() {
-    let input = "g()";
-
-    match statement(Span::new(input)) {
-        Err(Err::Error(e)) => {
-            println!("[ERROR] {:?}", e)
-            // println!("[ERROR] {:?}", nom::error::context("expected statement, found ", function_call)(Span::new(input)))
-        },
-        Err(Err::Failure(e)) => println!("[FAILURE] {:?}", e),
-        Ok(s) => println!("statement ok - {:?}", s),
-        _ => (),
-    };
+    assert!(statement(Span::new("")).is_err()); // do not allow blank lines to slip through
+    assert!(statement(Span::new("g()")).is_ok());
+    // assert!(statement(Span::new("[g]")).is_ok());
 }

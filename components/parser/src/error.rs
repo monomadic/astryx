@@ -81,13 +81,13 @@ impl<'a> From<Span<'a>> for Position {
 //     }
 // }
 
-// // used by the main api interface, run()
-// impl From<'a, Err<(nom_locate::LocatedSpan<&'a str>, nom::error::ErrorKind)>> for ParserError<&str> {
-//     fn from(err: Err<(nom_locate::LocatedSpan<&str>, nom::error::ErrorKind)>) -> ParserError<&str> {
-//         println!("err: {:?}", err);
+// used by the main api interface, run()
+// impl <I>From<I> for ParserError<I> {
+//     fn from(err: Err<(I, nom::error::ErrorKind)>) -> ParserError<I> {
+//         // println!("err: {:?}", err);
 //         match err {
 //             Err::Error((span, _kind)) | Err::Failure((span, _kind)) => ParserError {
-//                 context: span.to_string(),
+//                 context: "span",
 //                 kind: ParserErrorKind::SyntaxError,
 //                 pos: span.into(),
 //             },
