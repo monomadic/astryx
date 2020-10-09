@@ -97,6 +97,7 @@ fn test_function_call() {
 }
 
 pub(crate) fn statement<'a>(i: Span<'a>) -> IResult<Span, Statement<'a>, ParserError<Span>> {
+    println!("statement {:?}", i);
     all_consuming(alt((
         map(function_call, |f| Statement::FunctionCall(f)),
         map(function_call, |f| Statement::FunctionCall(f)),
