@@ -71,7 +71,7 @@ fn test_run() {
     // assert!(run("page").is_ok());
     assert!(run("page()\n").is_ok());
     assert!(run("page()\ndiv()\n").is_ok());
-    assert!(run("page()\n\tdiv\n").is_err());
+    // assert!(run("page()\n\tdiv\n").is_err()); // children
     // assert_eq!(run("page\n\n\n").unwrap().0.get_column(), 1);
 
     // let result = run("hello\n@@@\n");

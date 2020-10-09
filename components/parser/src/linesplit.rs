@@ -37,6 +37,11 @@ fn test_take_lines() {
     // test throw away blank lines
     assert_eq!(take_lines("a\nb\n\n").unwrap().1.len(), 2);
     assert_eq!(take_lines("a\n\nb\n\nc\n").unwrap().1.len(), 3);
+
+    // test children
+    assert_eq!(take_lines("a\n\tb\n").unwrap().1[0].content.to_string(), "a");
+    assert_eq!(take_lines("a\n\tb\n").unwrap().1[0].children[0].content.to_string(), "b");
+    assert_eq!(take_lines("a\n\tb\n\tc\n").unwrap().1[0].children[1].content.to_string(), "c");
 }
 
 fn take_children(i: Span) -> IResult<Span, Line> {
