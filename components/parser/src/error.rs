@@ -4,7 +4,6 @@
 use crate::Span;
 use nom::{
     error::{ErrorKind, ParseError},
-    Err,
 };
 
 pub type ParserResult<T,I> = Result<T, ParserError<I>>;
@@ -42,8 +41,8 @@ impl<I> ParseError<I> for ParserError<I> {
     }
 
     fn from_char(input: I, _: char) -> Self {
-        panic!("from_char");
-        // Self::from_error_kind(input, ErrorKind::Char)
+        // panic!("from_char");
+        Self::from_error_kind(input, ErrorKind::Char)
     }
 
     fn or(self, other: Self) -> Self {

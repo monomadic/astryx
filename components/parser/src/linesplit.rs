@@ -1,11 +1,11 @@
-use crate::{ Span, eof::eof};
+use crate::Span;
 use nom::{
-    bytes::complete::{take_till, take_until, take_while, is_not},
-    character::{is_alphabetic, complete::{newline, one_of, not_line_ending, line_ending, multispace0, space0, alpha1}},
-    combinator::{not, cut, opt},
+    bytes::complete::is_not,
+    character::complete::{newline, one_of, space0},
+    combinator::{cut, opt},
     multi::many0,
-    sequence::{delimited, tuple, preceded, terminated},
-    IResult, branch::alt,
+    sequence::tuple,
+    IResult,
 };
 
 /// whitespace significant linesplit
@@ -30,8 +30,14 @@ fn test_take_lines() {
     assert_eq!(take_lines("a\nb").unwrap().1[0].content.to_string(), "a");
     assert_eq!(take_lines("a\nb").unwrap().1[1].content.to_string(), "b");
     assert_eq!(take_lines("a\nb").unwrap().1.len(), 2);
-    assert_eq!(take_lines("page()\nb").unwrap().1[0].content.to_string(), "page()");
-    assert_eq!(take_lines("page()\nb").unwrap().1[1].content.to_string(), "b");
+    assert_eq!(
+        take_lines("page()\nb").unwrap().1[0].content.to_string(),
+        "page()"
+    );
+    assert_eq!(
+        take_lines("page()\nb").unwrap().1[1].content.to_string(),
+        "b"
+    );
     assert!(take_lines("page\n").is_ok());
 
     // test throw away blank lines
@@ -39,9 +45,22 @@ fn test_take_lines() {
     assert_eq!(take_lines("a\n\nb\n\nc\n").unwrap().1.len(), 3);
 
     // test children
-    assert_eq!(take_lines("a\n\tb\n").unwrap().1[0].content.to_string(), "a");
-    assert_eq!(take_lines("a\n\tb\n").unwrap().1[0].children[0].content.to_string(), "b");
-    assert_eq!(take_lines("a\n\tb\n\tc\n").unwrap().1[0].children[1].content.to_string(), "c");
+    assert_eq!(
+        take_lines("a\n\tb\n").unwrap().1[0].content.to_string(),
+        "a"
+    );
+    assert_eq!(
+        take_lines("a\n\tb\n").unwrap().1[0].children[0]
+            .content
+            .to_string(),
+        "b"
+    );
+    assert_eq!(
+        take_lines("a\n\tb\n\tc\n").unwrap().1[0].children[1]
+            .content
+            .to_string(),
+        "c"
+    );
 }
 
 fn take_children(i: Span) -> IResult<Span, Line> {
@@ -64,7 +83,6 @@ fn take_children(i: Span) -> IResult<Span, Line> {
     ))
 }
 
-
 /// take a single line in the format (indent, content) and chomp newline
 fn line(i: Span) -> IResult<Span, (usize, Span)> {
     tuple((
@@ -72,14 +90,9 @@ fn line(i: Span) -> IResult<Span, (usize, Span)> {
         is_not("\n"),
         opt(newline),
         opt(many0(tuple((space0, newline)))), // throw away blank lines
-    ))
-    (i)
+    ))(i)
     .map(|(r, (indent, line, _, _))| (r, (indent, line)))
 }
-
-// fn take_line(i: Span) -> IResult<Span, (usize, Span)> {
-//     take_until("\n")(i).map(|(r, line)| (r, (line_indent(line.fragment()), line)))
-// }
 
 /// returns the position of the first non-whitespace character,
 /// or None if the line is entirely whitespace.

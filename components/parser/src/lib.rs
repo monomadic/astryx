@@ -26,10 +26,10 @@ type Span<'a> = LocatedSpan<&'a str>;
 pub mod error;
 pub mod models;
 pub mod parser;
-pub mod variable;
+// pub mod variable;
 pub use crate::error::{ParserError, ParserResult};
 pub use crate::parser::Token;
-mod eof;
+// mod eof;
 mod linesplit;
 
 pub fn parse_line<'a>(i: Span<'a>) -> Result<Statement<'a>, ParserError<Span>> {
@@ -81,17 +81,3 @@ fn test_run() {
 
     // assert!(run("44").is_err());
 }
-
-// #[test]
-// fn test_run() {
-//     assert!(run("").is_ok());
-//     // assert!(run("page").is_ok());
-//     assert!(run("page\n").is_ok());
-//     assert!(run("page\n\tdiv\n").is_ok());
-//     // assert_eq!(run("page\n\n\n").unwrap().0.get_column(), 1);
-
-//     let result = run("hello\n@@@\n");
-//     println!("{:?}", result);
-
-//     // assert!(run("44").is_err());
-// }
