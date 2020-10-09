@@ -51,35 +51,54 @@ mod linesplit;
 //     .map_err(|e| e.into())
 // }
 
-pub fn run(i: &str) -> ParserResult<Vec<Token>> {
-    linesplit::take_lines(i) // break document up by whitespace indentation
-        .map(|(_, lines)| lines)? // rem will always be empty as we use cut()
-        .into_iter()
-        .map(|line| {
-            println!("sending {:?}", line.content);
-            parser::node(line.content) // parse a line into a statement
-                .map(|(_, token)| token)
-                // .map_err(|e:Err<_>| match e {
-                //     Err::Error(e) | Err::Failure(e) => e.convert(),
-                //     Err::Incomplete(_) => Err::convert
-                // })
-                // .map_err(|e| Err::convert::<ParserError>(e))
-                // .unwrap_err()
-                .map_err(ParserError::from)
-        })
-        .collect()
-}
+// pub fn run(i: &str) -> ParserResult<Vec<Token>> {
+//     linesplit::take_lines(i) // break document up by whitespace indentation
+//         .map(|(_, lines)| lines)? // rem will always be empty as we use cut()
+//         .into_iter()
+//         .map(|line| {
+//             println!("sending {:?}", line.content);
+//             parser::node(line.content) // parse a line into a statement
+//                 .map(|(_, token)| token)
+//                 // .map_err(|e:Err<_>| match e {
+//                 //     Err::Error(e) | Err::Failure(e) => e.convert(),
+//                 //     Err::Incomplete(_) => Err::convert
+//                 // })
+//                 // .map_err(|e| Err::convert::<ParserError>(e))
+//                 // .unwrap_err()
+//                 .map_err(ParserError::from)
+//         })
+//         .collect()
+// }
 
-#[test]
-fn test_run() {
-    assert!(run("").is_ok());
-    // assert!(run("page").is_ok());
-    assert!(run("page\n").is_ok());
-    assert!(run("page\n\tdiv\n").is_ok());
-    // assert_eq!(run("page\n\n\n").unwrap().0.get_column(), 1);
+// pub fn run(i: &str) -> ParserResult<Vec<Token>> {
+//     linesplit::take_lines(i) // break document up by whitespace indentation
+//         .map(|(_, lines)| lines)? // rem will always be empty as we use cut()
+//         .into_iter()
+//         .map(|line| {
+//             println!("sending {:?}", line.content);
+//             parser::node(&line.content.to_string()) // parse a line into a statement
+//                 .map(|(_, token)| token)
+//                 // .map_err(|e:Err<_>| match e {
+//                 //     Err::Error(e) | Err::Failure(e) => e.convert(),
+//                 //     Err::Incomplete(_) => Err::convert
+//                 // })
+//                 // .map_err(|e| Err::convert::<ParserError>(e))
+//                 // .unwrap_err()
+//                 // .map_err(ParserError::from)
+//         })
+//         .collect()
+// }
 
-    let result = run("hello\n@@@\n");
-    println!("{:?}", result);
+// #[test]
+// fn test_run() {
+//     assert!(run("").is_ok());
+//     // assert!(run("page").is_ok());
+//     assert!(run("page\n").is_ok());
+//     assert!(run("page\n\tdiv\n").is_ok());
+//     // assert_eq!(run("page\n\n\n").unwrap().0.get_column(), 1);
 
-    // assert!(run("44").is_err());
-}
+//     let result = run("hello\n@@@\n");
+//     println!("{:?}", result);
+
+//     // assert!(run("44").is_err());
+// }
