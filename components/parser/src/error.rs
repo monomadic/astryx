@@ -6,8 +6,6 @@ use nom::{
     error::{ErrorKind, ParseError},
 };
 
-pub type ParserResult<T,I> = Result<T, ParserError<I>>;
-
 #[derive(Debug)]
 pub struct ParserError<I> {
     pub kind: ParserErrorKind<I>,
