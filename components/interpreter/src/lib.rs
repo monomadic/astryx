@@ -8,7 +8,7 @@
 //!
 
 use parser::Statement;
-use error::InterpreterError;
+pub use error::InterpreterError;
 use models::AstryxNode;
 use state::State;
 

@@ -1,18 +1,20 @@
-use astryx::error::*;
-use parser::{error::{ParserErrorKind, Position}};
+use crate::error::*;
+use parser::{error::{Position}};
 
-pub(crate) fn build(file: String) -> AstryxResult<()> {
-    match astryx::render(&file) {
-        Ok(buffers) => println!("ok. {:?}", buffers),
-        Err(e) => display_error(e)
-    }
+pub(crate) fn build<'a>(file: String) -> AstryxResult<'a, ()> {
+    // match crate::render::render(&file) {
+    //     Ok(buffers) => println!("ok. {:?}", buffers),
+    //     Err(e) => display_error(e)
+    // }
     Ok(())
 }
 
 fn display_error(err: AstryxError) {
     // println!("error: {:?}", err);
     match &err {
-        AstryxError::ParserError(e) => println!("{}", error_with_line("test.src", &e.pos, &e.context, "--"))
+        AstryxError::ParserError(e) => println!("{}", error_with_line("test.src", &e.pos, &e.context.to_string(), "--")),
+        AstryxError::InterpreterError => {}
+        AstryxError::HTMLError => {}
     }
 }
 

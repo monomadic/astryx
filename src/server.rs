@@ -1,8 +1,7 @@
-use astryx::error::AstryxResult;
+use crate::{errorpage::error_page, error::AstryxResult};
 use simple_server::{Server, StatusCode};
-use crate::{errorpage::error_page};
 
-pub(crate) fn start(file: String, port: u32) -> AstryxResult<()> {
+pub(crate) fn start<'a>(file: String, port: u32) -> AstryxResult<'a, ()> {
     let host = "127.0.0.1";
     let port = port.to_string();
     // let mut file = crate::filesystem::read_file(file)?;
@@ -20,7 +19,7 @@ pub(crate) fn start(file: String, port: u32) -> AstryxResult<()> {
                 Err(e) => Ok(response.body(error_page(e))?),
             }
         } else {
-            let pages = astryx::render(&file);
+            let pages = crate::render::render(&file);
 
             println!("{} {}", request.method(), path);
 
@@ -43,10 +42,10 @@ pub(crate) fn start(file: String, port: u32) -> AstryxResult<()> {
                 },
                 Err(e) => {
                     response.status(StatusCode::INTERNAL_SERVER_ERROR);
-                    println!("ERROR: {}", e);
+                    println!("ERROR: {:?}", e);
 
                     Ok(response.body(
-                    format!("<html style='background-color: black;color: white;'><body><h1>Error :(</h1><pre>{}</pre></body></html>", &e)
+                    format!("<html style='background-color: black;color: white;'><body><h1>Error :(</h1><pre>{:?}</pre></body></html>", &e)
                         .as_bytes()
                         .to_vec(),
                 )?)

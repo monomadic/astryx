@@ -12,14 +12,14 @@ syntect = "4.2.0"
 rctree = "0.3.3"
 parser = { path = "components/parser" }
 interpreter = { path = "components/interpreter" }
-#html = { path = "components/html" }
+html = { path = "components/html" }
 simple-server = "0.4.0"
-structopt = "0.3
+structopt = "0.3"
 
 [workspace]
 members = [
   "components/interpreter",
   "components/search",
   "components/parser",
-  #"components/html"
+  "components/html"
 ]

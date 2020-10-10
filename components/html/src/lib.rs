@@ -4,9 +4,10 @@ mod error;
 
 use rctree::Node;
 use std::{collections::HashMap, fmt::Write};
+pub use error::{HTMLError, HTMLResult};
 
 #[derive(Debug, Clone)]
-pub(crate) enum HTMLNode {
+pub enum HTMLNode {
     Element(HTMLElement),
     Text(String),
 }
@@ -14,7 +15,7 @@ pub(crate) enum HTMLNode {
 type Attributes = HashMap<String, String>;
 
 #[derive(Debug, Clone)]
-pub(crate) struct HTMLElement {
+pub struct HTMLElement {
     pub ident: String,
     pub(crate) attributes: Attributes,
 	pub classes: Vec<String>,
@@ -23,7 +24,7 @@ pub(crate) struct HTMLElement {
 
 impl HTMLElement {
 
-	pub(crate) fn new_from_html_tag<S:ToString>(ident: S) -> InterpreterResult<HTMLElement> {
+	pub(crate) fn new_from_html_tag<S:ToString>(ident: S) -> HTMLResult<HTMLElement> {
 		if HTML_TAGS.contains(&&(*ident.to_string())) {
 			Ok(HTMLElement {
 				ident: ident.to_string(),
@@ -32,7 +33,7 @@ impl HTMLElement {
 				styles: Vec::new(),
 			})
 		} else {
-			Err(InterpreterError::InvalidHTMLTag)
+			Err(HTMLError::InvalidHTMLTag)
 		}
 	}
 
@@ -58,7 +59,7 @@ impl HTMLElement {
 	// }
 }
 
-pub(crate) fn new_node_with_text<S:Into<String>>(ident: S, content: S) -> InterpreterResult<Node<HTMLNode>> {
+pub(crate) fn new_node_with_text<S:Into<String>>(ident: S, content: S) -> HTMLResult<Node<HTMLNode>> {
 	let tag = HTMLNode::new_element(ident.into().as_str());
 	let mut node = Node::new(tag);
 	node.append(Node::new(HTMLNode::Text(content.into())));
@@ -90,18 +91,18 @@ impl HTMLNode {
     }
 }
 
-pub(crate) fn render_as_string(nodes: &HashMap<String, Node<HTMLNode>>) -> InterpreterResult<HashMap<String, String>> {
+pub fn render_as_string(nodes: &HashMap<String, Node<HTMLNode>>) -> HTMLResult<HashMap<String, String>> {
 	let mut pages: HashMap<String, String> = HashMap::new();
 
 	for (route, node) in nodes {
 		let buf = &mut String::new();
-		crate::html::render_page(&node, buf)?;
+		render_page(&node, buf)?;
 		pages.insert(route.into(), buf.to_string());
 	}
 	Ok(pages)
 }
 
-pub(crate) fn render_page<W: Write>(node: &Node<HTMLNode>, writer: &mut W) -> InterpreterResult<()> {
+pub(crate) fn render_page<W: Write>(node: &Node<HTMLNode>, writer: &mut W) -> HTMLResult<()> {
     // can we avoid a clone here?
     Ok(match node.borrow().clone() {
         HTMLNode::Element(e) => {

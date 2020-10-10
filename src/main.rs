@@ -1,11 +1,12 @@
 use structopt::StructOpt;
-use astryx::{self, error::AstryxResult};
+use error::AstryxResult;
 
 mod server;
 mod filesystem;
 mod render;
 mod errorpage;
 mod build;
+mod error;
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "astryx")]
@@ -39,7 +40,7 @@ pub fn main() {
 }
 
 /// run cli commands
-fn run() -> AstryxResult<()> {
+fn run<'a>() -> AstryxResult<'a, ()> {
     let opt = Opt::from_args();
 
     match opt.command {
@@ -51,6 +52,6 @@ fn run() -> AstryxResult<()> {
 }
 
 /// set up a new project in the current directory
-fn new_project() -> AstryxResult<()> {
+fn new_project<'a>() -> AstryxResult<'a, ()> {
     Ok(())
 }
