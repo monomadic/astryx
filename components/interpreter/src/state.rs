@@ -1,7 +1,9 @@
+use std::collections::HashMap;
+use crate::models::Value;
 
 type LocalData = HashMap<String, Value>;
-// TODO make private type
-#[derive(Debug, Clone)]
+
+#[derive(Debug)]
 pub(crate) struct State {
     locals: LocalData,
     // pub(crate) pages: Layouts,

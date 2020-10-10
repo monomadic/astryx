@@ -20,9 +20,9 @@ mod state;
 pub type InterpreterResult<T> = Result<T, InterpreterError>;
 
 /// run the interpreter on an AST tree and return a HTMLNode tree for each page
-pub fn run(tokens: &Vec<Statement>) -> InterpreterResult<AstryxNode> {
+pub fn run(statements: &Vec<Statement>) -> InterpreterResult<AstryxNode> {
     run::interpret(
-        token,
+        &statements[0],
         State::new(),
     )
 }
