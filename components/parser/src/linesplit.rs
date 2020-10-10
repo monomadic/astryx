@@ -8,9 +8,6 @@ use nom::{
     IResult,
 };
 
-/// whitespace significant linesplit
-/// see: map_while
-
 #[derive(Debug)]
 pub struct Line<'a> {
     pub content: Span<'a>,

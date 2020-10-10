@@ -63,12 +63,21 @@ fn function_call<'a>(i: Span<'a>) -> IResult<Span, FunctionCall<'a>, ParserError
 fn test_function_call() {
     assert!(function_call(Span::new("g()")).is_ok());
 
+    // check ident Span
+    let f: FunctionCall = function_call(Span::new("function()")).unwrap().1;
+    assert_eq!(f.ident.to_string(), "function");
+    assert_eq!(f.ident.location_line(), 1);
+    assert_eq!(f.ident.location_offset(), 0);
+    assert_eq!(f.ident.get_column(), 1);
+
+    // check no-match with error
     let e = function_call(Span::new("g"));
     match e {
         Err(nom::Err::Error(_)) => (),
         _ => panic!("expected Error, got {:?}", e),
     };
 
+    // check partial match with fail
     let e = function_call(Span::new("g(1)"));
     match e {
         Err(nom::Err::Failure(_)) => (),

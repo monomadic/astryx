@@ -19,9 +19,8 @@
 use nom::Err;
 use nom_locate::LocatedSpan;
 use linesplit::Line;
-use models::Statement;
 
-type Span<'a> = LocatedSpan<&'a str>;
+pub type Span<'a> = LocatedSpan<&'a str>;
 
 pub mod error;
 pub mod models;
@@ -29,6 +28,7 @@ pub mod parser;
 // pub mod variable;
 pub use crate::error::{ParserError, ParserResult};
 pub use crate::parser::Token;
+pub use crate::models::*;
 // mod eof;
 mod linesplit;
 
