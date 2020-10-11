@@ -25,17 +25,17 @@ pub type ParserResult<T,I> = Result<T, ParserError<I>>;
 
 pub mod error;
 pub mod models;
-pub mod parser;
+pub mod statement;
 // pub mod variable;
 pub use crate::error::ParserError;
-pub use crate::parser::Token;
 pub use crate::models::*;
 // mod eof;
 mod linesplit;
 mod element;
+mod function;
 
 pub fn parse_line<'a>(i: Span<'a>) -> Result<Statement<'a>, ParserError<Span>> {
-    parser::statement(i)
+    statement::statement(i)
         .map(|(_r, result)| result)
         .map_err(|e| match e {
             Err::Error(e) | Err::Failure(e) => e,

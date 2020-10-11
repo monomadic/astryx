@@ -45,7 +45,7 @@ fn run<'a>() -> AstryxResult<'a, ()> {
     match opt.command {
         Command::Serve{ file, port } =>
             server::start(
-                std::fs::read_to_string(file.unwrap_or(String::from("site.astryx")))?,
+                file.unwrap_or(String::from("site.astryx")),
                 port.unwrap_or(8888)),
         Command::Build{ file } => build::build(
             &file.unwrap_or(String::from("site.astryx"))),

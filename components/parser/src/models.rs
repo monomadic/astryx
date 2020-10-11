@@ -1,5 +1,11 @@
 use crate::Span;
 
+// #[derive(Debug, Clone, PartialEq)]
+// pub enum Token {
+//     Blank,
+//     Letter,
+// }
+
 #[derive(Debug, Clone)]
 pub enum Statement<'a> {
     FunctionCall(FunctionCall<'a>),

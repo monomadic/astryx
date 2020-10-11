@@ -12,7 +12,7 @@ fn attribute_assignment<'a>(
     i: Span<'a>,
 ) -> IResult<Span<'a>, (Span<'a>, Span<'a>), ParserError<Span<'a>>> {
     nom::sequence::tuple((
-        terminated(multispace0, alpha1),
+        alpha1,
         terminated(multispace0, char('=')),
         cut(terminated(multispace0, alpha1)),
     ))(i)
