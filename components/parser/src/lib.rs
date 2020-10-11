@@ -65,7 +65,9 @@ fn parse_line<'a>(line: Line<'a>) -> Result<Node<Statement<'a>>, ParserError<Spa
     let mut node: Node<Statement> = Node::new(statement);
 
     for child in line.children {
+        println!("line {:?}", &child);
         let (_, statement) = statement::statement(child.content).unwrap();
+        println!("statement {:?}", &statement);
         node.append(Node::new(statement));
     }
     
