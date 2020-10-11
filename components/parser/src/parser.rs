@@ -1,14 +1,14 @@
 use crate::{
     error::{ParserErrorKind},
     models::{FunctionCall, Statement},
-    ParserError,
+    ParserError, Variable,
 };
 use nom::{
     branch::alt,
     character::complete::{alpha0, alpha1, char},
     combinator::{all_consuming, cut, map},
     sequence::tuple,
-    IResult,
+    IResult, multi::many0, bytes::complete::tag,
 };
 use nom_locate::{position, LocatedSpan};
 
@@ -38,25 +38,40 @@ type Span<'a> = LocatedSpan<&'a str>;
 //     assert!(array(Span::new("[g]")).is_ok());
 // }
 
-fn function_call<'a>(i: Span<'a>) -> IResult<Span, FunctionCall<'a>, ParserError<Span>> {
-    // fn letter(i: &str) -> IResult<&str, Token, ParserError> {
-    tuple((alpha1, char('('), cut(alpha0), cut(char(')'))))(i)
-        .map(|(r, (ident, _, _, _))| {
+fn function_call_argument<'a>(i: Span<'a>) -> IResult<Span<'a>, (Span<'a>, Variable<'a>), ParserError<Span<'a>>> {
+    tuple((
+        alpha0,
+        tag(":"),
+        alpha0,
+    ))
+    (i)
+    .map(|(r, (ident, _, value))|
+        (r, (ident, Variable::QuotedString(value)))
+    )
+}
+
+fn function_call_arguments<'a>(i: Span<'a>) -> IResult<Span<'a>, Vec<(Span<'a>, Variable<'a>)>, ParserError<Span<'a>>> {
+    many0(function_call_argument)(i)
+}
+
+fn function_call<'a>(i: Span<'a>) -> IResult<Span<'a>, FunctionCall<'a>, ParserError<Span<'a>>> {
+    tuple((alpha1, char('('), cut(function_call_arguments), cut(char(')'))))(i)
+        .map(|(r, (ident, _, arguments, _))| {
             (
                 r,
                 FunctionCall {
                     ident,
-                    arguments: Vec::new(),
+                    arguments,
                 },
             )
         })
-        .map_err(|e| {
-            e.map(|(span, _kind)| ParserError {
+        .map_err(|e| e.map(|s| {
+            ParserError {
                 context: i,
                 kind: ParserErrorKind::SyntaxError,
-                pos: span.into(),
-            })
-        })
+                pos: s.context.into(),
+            }
+        }))
 }
 
 #[test]

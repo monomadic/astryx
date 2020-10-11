@@ -2,7 +2,6 @@ use structopt::StructOpt;
 use error::AstryxResult;
 
 mod server;
-// mod filesystem;
 mod render;
 mod errorpage;
 mod build;

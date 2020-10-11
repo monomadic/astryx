@@ -24,7 +24,7 @@ fn display_error(err: AstryxError, path: &str, file: &str) {
 }
 
 /// TODO: move this into another module...
-fn error_with_line(pos: &Position, context: &Span, reason: &str, path: &str, file: &str) -> String {
+fn error_with_line(pos: &Position, context: &Span, reason: &str, path: &str, _file: &str) -> String {
     [
         format!("error: {}", reason),
         format!("--> {}:{}:{}", path, pos.line, pos.column),
