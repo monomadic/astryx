@@ -1,5 +1,9 @@
-use crate::error::{display_error, html_error_page, AstryxError, AstryxResult};
+use crate::{
+    error::{display_error, html_error_page, AstryxError, AstryxResult},
+    render::render,
+};
 use simple_server::{Server, StatusCode};
+use std::fs::read_to_string;
 
 pub(crate) fn start<'a>(path: String, port: u32) -> AstryxResult<'a, ()> {
     let host = "127.0.0.1";
@@ -10,7 +14,7 @@ pub(crate) fn start<'a>(path: String, port: u32) -> AstryxResult<'a, ()> {
         let request_path = request.uri().path();
 
         if request_path == "/ast" {
-            let ast = std::fs::read_to_string(&path)
+            let ast = read_to_string(&path)
                 .map_err(AstryxError::from)
                 .map(|file| format!("{:#?}", parser::run(&*file)));
 
@@ -21,24 +25,19 @@ pub(crate) fn start<'a>(path: String, port: u32) -> AstryxResult<'a, ()> {
         } else {
             println!("{} {}", request.method(), request_path);
 
-            let file = std::fs::read_to_string(&path)?;
+            let file = read_to_string(&path)?;
 
             // if request_path.contains("svg") {
             //     response.header("content-type", "image/svg+xml");
             //     // return Ok(response.body(svgfile.as_bytes().to_vec())?);
             // }
 
-            match crate::render::render(&file) {
+            let body = match render(&file) {
                 Ok(pages) => match pages.get(0) {
-                    // Some(page) => Ok(response.body(page.as_bytes().to_vec())?),
-                    Some(page) => Ok(response.body(format!("{:?}", page).as_bytes().to_vec())?),
+                    Some(page) => format!("{:?}", page),
                     None => {
                         response.status(StatusCode::NOT_FOUND);
-                        Ok(response.body(
-                            format!("<h1>404</h1><p>Path not found: {}<p>", request_path)
-                                .as_bytes()
-                                .to_vec(),
-                        )?)
+                        format!("<h1>404</h1><p>Path not found: {}<p>", request_path)
                     }
                 },
                 Err(e) => {
@@ -46,9 +45,11 @@ pub(crate) fn start<'a>(path: String, port: u32) -> AstryxResult<'a, ()> {
                     let error_text = display_error(&e, &path);
                     println!("{}", error_text);
 
-                    Ok(response.body(html_error_page(&error_text).as_bytes().to_vec())?)
+                    html_error_page(&error_text)
                 }
-            }
+            };
+
+            Ok(response.body(body.as_bytes().to_vec())?)
         }
     });
 

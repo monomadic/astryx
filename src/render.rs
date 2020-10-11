@@ -1,5 +1,6 @@
 use crate::error::{AstryxError, AstryxResult};
 use parser::Statement;
+use rctree::Node;
 
 pub trait RenderErrorAsHTML {
     fn to_html(&self) -> String;
@@ -12,7 +13,7 @@ impl RenderErrorAsHTML for AstryxError<'_> {
 }
 
 // pub fn render<'a>(file: &'a str) -> AstryxResult<'a, std::collections::HashMap<String, String>> {
-pub fn render<'a>(file: &'a str) -> AstryxResult<'a, Vec<Statement>> {
+pub fn render<'a>(file: &'a str) -> AstryxResult<'a, Vec<Node<Statement<'a>>>> {
     parser::run(file)
         .map_err(AstryxError::from)
         // .and_then(|ast: Vec<Statement>| interpreter::run(&ast).map_err(AstryxError::from))

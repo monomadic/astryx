@@ -16,9 +16,10 @@
 //!
 //! ```
 
-use nom::Err;
 use nom_locate::LocatedSpan;
 use linesplit::Line;
+
+use rctree::Node;
 
 pub type Span<'a> = LocatedSpan<&'a str>;
 pub type ParserResult<T,I> = Result<T, ParserError<I>>;
@@ -29,42 +30,46 @@ pub mod statement;
 // pub mod variable;
 pub use crate::error::ParserError;
 pub use crate::models::*;
-// mod eof;
 mod linesplit;
 mod element;
 mod function;
 
-pub fn parse_line<'a>(i: Span<'a>) -> Result<Statement<'a>, ParserError<Span>> {
-    statement::statement(i)
-        .map(|(_r, result)| result)
-        .map_err(|e| match e {
-            Err::Error(e) | Err::Failure(e) => e,
-            Err::Incomplete(_) => unreachable!(),
-        })
-}
+// pub fn parse_line<'a>(i: Span<'a>) -> Result<Statement<'a>, ParserError<Span>> {
+//     statement::statement(i)
+//         .map(|(_r, result)| result)
+//         .map_err(|e| match e {
+//             Err::Error(e) | Err::Failure(e) => e,
+//             Err::Incomplete(_) => unreachable!(),
+//         })
+// }
 
-#[test]
-fn test_parse_line() {
-    assert!(parse_line(Span::new("func()")).is_ok());
-    // assert!(parse_line(Span::new("func(a:1)")).is_ok());
-    assert!(parse_line(Span::new("func()\nfunc()")).is_err());
-}
+// #[test]
+// fn test_parse_line() {
+//     assert!(parse_line(Span::new("func()")).is_ok());
+//     // assert!(parse_line(Span::new("func(a:1)")).is_ok());
+//     assert!(parse_line(Span::new("func()\nfunc()")).is_err());
+// }
 
-pub fn run<'a>(i: &'a str) -> Result<Vec<Statement<'a>>, ParserError<Span<'a>>> {
-    let (_, lines) = linesplit::take_lines(i).expect("linesplit fail (fix)"); // break document up by whitespace indentation
+pub fn run<'a>(i: &'a str) -> Result<Vec<Node<Statement<'a>>>, ParserError<Span<'a>>> {
+    let (_, lines): (_, Vec<Line>) = linesplit::take_lines(i).expect("linesplit fail (fix)"); // break document up by whitespace indentation
 
     lines
         .into_iter()
-        // .filter_map(|line: Line|
-        //     // if the line is empty, skip it
-        //     // (should this be in linesplit? probably...)
-        //     if line.content.to_string() == "" {
-        //         None
-        //     } else {
-        //         Some(parse_line(line.content))
-        //     })
-        .map(|line: Line| parse_line(line.content))
+        .map(|line| parse_line(line))
         .collect()
+}
+
+fn parse_line<'a>(line: Line<'a>) -> Result<Node<Statement<'a>>, ParserError<Span<'a>>> {
+    let (_, statement) = statement::statement(line.content).unwrap(); // fix this
+
+    let mut node: Node<Statement> = Node::new(statement);
+
+    for child in line.children {
+        let (_, statement) = statement::statement(child.content).unwrap();
+        node.append(Node::new(statement));
+    }
+    
+    Ok(node)
 }
 
 #[test]

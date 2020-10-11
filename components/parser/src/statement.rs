@@ -26,7 +26,7 @@ use nom::{
 //     assert!(array(Span::new("[g]")).is_ok());
 // }
 
-pub(crate) fn statement<'a>(i: Span<'a>) -> IResult<Span, Statement<'a>, ParserError<Span>> {
+pub(crate) fn statement<'a>(i: Span<'a>) -> IResult<Span, Statement<'a>, ParserError<Span<'a>>> {
     all_consuming(alt((
         map(function_call, |f| Statement::FunctionCall(f)),
         map(element, |e| Statement::Element(e)),

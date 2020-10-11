@@ -1,6 +1,3 @@
-page(route:here)
+Page(route:here)
   h1
     | Hello World
-p()
-h1 blah = "hi
-b()
