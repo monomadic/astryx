@@ -11,15 +11,14 @@ impl RenderErrorAsHTML for AstryxError<'_> {
     }
 }
 
-pub fn render<'a>(file: &'a str) -> AstryxResult<'a, std::collections::HashMap<String, String>> {
-    // let file: &'a str = &std::fs::read_to_string(&path).expect("file");
-
+// pub fn render<'a>(file: &'a str) -> AstryxResult<'a, std::collections::HashMap<String, String>> {
+pub fn render<'a>(file: &'a str) -> AstryxResult<'a, Vec<Statement>> {
     parser::run(file)
         .map_err(AstryxError::from)
-        .and_then(|ast: Vec<Statement>| interpreter::run(&ast).map_err(AstryxError::from))
-        .and_then(|_html_nodes| {
-            html::render_as_string(&std::collections::HashMap::new()) // FIXME this will totally break everything rn
-                .map_err(AstryxError::from)
-        })
-        .map_err(AstryxError::from)
+        // .and_then(|ast: Vec<Statement>| interpreter::run(&ast).map_err(AstryxError::from))
+        // .and_then(|html_nodes| {
+        //     html::render_as_string(&html_nodes)
+        //         .map_err(AstryxError::from)
+        // })
+        // .map_err(AstryxError::from)
 }

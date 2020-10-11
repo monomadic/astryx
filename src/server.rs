@@ -30,8 +30,9 @@ pub(crate) fn start<'a>(file: String, port: u32) -> AstryxResult<'a, ()> {
             }
 
             match pages {
-                Ok(pages) => match pages.get(path) {
-                    Some(page) => Ok(response.body(page.as_bytes().to_vec())?),
+                Ok(pages) => match pages.get(0) {
+                    // Some(page) => Ok(response.body(page.as_bytes().to_vec())?),
+                    Some(page) => Ok(response.body(format!("{:?}", page).as_bytes().to_vec())?),
                     None => {
                         response.status(StatusCode::NOT_FOUND);
                         Ok(response.body(
