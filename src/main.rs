@@ -2,7 +2,7 @@ use structopt::StructOpt;
 use error::AstryxResult;
 
 mod server;
-mod filesystem;
+// mod filesystem;
 mod render;
 mod errorpage;
 mod build;
@@ -45,8 +45,11 @@ fn run<'a>() -> AstryxResult<'a, ()> {
 
     match opt.command {
         Command::Serve{ file, port } =>
-            server::start(file.unwrap_or(String::from("site.astryx")), port.unwrap_or(8888)),
-        Command::Build{ file } => build::build(file.unwrap_or(String::from("site.astryx"))),
+            server::start(
+                std::fs::read_to_string(file.unwrap_or(String::from("site.astryx")))?,
+                port.unwrap_or(8888)),
+        Command::Build{ file } => build::build(
+            &file.unwrap_or(String::from("site.astryx"))),
         Command::New => new_project(),
     }
 }

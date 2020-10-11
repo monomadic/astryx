@@ -9,6 +9,7 @@ pub enum AstryxError<'a> {
     ParserError(ParserError<Span<'a>>),
     InterpreterError,
     HTMLError,
+    IO(std::io::Error)
 }
 
 impl <'a>From<ParserError<Span<'a>>> for AstryxError<'a> {
@@ -26,5 +27,11 @@ impl <'a>From<InterpreterError> for AstryxError<'a> {
 impl <'a>From<HTMLError> for AstryxError<'a> {
     fn from(_e: HTMLError) -> AstryxError<'a> {
         AstryxError::HTMLError
+    }
+}
+
+impl <'a>From<std::io::Error> for AstryxError<'a> {
+    fn from(e: std::io::Error) -> AstryxError<'a> {
+        AstryxError::IO(e)
     }
 }

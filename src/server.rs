@@ -1,4 +1,4 @@
-use crate::{errorpage::error_page, error::AstryxResult};
+use crate::{errorpage::error_page, error::{AstryxError, AstryxResult}};
 use simple_server::{Server, StatusCode};
 
 pub(crate) fn start<'a>(file: String, port: u32) -> AstryxResult<'a, ()> {
@@ -11,7 +11,8 @@ pub(crate) fn start<'a>(file: String, port: u32) -> AstryxResult<'a, ()> {
         let path = request.uri().path();
 
         if path == "/ast" {
-            let ast = crate::filesystem::read_file(&file)
+            let ast = std::fs::read_to_string(&file)
+                .map_err(AstryxError::from)
                 .map(|file| format!("{:#?}", parser::run(&*file)));
 
             match ast {

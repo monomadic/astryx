@@ -10,7 +10,7 @@ use nom::{
     sequence::tuple,
     IResult,
 };
-use nom_locate::LocatedSpan;
+use nom_locate::{position, LocatedSpan};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {
@@ -52,7 +52,7 @@ fn function_call<'a>(i: Span<'a>) -> IResult<Span, FunctionCall<'a>, ParserError
         })
         .map_err(|e| {
             e.map(|(span, _kind)| ParserError {
-                context: span,
+                context: i,
                 kind: ParserErrorKind::SyntaxError,
                 pos: span.into(),
             })
