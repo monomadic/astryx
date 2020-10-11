@@ -1,7 +1,7 @@
 use crate::{
     error::{ParserErrorKind},
     models::{FunctionCall, Statement},
-    ParserError, Variable,
+    ParserError, Variable, element::element,
 };
 use nom::{
     branch::alt,
@@ -104,7 +104,8 @@ pub(crate) fn statement<'a>(i: Span<'a>) -> IResult<Span, Statement<'a>, ParserE
     println!("statement {:?}", i);
     all_consuming(alt((
         map(function_call, |f| Statement::FunctionCall(f)),
-        map(function_call, |f| Statement::FunctionCall(f)),
+        map(element, |e| Statement::Element(e)),
+        // map(alpha1, |e| Statement::Element(e)),
     )))(i)
 }
 

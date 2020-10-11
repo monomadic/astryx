@@ -2,7 +2,8 @@ use crate::Span;
 
 #[derive(Debug, Clone)]
 pub enum Statement<'a> {
-    FunctionCall(FunctionCall<'a>)
+    FunctionCall(FunctionCall<'a>),
+    Element(Element<'a>),
 }
 
 #[derive(Debug, Clone)]
@@ -18,4 +19,10 @@ pub enum Variable<'a> {
     Reference(Span<'a>),
     // TemplateFile(TemplateFile),
     // FunctionCall()
+}
+
+#[derive(Debug, Clone)]
+pub struct Element<'a> {
+    pub ident: Span<'a>,
+    pub attributes: Vec<(Span<'a>, Span<'a>)>,
 }

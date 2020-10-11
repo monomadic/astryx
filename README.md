@@ -3,9 +3,9 @@
 [![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Minimum rustc version](https://img.shields.io/badge/rustc-1.42.0+-green.svg)](#rust-version-requirements)
 
-Astryx is a declarative, pure, expressive static web content compiler.
-It draws inspiration from projects like elm-ui, haml and svelte, with the
-type safety of rust and far, far easier setup and deployment.
+Astryx is a declarative, pure, expressive static web content tool. It walks the line
+between being a simple language and a compiler environment, taking static generators
+to a whole new level.
 
 ## Features
 * declarative, type-checked, intuitive ui language

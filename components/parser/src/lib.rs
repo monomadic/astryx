@@ -32,6 +32,7 @@ pub use crate::parser::Token;
 pub use crate::models::*;
 // mod eof;
 mod linesplit;
+mod element;
 
 pub fn parse_line<'a>(i: Span<'a>) -> Result<Statement<'a>, ParserError<Span>> {
     parser::statement(i)
