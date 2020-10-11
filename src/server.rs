@@ -1,4 +1,4 @@
-use crate::{errorpage::error_page, error::{AstryxError, AstryxResult, display_error}};
+use crate::error::{display_error, html_error_page, AstryxError, AstryxResult};
 use simple_server::{Server, StatusCode};
 
 pub(crate) fn start<'a>(path: String, port: u32) -> AstryxResult<'a, ()> {
@@ -16,20 +16,19 @@ pub(crate) fn start<'a>(path: String, port: u32) -> AstryxResult<'a, ()> {
 
             match ast {
                 Ok(page) => Ok(response.body(page.as_bytes().to_vec())?),
-                Err(e) => Ok(response.body(error_page(e))?),
+                Err(e) => Ok(response.body(display_error(&e, &path).as_bytes().to_vec())?),
             }
         } else {
-            let file = std::fs::read_to_string(&path).expect("file to read");
-            let pages = crate::render::render(&file);
-
             println!("{} {}", request.method(), request_path);
 
-            if request_path.contains("svg") {
-                response.header("content-type", "image/svg+xml");
-                // return Ok(response.body(svgfile.as_bytes().to_vec())?);
-            }
+            let file = std::fs::read_to_string(&path)?;
 
-            match pages {
+            // if request_path.contains("svg") {
+            //     response.header("content-type", "image/svg+xml");
+            //     // return Ok(response.body(svgfile.as_bytes().to_vec())?);
+            // }
+
+            match crate::render::render(&file) {
                 Ok(pages) => match pages.get(0) {
                     // Some(page) => Ok(response.body(page.as_bytes().to_vec())?),
                     Some(page) => Ok(response.body(format!("{:?}", page).as_bytes().to_vec())?),
@@ -44,14 +43,10 @@ pub(crate) fn start<'a>(path: String, port: u32) -> AstryxResult<'a, ()> {
                 },
                 Err(e) => {
                     response.status(StatusCode::INTERNAL_SERVER_ERROR);
-                    let error_view = display_error(e, &path);
-                    println!("ERROR: {}", error_view);
+                    let error_text = display_error(&e, &path);
+                    println!("{}", error_text);
 
-                    Ok(response.body(
-                    format!("<html style='background-color: black;color: white;'><body><h1>Error :(</h1><pre>{}</pre></body></html>", error_view)
-                        .as_bytes()
-                        .to_vec(),
-                )?)
+                    Ok(response.body(html_error_page(&error_text).as_bytes().to_vec())?)
                 }
             }
         }

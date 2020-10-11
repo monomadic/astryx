@@ -3,7 +3,6 @@ use error::AstryxResult;
 
 mod server;
 mod render;
-mod errorpage;
 mod build;
 mod error;
 

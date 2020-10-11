@@ -1,6 +1,6 @@
-use parser::{ParserError, Span, error::Position};
-use interpreter::InterpreterError;
 use html::HTMLError;
+use interpreter::InterpreterError;
+use parser::{error::Position, ParserError, Span};
 
 pub type AstryxResult<'a, T> = Result<T, AstryxError<'a>>;
 
@@ -9,39 +9,42 @@ pub enum AstryxError<'a> {
     ParserError(ParserError<Span<'a>>),
     InterpreterError,
     HTMLError,
-    IO(std::io::Error)
+    IO(std::io::Error),
 }
 
-impl <'a>From<ParserError<Span<'a>>> for AstryxError<'a> {
+impl<'a> From<ParserError<Span<'a>>> for AstryxError<'a> {
     fn from(e: ParserError<Span<'a>>) -> AstryxError<'a> {
         AstryxError::ParserError(e)
     }
 }
 
-impl <'a>From<InterpreterError> for AstryxError<'a> {
+impl<'a> From<InterpreterError> for AstryxError<'a> {
     fn from(_e: InterpreterError) -> AstryxError<'a> {
         AstryxError::InterpreterError
     }
 }
 
-impl <'a>From<HTMLError> for AstryxError<'a> {
+impl<'a> From<HTMLError> for AstryxError<'a> {
     fn from(_e: HTMLError) -> AstryxError<'a> {
         AstryxError::HTMLError
     }
 }
 
-impl <'a>From<std::io::Error> for AstryxError<'a> {
+impl<'a> From<std::io::Error> for AstryxError<'a> {
     fn from(e: std::io::Error) -> AstryxError<'a> {
         AstryxError::IO(e)
     }
 }
 
+pub(crate) fn html_error_page(content: &str) -> String {
+    format!("<html style='background-color: black;color: white;'><body><h1>Error :(</h1><pre>{}</pre></body></html>", content)
+}
+
 /// convert an error to a display-friendly string
-pub(crate) fn display_error(err: AstryxError, path: &str) -> String {
+pub(crate) fn display_error(err: &AstryxError, path: &str) -> String {
     // println!("error: {:?}", err);
     match &err {
-        AstryxError::ParserError(e) =>
-            error_with_line(&e.pos, &e.context, "reason", path),
+        AstryxError::ParserError(e) => error_with_line(&e.pos, &e.context, "reason", path),
         AstryxError::InterpreterError => format!("InterpreterError"),
         AstryxError::HTMLError => format!("HTMLError"),
         AstryxError::IO(_) => format!("IO"),

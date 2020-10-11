@@ -5,7 +5,7 @@ pub(crate) fn build<'a>(path: &str) -> AstryxResult<'a, ()> {
 
     match crate::render::render(&file) {
         Ok(buffers) => println!("ok. {:#?}", buffers),
-        Err(e) => println!("{}", display_error(e, &path)),
+        Err(e) => println!("{}", display_error(&e, &path)),
     }
     Ok(())
 }
