@@ -10,7 +10,7 @@ use nom::{
     sequence::tuple,
     IResult, multi::many0, bytes::complete::tag,
 };
-use nom_locate::{position, LocatedSpan};
+use nom_locate::LocatedSpan;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {
