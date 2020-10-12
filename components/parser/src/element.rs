@@ -1,6 +1,6 @@
-use crate::{error::ParserErrorKind, Element, ParserError, Span};
+use crate::{error::ParserErrorKind, Element, ParserError, Span, variable::variable, Variable};
 use nom::{
-    character::complete::char,
+    character::complete::{space0, char},
     character::complete::{alpha1, alphanumeric1, multispace0},
     combinator::{cut, opt},
     multi::many0,
@@ -10,13 +10,22 @@ use nom::{
 
 fn attribute_assignment<'a>(
     i: Span<'a>,
-) -> IResult<Span<'a>, (Span<'a>, Span<'a>), ParserError<Span<'a>>> {
+) -> IResult<Span<'a>, (Span<'a>, Variable), ParserError<Span<'a>>> {
     nom::sequence::tuple((
         alpha1,
         terminated(multispace0, char('=')),
-        cut(terminated(multispace0, alpha1)),
+        space0,
+        cut(variable),
     ))(i)
-    .map(|(r, (ident, _, value))| (r, (ident, value)))
+    .map_err(|e: nom::Err<(_, _)>| {
+        e.map(|s| ParserError {
+            context: i,
+            kind: ParserErrorKind::SyntaxError,
+            pos: s.0.into(),
+        })
+    })
+    .map(|(r, (ident, _, _, value))| (r, (ident, value)))
+
 }
 
 // pub(crate) fn attribute<'a>(i: Span<'a>) -> IResult<Span<'a>, Vec<Span<'a>>, ParserError<Span<'a>>> {

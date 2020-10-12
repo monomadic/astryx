@@ -34,6 +34,7 @@ pub use crate::models::*;
 mod element;
 mod function;
 mod linesplit;
+mod variable;
 
 // pub fn parse_line<'a>(i: Span<'a>) -> Result<Statement<'a>, ParserError<Span>> {
 //     statement::statement(i)

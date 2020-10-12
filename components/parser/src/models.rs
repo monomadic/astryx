@@ -21,7 +21,7 @@ pub struct FunctionCall<'a> {
 #[derive(Debug, Clone)]
 pub enum Variable<'a> {
     RelativePath(Span<'a>),
-    QuotedString(Span<'a>),
+    QuotedString(Span<'a>), // todo: make this Value(Value)?
     Reference(Span<'a>),
     // TemplateFile(TemplateFile),
     // FunctionCall()
@@ -30,5 +30,5 @@ pub enum Variable<'a> {
 #[derive(Debug, Clone)]
 pub struct Element<'a> {
     pub ident: Span<'a>,
-    pub attributes: Vec<(Span<'a>, Span<'a>)>,
+    pub attributes: Vec<(Span<'a>, Variable<'a>)>,
 }
