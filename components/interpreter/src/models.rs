@@ -7,5 +7,4 @@ pub enum AstryxNode {
 
 #[derive(Debug)]
 pub enum Value {
-    String
 }
