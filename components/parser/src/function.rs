@@ -21,7 +21,9 @@ fn function_call_arguments<'a>(
     many0(function_call_argument)(i)
 }
 
-pub(crate) fn function_call<'a>(i: Span<'a>) -> IResult<Span<'a>, FunctionCall<'a>, ParserError<Span<'a>>> {
+pub(crate) fn function_call<'a>(
+    i: Span<'a>,
+) -> IResult<Span<'a>, FunctionCall<'a>, ParserError<Span<'a>>> {
     tuple((
         alpha1,
         char('('),
