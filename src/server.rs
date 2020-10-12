@@ -16,7 +16,7 @@ pub(crate) fn start<'a>(path: String, port: u32) -> AstryxResult<'a, ()> {
         if request_path == "/ast" {
             let ast = read_to_string(&path)
                 .map_err(AstryxError::from)
-                .map(|file| format!("{:#?}", parser::run(&*file)));
+                .map(|ref file| format!("{:#?}", parser::run(file)));
 
             match ast {
                 Ok(page) => Ok(response.body(page.as_bytes().to_vec())?),

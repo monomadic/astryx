@@ -1,4 +1,4 @@
-use html::HTMLError;
+// use html::HTMLError;
 use interpreter::InterpreterError;
 use parser::{error::Position, ParserError, Span};
 
@@ -8,7 +8,7 @@ pub type AstryxResult<'a, T> = Result<T, AstryxError<'a>>;
 pub enum AstryxError<'a> {
     ParserError(ParserError<Span<'a>>),
     InterpreterError,
-    HTMLError,
+    // HTMLError,
     IO(std::io::Error),
 }
 
@@ -24,11 +24,11 @@ impl<'a> From<InterpreterError> for AstryxError<'a> {
     }
 }
 
-impl<'a> From<HTMLError> for AstryxError<'a> {
-    fn from(_e: HTMLError) -> AstryxError<'a> {
-        AstryxError::HTMLError
-    }
-}
+// impl<'a> From<HTMLError> for AstryxError<'a> {
+//     fn from(_e: HTMLError) -> AstryxError<'a> {
+//         AstryxError::HTMLError
+//     }
+// }
 
 impl<'a> From<std::io::Error> for AstryxError<'a> {
     fn from(e: std::io::Error) -> AstryxError<'a> {
@@ -46,7 +46,7 @@ pub(crate) fn display_error(err: &AstryxError, path: &str) -> String {
     match &err {
         AstryxError::ParserError(e) => error_with_line(&e.pos, &e.context, "reason", path),
         AstryxError::InterpreterError => format!("InterpreterError"),
-        AstryxError::HTMLError => format!("HTMLError"),
+        // AstryxError::HTMLError => format!("HTMLError"),
         AstryxError::IO(_) => format!("IO"),
     }
 }

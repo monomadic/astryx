@@ -52,8 +52,9 @@ mod variable;
 //     assert!(parse_line(Span::new("func()\nfunc()")).is_err());
 // }
 
-pub fn run<'a>(i: &'a str) -> Result<Vec<Node<Statement<'a>>>, ParserError<Span<'a>>> {
-    let (_, lines): (_, Vec<Line>) = linesplit::take_lines(i).expect("linesplit fail (fix)"); // break document up by whitespace indentation
+pub fn run<'a>(i: &'a String) -> Result<Vec<Node<Statement<'a>>>, ParserError<Span<'a>>> {
+
+    let (_, lines): (_, Vec<Line>) = linesplit::take_lines(&i).expect("linesplit fail (fix)"); // break document up by whitespace indentation
 
     // let l: Result<Vec<(Span, Node<Statement<'a>>)>, nom::Err<ParserError<Span<'a>>>> = lines
     //     .into_iter()
@@ -81,9 +82,9 @@ fn parse_line<'a>(line: Line<'a>) -> IResult<Span<'a>, Node<Statement<'a>>, Pars
     let mut node: Node<Statement> = Node::new(statement);
 
     for child in line.children {
-        println!("line {:?}", &child);
+        // println!("line {:?}", &child);
         let (_, statement) = statement::statement(child.content).unwrap();
-        println!("statement {:?}", &statement);
+        // println!("statement {:?}", &statement);
         node.append(Node::new(statement));
     }
 

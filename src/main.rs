@@ -46,8 +46,12 @@ fn run<'a>() -> AstryxResult<'a, ()> {
             server::start(
                 file.unwrap_or(String::from("site.astryx")),
                 port.unwrap_or(8888)),
-        Command::Build{ file } => build::build(
-            &file.unwrap_or(String::from("site.astryx"))),
+        Command::Build{ file } => {
+            let file = file.unwrap_or(String::from("site.astryx"));
+            println!("building: {}\n", &file);
+            build::build(
+            &file)
+        },
         Command::New => new_project(),
     }
 }
