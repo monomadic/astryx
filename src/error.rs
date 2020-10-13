@@ -1,6 +1,6 @@
 // use html::HTMLError;
 use interpreter::InterpreterError;
-use parser::{error::Position, ParserError, Span};
+use parser::{error::{ParserErrorKind, Position}, ParserError, Span};
 
 pub type AstryxResult<'a, T> = Result<T, AstryxError<'a>>;
 
@@ -44,26 +44,31 @@ pub(crate) fn html_error_page(content: &str) -> String {
 pub(crate) fn display_error(err: &AstryxError, path: &str) -> String {
     // println!("error: {:?}", err);
     match &err {
-        AstryxError::ParserError(e) => error_with_line(&e.pos, &e.context, "reason", path),
+        AstryxError::ParserError(e) => error_with_line(&e.context, &e.pos, &parser_reason(&e.kind), path),
         AstryxError::InterpreterError => format!("InterpreterError"),
         // AstryxError::HTMLError => format!("HTMLError"),
         AstryxError::IO(_) => format!("IO"),
     }
 }
 
+fn parser_reason(kind: &ParserErrorKind<Span>) -> String {
+    format!("{:?}", kind)
+}
+
 // terminal view for errors
-fn error_with_line(pos: &Position, context: &Span, reason: &str, path: &str) -> String {
+fn error_with_line(context: &Span, pos: &Span, reason: &str, path: &str) -> String {
+    // panic!("context: {:?}", context.fragment());
     [
         format!("error: {}", reason),
-        format!("--> {}:{}:{}", path, pos.line, pos.column),
+        format!("--> {}:{}:{}", path, pos.location_line(), pos.get_column()),
         String::from("  |"),
-        format!("{} | {}", pos.line, context), //file.lines().into_iter().enumerate().collect::<Vec<String>>()[context.location_line() as usize]),
+        format!("{} | {}", context.location_line(), context), //file.lines().into_iter().enumerate().collect::<Vec<String>>()[context.location_line() as usize]),
         format!(
             "  |{space:column$}{caret:offset$}",
             space = " ",
             caret = "^",
-            column = pos.column,
-            offset = pos.offset
+            column = pos.get_column(),
+            offset = pos.location_offset(),
         ),
     ]
     .join("\n")

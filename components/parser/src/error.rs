@@ -9,8 +9,8 @@ use nom::{
 #[derive(Debug)]
 pub struct ParserError<I> {
     pub kind: ParserErrorKind<I>,
-    pub pos: Position, // this should be a span.
-    pub context: I, // this is probably not necessary
+    pub pos: I,
+    pub context: I,
 }
 
 #[derive(Debug)]
@@ -20,34 +20,50 @@ pub struct Position {
     pub offset: usize,
 }
 
-impl<I> ParseError<I> for ParserError<I> {
-    fn from_error_kind(input: I, _kind: ErrorKind) -> Self {
+impl <'a>ParseError<Span<'a>> for ParserError<Span<'a>> {
+    fn from_error_kind(input: Span<'a>, _kind: ErrorKind) -> Self {
+        // panic!("incoming: {:?}", input);
         ParserError {
             kind: ParserErrorKind::Unhandled,
-            pos: Position {
-                column: 0,
-                line: 0,
-                offset: 0,
-            },
+            pos: input,
             context: input,
         }
-        // panic!("unhandled error {:?} {:?}", input, kind);
     }
 
-    fn append(_i: I, _kind: ErrorKind, other: Self) -> Self {
-        other
-    }
-
-    fn from_char(input: I, _: char) -> Self {
-        // panic!("from_char");
-        Self::from_error_kind(input, ErrorKind::Char)
-    }
-
-    fn or(self, other: Self) -> Self {
-        // panic!("or");
+    fn append(_i: Span<'a>, _kind: ErrorKind, other: Self) -> Self {
         other
     }
 }
+
+// impl<I:std::fmt::Debug> ParseError<I> for ParserError<I> {
+//     fn from_error_kind(input: I, _kind: ErrorKind) -> Self {
+//         panic!("incoming: {:?}", input);
+//         ParserError {
+//             kind: ParserErrorKind::Unhandled,
+//             pos: Position {
+//                 column: 0,
+//                 line: 0,
+//                 offset: 0,
+//             },
+//             context: input,
+//         }
+//         // panic!("unhandled error {:?} {:?}", input, kind);
+//     }
+
+//     fn append(_i: I, _kind: ErrorKind, other: Self) -> Self {
+//         other
+//     }
+
+//     fn from_char(input: I, _: char) -> Self {
+//         // panic!("from_char");
+//         Self::from_error_kind(input, ErrorKind::Char)
+//     }
+
+//     fn or(self, other: Self) -> Self {
+//         // panic!("or");
+//         other
+//     }
+// }
 
 // impl<I:std::fmt::Display> ContextError<I> for ParserError<I> {
 //     fn add_context(input: I, ctx: &'static str, other: Self) -> Self {
@@ -116,6 +132,7 @@ pub enum ParserErrorKind<I> {
     SyntaxError,
     FunctionArgumentError,
     Unhandled,
+    UnexpectedToken(String),
     Nom(I),
 }
 

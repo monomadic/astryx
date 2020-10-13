@@ -32,6 +32,13 @@ pub(crate) fn statement<'a>(i: Span<'a>) -> IResult<Span, Statement<'a>, ParserE
         map(element, |e| Statement::Element(e)),
         // map(alpha1, |e| Statement::Element(e)),
     )))(i)
+    .map_err(|e| {
+        e.map(|s| ParserError {
+            context: i,
+            kind: s.kind,
+            pos: s.pos,
+        })
+    })
 }
 
 #[test]

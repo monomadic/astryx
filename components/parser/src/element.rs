@@ -18,10 +18,10 @@ fn attribute_assignment<'a>(
         cut(variable),
     ))(i)
     .map_err(|e: nom::Err<(_, _)>| {
-        e.map(|s| ParserError {
-            context: i,
+        e.map(|(span, _kind)| ParserError {
+            context: span,
             kind: ParserErrorKind::SyntaxError,
-            pos: s.0.into(),
+            pos: span.into(),
         })
     })
     .map(|(r, (ident, _, _, value))| (r, (ident, value)))
@@ -41,11 +41,11 @@ fn attribute_assignment<'a>(
 pub(crate) fn element<'a>(i: Span<'a>) -> IResult<Span<'a>, Element<'a>, ParserError<Span<'a>>> {
     tuple((alphanumeric1, opt(char(' ')), many0(attribute_assignment)))(i)
         .map(|(r, (ident, _, attributes))| (r, Element { ident, attributes }))
-        .map_err(|e: nom::Err<ParserError<Span<'a>>>| {
-            e.map(|s| ParserError {
-                context: i,
+        .map_err(|e: nom::Err<_>| {
+            e.map(|e: ParserError<Span<'a>>| ParserError {
+                context: e.context,
                 kind: ParserErrorKind::SyntaxError,
-                pos: s.context.into(),
+                pos: i.into(),
             })
         })
 }

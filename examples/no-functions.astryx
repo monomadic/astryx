@@ -1,5 +1,5 @@
-file path="index.html"
+file(_)
   html
     head
-    body path="f"
+    body path=%
       h1

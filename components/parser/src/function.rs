@@ -19,6 +19,13 @@ fn function_call_arguments<'a>(
     i: Span<'a>,
 ) -> IResult<Span<'a>, Vec<(Span<'a>, Variable<'a>)>, ParserError<Span<'a>>> {
     many0(function_call_argument)(i)
+    .map_err(|e:nom::Err<ParserError<_>>| {
+        e.map(|s| ParserError {
+            context: i,
+            kind: ParserErrorKind::UnexpectedToken("blah".into()),
+            pos: s.context.into(),
+        })
+    })
 }
 
 pub(crate) fn function_call<'a>(
@@ -31,13 +38,13 @@ pub(crate) fn function_call<'a>(
         cut(char(')')),
     ))(i)
     .map(|(r, (ident, _, arguments, _))| (r, FunctionCall { ident, arguments }))
-    .map_err(|e| {
-        e.map(|s| ParserError {
-            context: i,
-            kind: ParserErrorKind::SyntaxError,
-            pos: s.context.into(),
-        })
-    })
+    // .map_err(|e| {
+    //     e.map(|s| ParserError {
+    //         context: i,
+    //         kind: ParserErrorKind::UnexpectedToken("blah".into()),
+    //         pos: s.context.into(),
+    //     })
+    // })
 }
 
 #[test]
