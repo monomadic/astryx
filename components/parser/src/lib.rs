@@ -82,10 +82,11 @@ fn parse_line<'a>(line: Line<'a>) -> IResult<Span<'a>, Node<Statement<'a>>, Pars
     let mut node: Node<Statement> = Node::new(statement);
 
     for child in line.children {
-        // println!("line {:?}", &child);
-        let (_, statement) = statement::statement(child.content).unwrap();
+        // println!("line {:?}", &child.content);
+        // let (_, statement) = statement::statement(child.content).unwrap();
+        let (_, child_node) = parse_line(child)?;
         // println!("statement {:?}", &statement);
-        node.append(Node::new(statement));
+        node.append(child_node);
     }
 
     Ok((r, node))
