@@ -1,10 +1,10 @@
+use error::{AstryxError, AstryxResult, display_error};
 use structopt::StructOpt;
-use error::AstryxResult;
 
-mod server;
-mod render;
 mod build;
 mod error;
+mod render;
+mod server;
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "astryx")]
@@ -32,28 +32,39 @@ enum Command {
 
 pub fn main() {
     match run() {
-        Ok(_) => println!("\n"),
-        Err(e) => println!("\n\nERROR: {:?}", e),
+        Ok(r) => println!("{}", r),
+        Err(e) => println!("{}", e),
     }
 }
 
 /// run cli commands
-fn run<'a>() -> AstryxResult<'a, ()> {
+fn run() -> Result<String, String> {
     let opt = Opt::from_args();
 
     match opt.command {
-        Command::Serve{ file, port } =>
+        Command::Serve { file, port } => {
+            let path = &file.unwrap_or(String::from("site.astryx"));
+
             server::start(
-                file.unwrap_or(String::from("site.astryx")),
-                port.unwrap_or(8888)),
-        Command::Build{ file } => {
-            let file = file.unwrap_or(String::from("site.astryx"));
-            println!("building: {}\n", &file);
-            build::build(
-            &file)
-        },
-        Command::New => new_project(),
+                path.into(),
+                port.unwrap_or(8888),
+            )
+            .map_err(|e| display_error(&e, path))
+        }
+        Command::Build { file } => {
+            let path = &file.unwrap_or(String::from("site.astryx"));
+            let file = std::fs::read_to_string(&path).expect(&format!("could not open {}", path));
+            println!("building: {}\n", &path);
+
+            build::build(&file)
+            .map_err(|e| display_error(&e, path))
+        }
+        Command::New => {
+            new_project()
+            .map_err(|e| format!("error creating new project: {:?}", e))
+        }
     }
+    .map(|_| "done.".to_string())
 }
 
 /// set up a new project in the current directory

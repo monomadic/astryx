@@ -1,19 +1,18 @@
 use crate::error::*;
 use rctree::Node;
 
-pub(crate) fn build<'a>(path: &str) -> AstryxResult<'a, ()> {
-    let file = std::fs::read_to_string(&path)?;
-
-    let _ = crate::render::render(&file)
+pub(crate) fn build<'a>(file: &'a str) -> AstryxResult<'a, ()> {
+    crate::render::render(file)
         .and_then(|nodes| interpreter::run(nodes).map_err(AstryxError::from))
-        .map_err(AstryxError::from);
+        .map_err(AstryxError::from)
+        .map(|_| ()) // gotta terminate with an empty tuple so we still get the error.
 
     // std::fs::read_to_string(&path)
     //     .map_err(AstryxError::from)
     //     .and_then(|file| crate::render::render(&file))
     //     .and_then(|nodes| interpreter::run(nodes).map_err(AstryxError::from))?;
 
-    Ok(())
+    // Ok(())
 }
 
 fn print_node<T: std::fmt::Debug>(node: Node<T>) {

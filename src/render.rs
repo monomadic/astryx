@@ -13,7 +13,7 @@ impl RenderErrorAsHTML for AstryxError<'_> {
 }
 
 // pub fn render<'a>(file: &'a str) -> AstryxResult<'a, std::collections::HashMap<String, String>> {
-pub fn render<'a>(file: &'a String) -> AstryxResult<'a, Vec<Node<Statement<'a>>>> {
+pub fn render<'a>(file: &'a str) -> AstryxResult<'a, Vec<Node<Statement<'a>>>> {
     parser::run(&file)
         .map_err(AstryxError::from)
         // .and_then(|ast: Vec<Statement>| interpreter::run(&ast).map_err(AstryxError::from))

@@ -8,7 +8,7 @@
 //!
 
 pub use error::InterpreterError;
-use models::AstryxNode;
+pub use models::AstryxNode;
 use parser::Statement;
 use rctree::Node;
 use state::State;

@@ -52,7 +52,7 @@ mod variable;
 //     assert!(parse_line(Span::new("func()\nfunc()")).is_err());
 // }
 
-pub fn run<'a>(i: &'a String) -> Result<Vec<Node<Statement<'a>>>, ParserError<Span<'a>>> {
+pub fn run<'a>(i: &'a str) -> Result<Vec<Node<Statement<'a>>>, ParserError<Span<'a>>> {
 
     let (_, lines): (_, Vec<Line>) = linesplit::take_lines(&i).expect("linesplit fail (fix)"); // break document up by whitespace indentation
 
