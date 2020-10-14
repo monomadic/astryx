@@ -1,2 +1,2 @@
-Page(route:here)
+Page(path: "/index.html")
   h1

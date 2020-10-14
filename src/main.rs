@@ -1,4 +1,4 @@
-use error::{AstryxError, AstryxResult, display_error};
+use error::{display_error, AstryxResult};
 use structopt::StructOpt;
 
 mod build;
@@ -45,24 +45,16 @@ fn run() -> Result<String, String> {
         Command::Serve { file, port } => {
             let path = &file.unwrap_or(String::from("site.astryx"));
 
-            server::start(
-                path.into(),
-                port.unwrap_or(8888),
-            )
-            .map_err(|e| display_error(&e, path))
+            server::start(path.into(), port.unwrap_or(8888)).map_err(|e| display_error(&e, path))
         }
         Command::Build { file } => {
             let path = &file.unwrap_or(String::from("site.astryx"));
             let file = std::fs::read_to_string(&path).expect(&format!("could not open {}", path));
             println!("building: {}\n", &path);
 
-            build::build(&file)
-            .map_err(|e| display_error(&e, path))
+            build::build(&file).map_err(|e| display_error(&e, path))
         }
-        Command::New => {
-            new_project()
-            .map_err(|e| format!("error creating new project: {:?}", e))
-        }
+        Command::New => new_project().map_err(|e| format!("error creating new project: {:?}", e)),
     }
     .map(|_| "done.".to_string())
 }

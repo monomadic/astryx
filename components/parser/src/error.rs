@@ -133,6 +133,7 @@ pub enum ParserErrorKind<I> {
     FunctionArgumentError,
     Unhandled,
     UnexpectedToken(String),
+    ExpectedValue,
     Nom(I),
 }
 

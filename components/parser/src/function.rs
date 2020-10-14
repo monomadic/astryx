@@ -1,6 +1,6 @@
-use crate::{error::ParserErrorKind, FunctionCall, ParserError, Span, Variable};
+use crate::{error::ParserErrorKind, FunctionCall, ParserError, Span, Variable, variable::variable};
 use nom::{
-    character::complete::char,
+    character::complete::{space0, char},
     character::complete::{alpha1, multispace0},
     combinator::cut,
     multi::many0,
@@ -11,21 +11,28 @@ use nom::{
 fn function_call_argument<'a>(
     i: Span<'a>,
 ) -> IResult<Span<'a>, (Span<'a>, Variable<'a>), ParserError<Span<'a>>> {
-    tuple((alpha1, terminated(multispace0, char(':')), alpha1))(i)
-        .map(|(r, (ident, _, value))| (r, (ident, Variable::QuotedString(value))))
+    tuple((alpha1, terminated(multispace0, char(':')), space0, cut(variable)))(i)
+        .map(|(r, (ident, _, _, value))| (r, (ident, value)))
+        .map_err(|e:nom::Err<_>| {
+            e.map(|(span, _e)| ParserError {
+                context: i,
+                kind: ParserErrorKind::ExpectedValue,
+                pos: span,
+            })
+        })
 }
 
 fn function_call_arguments<'a>(
     i: Span<'a>,
 ) -> IResult<Span<'a>, Vec<(Span<'a>, Variable<'a>)>, ParserError<Span<'a>>> {
     many0(function_call_argument)(i)
-    .map_err(|e:nom::Err<ParserError<_>>| {
-        e.map(|s| ParserError {
-            context: i,
-            kind: ParserErrorKind::UnexpectedToken("blah".into()),
-            pos: s.context.into(),
-        })
-    })
+        // .map_err(|e:nom::Err<ParserError<_>>| {
+        //     e.map(|s| ParserError {
+        //         context: i,
+        //         kind: ParserErrorKind::UnexpectedToken("g".into()),
+        //         pos: s.context.into(),
+        //     })
+        // })
 }
 
 pub(crate) fn function_call<'a>(
@@ -34,7 +41,7 @@ pub(crate) fn function_call<'a>(
     tuple((
         alpha1,
         char('('),
-        cut(function_call_arguments),
+        function_call_arguments,
         cut(char(')')),
     ))(i)
     .map(|(r, (ident, _, arguments, _))| (r, FunctionCall { ident, arguments }))
