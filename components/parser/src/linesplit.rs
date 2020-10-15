@@ -88,7 +88,7 @@ fn line(i: Span) -> IResult<Span, (usize, Span)> {
         opt(newline),
         opt(many0(tuple((space0, newline)))), // throw away blank lines
     ))(i)
-    .map(|(r, (indent, line, _, _))| (r, (indent, line)))
+    .map(|(r, (indent, line, _, _))| (r, (indent, Span::new(line.fragment()))))
 }
 
 /// returns the position of the first non-whitespace character,
