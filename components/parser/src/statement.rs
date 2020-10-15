@@ -1,6 +1,6 @@
 use crate::{
     models::Statement,
-    ParserError, element::element, function::function_call, Span,
+    ParserError, element::element, function::function_call, Span, text::piped_string,
 };
 use nom::{
     branch::alt,
@@ -30,11 +30,12 @@ pub(crate) fn statement<'a>(i: Span<'a>) -> IResult<Span, Statement<'a>, ParserE
     all_consuming(alt((
         map(function_call, |f| Statement::FunctionCall(f)),
         map(element, |e| Statement::Element(e)),
+        map(piped_string, |e| Statement::Text(e)),
         // map(alpha1, |e| Statement::Element(e)),
     )))(i)
     .map_err(|e| {
         e.map(|s| ParserError {
-            context: i,
+            context: i, // we need to reset the context to the whole line
             kind: s.kind,
             pos: s.pos,
         })

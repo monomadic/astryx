@@ -10,6 +10,7 @@ use crate::Span;
 pub enum Statement<'a> {
     FunctionCall(FunctionCall<'a>),
     Element(Element<'a>),
+    Text(Vec<StringToken<'a>>), // todo: replace with interpolatedstring
 }
 
 #[derive(Debug, Clone)]
@@ -31,4 +32,10 @@ pub enum Variable<'a> {
 pub struct Element<'a> {
     pub ident: Span<'a>,
     pub attributes: Vec<(Span<'a>, Variable<'a>)>,
+}
+
+#[derive(Debug, Clone)]
+pub enum StringToken<'a> {
+    Text(Span<'a>),
+    Variable(Variable<'a>),
 }

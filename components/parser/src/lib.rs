@@ -19,22 +19,23 @@
 use linesplit::Line;
 use nom_locate::LocatedSpan;
 
+use error::ParserErrorKind;
 use nom::{Err, IResult};
 use rctree::Node;
 
 pub type Span<'a> = LocatedSpan<&'a str>;
 pub type ParserResult<T, I> = Result<T, ParserError<I>>;
 
-pub mod error;
-pub mod models;
-pub mod statement;
-// pub mod variable;
-pub use crate::error::ParserError;
-pub use crate::models::*;
 mod element;
+pub mod error;
 mod function;
 mod linesplit;
+pub mod models;
+pub mod statement;
+mod text;
 mod variable;
+pub use crate::error::ParserError;
+pub use crate::models::*;
 
 // pub fn parse_line<'a>(i: Span<'a>) -> Result<Statement<'a>, ParserError<Span>> {
 //     statement::statement(i)
@@ -53,7 +54,6 @@ mod variable;
 // }
 
 pub fn run<'a>(i: &'a str) -> Result<Vec<Node<Statement<'a>>>, ParserError<Span<'a>>> {
-
     let (_, lines): (_, Vec<Line>) = linesplit::take_lines(&i).expect("linesplit fail (fix)"); // break document up by whitespace indentation
 
     // let l: Result<Vec<(Span, Node<Statement<'a>>)>, nom::Err<ParserError<Span<'a>>>> = lines
@@ -77,6 +77,13 @@ pub fn run<'a>(i: &'a str) -> Result<Vec<Node<Statement<'a>>>, ParserError<Span<
 
 fn parse_line<'a>(line: Line<'a>) -> IResult<Span<'a>, Node<Statement<'a>>, ParserError<Span<'a>>> {
     let (r, statement) = statement::statement(line.content)?;
+    // .map_err(|e| {
+    //     e.map(|s| ParserError {
+    //         context: line.content, // we need to reset the context to the whole line
+    //         kind: ParserErrorKind::UnexpectedToken("6".into()),
+    //         pos: s.pos,
+    //     })
+    // })?;
     // .map_err(|e| e.map(ParserError::from))?; // fix this
 
     let mut node: Node<Statement> = Node::new(statement);

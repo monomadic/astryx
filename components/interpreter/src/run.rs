@@ -8,6 +8,7 @@ pub(crate) fn interpret(node: &Node<Statement>, state: &State) -> InterpreterRes
     match node.borrow().clone() {
         Statement::Element(e) => println!("# element: {:?}", e.ident.fragment()),
         Statement::FunctionCall(f) => println!("# function: {:?}", f.ident.fragment()),
+        Statement::Text(t) => println!("# text: {:?}", t),
     }
     for child in node.children() {
         let _ = interpret(&child, state);
