@@ -1,6 +1,6 @@
 // use html::HTMLError;
 use interpreter::InterpreterError;
-use parser::{error::{ParserErrorKind, Position}, ParserError, Span};
+use parser::{error::ParserErrorKind, ParserError, Span};
 
 pub type AstryxResult<'a, T> = Result<T, AstryxError<'a>>;
 

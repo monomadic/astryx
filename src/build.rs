@@ -15,10 +15,10 @@ pub(crate) fn build<'a>(file: &'a str) -> AstryxResult<'a, ()> {
     // Ok(())
 }
 
-fn print_node<T: std::fmt::Debug>(node: Node<T>) {
+fn _print_node<T: std::fmt::Debug>(node: Node<T>) {
     println!("-- {:?}", node.borrow());
     for child in node.children() {
-        print_node(child);
+        _print_node(child);
     }
 }
 
