@@ -19,7 +19,6 @@
 use linesplit::Line;
 use nom_locate::LocatedSpan;
 
-use error::ParserErrorKind;
 use nom::{Err, IResult};
 use rctree::Node;
 

@@ -3,7 +3,7 @@ use nom::{
     branch::alt,
     bytes::complete::{is_not, tag},
     character::complete::char,
-    character::complete::{multispace0, newline},
+    character::complete::multispace0,
     combinator::map,
     IResult,
 };

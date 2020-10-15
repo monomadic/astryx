@@ -30,7 +30,7 @@ fn quoted_string(i: Span) -> IResult<Span, Span> {
 fn relative_path(i: Span) -> IResult<Span, Span> {
     tuple((path_prefix, path_characters))(i)
         // .map(|(r, (prefix, pathname))| (r, Span::new(&format!("{}{}", prefix, pathname)))) // check this!
-        .map(|(r, (prefix, path))| (r, path)) // fix this so that prefix is included
+        .map(|(r, (_prefix, path))| (r, path)) // fix this so that prefix is included
 }
 
 fn path_characters(i: Span) -> IResult<Span, Span> {
