@@ -24,6 +24,6 @@ pub type InterpreterResult<T> = Result<T, InterpreterError>;
 pub fn run(nodes: Vec<Node<Statement>>) -> InterpreterResult<Vec<Node<AstryxNode>>> {
     nodes
         .iter()
-        .map(|node| run::interpret(node, &State::new()))
+        .map(|node| run::eval(node, &State::new()))
         .collect()
 }

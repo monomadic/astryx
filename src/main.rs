@@ -1,5 +1,6 @@
 use error::{display_error, AstryxResult};
 use structopt::StructOpt;
+use repl;
 
 mod build;
 mod error;
@@ -16,6 +17,7 @@ struct Opt {
 
 #[derive(StructOpt, Debug)]
 enum Command {
+    Repl,
     /// start a server
     Serve {
         /// Input file
@@ -55,6 +57,7 @@ fn run() -> Result<String, String> {
             build::build(&file).map_err(|e| display_error(&e, path))
         }
         Command::New => new_project().map_err(|e| format!("error creating new project: {:?}", e)),
+        Command::Repl => repl::run(),
     }
     .map(|_| "done.".to_string())
 }

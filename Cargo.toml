@@ -13,13 +13,15 @@ rctree = "0.3.3"
 parser = { path = "components/parser" }
 interpreter = { path = "components/interpreter" }
 html = { path = "components/html" }
+repl = { path = "components/repl" }
 simple-server = "0.4.0"
 structopt = "0.3"
 
 [workspace]
 members = [
+  "components/html",
   "components/interpreter",
-  "components/search",
   "components/parser",
-  "components/html"
+  "components/repl",
+  "components/search",
 ]

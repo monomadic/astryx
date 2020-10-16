@@ -3,7 +3,7 @@ use crate::{models::AstryxNode, InterpreterResult, state::State};
 use parser::Statement;
 use rctree::Node;
 
-pub(crate) fn interpret(node: &Node<Statement>, state: &State) -> InterpreterResult<Node<AstryxNode>> {
+pub(crate) fn eval(node: &Node<Statement>, state: &State) -> InterpreterResult<Node<AstryxNode>> {
     // println!("node {:?}", node);
     match node.borrow().clone() {
         Statement::Element(e) => println!("# element: {:?}", e.ident.fragment()),
@@ -11,7 +11,7 @@ pub(crate) fn interpret(node: &Node<Statement>, state: &State) -> InterpreterRes
         Statement::Text(t) => println!("# text: {:?}", t),
     }
     for child in node.children() {
-        let _ = interpret(&child, state);
+        let _ = eval(&child, state);
     }
     Ok(Node::new(AstryxNode::Element))
 }
