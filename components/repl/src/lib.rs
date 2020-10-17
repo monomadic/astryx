@@ -1,18 +1,26 @@
 use rustyline::error::ReadlineError;
 use rustyline::Editor;
+use interpreter::State;
 
 pub fn run() -> Result<(), String> {
     let mut rl = Editor::<()>::new();
     // if rl.load_history("history.txt").is_err() {
     //     println!("No previous history.");
     // }
+
+    let mut state = State::new();
+
     loop {
         let readline = rl.readline(">> ");
         match readline {
             Ok(line) => {
-                if line == "quit" || line == "exit" { break };
                 rl.add_history_entry(line.as_str());
-                eval(&line);
+
+                match line.as_str() {
+                    ".quit" | ".exit" | ".q" => break,
+                    ".state" | ".s" => println!("State: {:?}", state),
+                    _ => eval(&line),
+                }
             },
             Err(ReadlineError::Interrupted) => {
                 println!("CTRL-C");
@@ -34,7 +42,9 @@ pub fn run() -> Result<(), String> {
 }
 
 fn eval(i: &str) {
-    match i {
-        _ => println!("{:?}", i)
-    }
+    let result = parser::run(i);
+    // match i {
+    //     _ => println!("{:?}", i)
+    // }
+    println!("{:?}", result);
 }

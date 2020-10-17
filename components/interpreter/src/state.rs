@@ -4,7 +4,7 @@ use crate::models::Value;
 type LocalData = HashMap<String, Value>;
 
 #[derive(Debug)]
-pub(crate) struct State {
+pub struct State {
     locals: LocalData,
     // pub(crate) pages: Layouts,
     // pub(crate) imports: Imports,
@@ -12,7 +12,7 @@ pub(crate) struct State {
 }
 
 impl State {
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         State {
             locals: LocalData::new(),
         }

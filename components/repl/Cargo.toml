@@ -6,3 +6,5 @@ edition = "2018"
 
 [dependencies]
 rustyline = "6.3.0"
+interpreter = { path = "../interpreter" }
+parser = { path = "../parser" }

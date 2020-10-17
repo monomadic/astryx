@@ -9,9 +9,10 @@
 
 pub use error::InterpreterError;
 pub use models::AstryxNode;
+pub use state::State;
+
 use parser::Statement;
 use rctree::Node;
-use state::State;
 
 mod error;
 mod models;
