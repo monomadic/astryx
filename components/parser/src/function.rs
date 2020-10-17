@@ -14,10 +14,10 @@ fn function_call_argument<'a>(
     tuple((alpha1, terminated(multispace0, char(':')), space0, cut(variable)))(i)
         .map(|(r, (ident, _, _, value))| (r, (ident, value)))
         .map_err(|e:nom::Err<_>| {
-            e.map(|(span, _e)| ParserError {
+            e.map(|e| ParserError {
                 context: i,
                 kind: ParserErrorKind::ExpectedValue,
-                pos: span,
+                pos: e.context,
             })
         })
 }

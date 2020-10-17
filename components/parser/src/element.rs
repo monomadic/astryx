@@ -5,7 +5,7 @@ use nom::{
     combinator::{cut, opt},
     multi::many0,
     sequence::{terminated, tuple},
-    IResult,
+    IResult, bytes::complete::tag,
 };
 
 fn attribute_assignment<'a>(
@@ -17,13 +17,13 @@ fn attribute_assignment<'a>(
         space0,
         cut(variable),
     ))(i)
-    .map_err(|e: nom::Err<(_, _)>| {
-        e.map(|(span, _kind)| ParserError {
-            context: span,
-            kind: ParserErrorKind::SyntaxError,
-            pos: span.into(),
-        })
-    })
+    // .map_err(|e: nom::Err<(_, _)>| {
+    //     e.map(|(span, _kind)| ParserError {
+    //         context: span,
+    //         kind: ParserErrorKind::SyntaxError,
+    //         pos: span.into(),
+    //     })
+    // })
     .map(|(r, (ident, _, _, value))| (r, (ident, value)))
 
 }
@@ -39,8 +39,8 @@ fn attribute_assignment<'a>(
 // }
 
 pub(crate) fn element<'a>(i: Span<'a>) -> IResult<Span<'a>, Element<'a>, ParserError<Span<'a>>> {
-    tuple((alphanumeric1, opt(char(' ')), many0(attribute_assignment)))(i)
-        .map(|(r, (ident, _, attributes))| (r, Element { ident, attributes }))
+    tuple((tag("%"), alphanumeric1, opt(char(' ')), many0(attribute_assignment)))(i)
+        .map(|(r, (_, ident, _, attributes))| (r, Element { ident, attributes }))
         .map_err(|e: nom::Err<_>| {
             e.map(|e: ParserError<Span<'a>>| ParserError {
                 context: e.context,

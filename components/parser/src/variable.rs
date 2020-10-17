@@ -1,4 +1,4 @@
-use crate::{Span, Variable};
+use crate::{Span, Variable, ParserError, error::ParserErrorKind};
 use nom::{
     branch::alt, bytes::complete::{tag, is_not}, character::complete::{alphanumeric1, char}, combinator::map,
     sequence::{tuple, delimited}, IResult,
@@ -6,7 +6,7 @@ use nom::{
 
 // should this actually be called a reference? probably....
 
-pub(crate) fn variable(i: Span) -> IResult<Span, Variable> {
+pub(crate) fn variable<'a>(i: Span<'a>) -> IResult<Span<'a>, Variable<'a>, ParserError<Span<'a>>> {
     alt((
         // map(hash, JsonValue::Object),
         // map(array, JsonValue::Array),
@@ -20,6 +20,13 @@ pub(crate) fn variable(i: Span) -> IResult<Span, Variable> {
         // map(dotted_symbol,  |s| Property::DottedSymbol(String::from(s))),
         // map(symbol,         |s| Property::Symbol(String::from(s))),
     ))(i)
+    .map_err(|e| {
+        e.map(|(s, _k)| ParserError {
+            context: i, // we need to reset the context to the whole line
+            kind: ParserErrorKind::UnexpectedToken("variable".into()),
+            pos: s,
+        })
+    })
 }
 
 fn quoted_string(i: Span) -> IResult<Span, Span> {

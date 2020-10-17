@@ -1,11 +1,11 @@
 use crate::{
     models::Statement,
-    ParserError, element::element, function::function_call, Span, text::piped_string, Expression,
+    ParserError, element::element, function::function_call, Span, text::piped_string, Expression, variable::variable,
 };
 use nom::{
     branch::alt,
     combinator::{all_consuming, map},
-    IResult,
+    IResult, sequence::{terminated, tuple}, bytes::complete::tag, character::complete::{multispace1, alphanumeric1, multispace0, space0, space1},
 };
 
 // fn array<'a>(i: Span) -> IResult<Span, Span, ParserError<Span>> {
@@ -29,6 +29,7 @@ use nom::{
 pub(crate) fn statement<'a>(i: Span<'a>) -> IResult<Span, Statement<'a>, ParserError<Span<'a>>> {
     all_consuming(alt((
         // map(function_call, |f| Statement::FunctionCall(f)),
+        map(binding, |(ident, expr)| Statement::Binding(ident, expr)),
         map(expression, |e| Statement::Expression(e)),
         map(element, |e| Statement::Element(e)),
         map(piped_string, |e| Statement::Text(e)),
@@ -44,7 +45,32 @@ pub(crate) fn statement<'a>(i: Span<'a>) -> IResult<Span, Statement<'a>, ParserE
 }
 
 fn expression<'a>(i: Span<'a>) -> IResult<Span, Expression<'a>, ParserError<Span<'a>>> {
-    map(function_call, |f| Expression::FunctionCall(f))(i)
+    alt((
+        map(function_call, |f| Expression::FunctionCall(f)),
+        map(variable, |v| Expression::Reference(v)),
+    ))(i)
+}
+
+fn binding<'a>(i: Span<'a>) -> IResult<Span, (Span<'a>, Expression<'a>), ParserError<Span<'a>>> {
+    tuple((
+        tag("let"),
+        space1,
+        alphanumeric1,
+        terminated(space0, tag("=")),
+        space0,
+        expression,
+    ))(i)
+    .map(|(r, (_, _, ident, _, _, expr))| (r, (ident, expr)))
+}
+
+#[test]
+fn test_binding() {
+    assert!(binding(Span::new("let a=5")).is_ok());
+    // assert_eq!(binding(Span::new("let a=5")).unwrap().0.fragment().to_string(), "a");
+    assert!(binding(Span::new("let a = 5")).is_ok());
+    assert!(binding(Span::new("let print = print()")).is_ok());
+    assert!(binding(Span::new("let print = fn print()")).is_ok());
+    assert!(binding(Span::new("g()")).is_err());
 }
 
 #[test]

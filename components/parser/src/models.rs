@@ -13,15 +13,15 @@ use crate::Span;
 #[derive(Debug, Clone)]
 pub enum Statement<'a> {
     Expression(Expression<'a>),
-    // FunctionCall(FunctionCall<'a>),
+    Binding(Span<'a>, Expression<'a>),
     Element(Element<'a>),
     Text(Vec<StringToken<'a>>), // todo: replace with interpolatedstring
-    // Expression()
 }
 
 #[derive(Debug, Clone)]
 pub enum Expression<'a> {
     FunctionCall(FunctionCall<'a>),
+    Reference(Variable<'a>),
 }
 
 #[derive(Debug, Clone)]

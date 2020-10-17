@@ -45,11 +45,11 @@ fn interpolated_variable<'a>(
         char('}'),
     ))(i)
     .map(|(r, (_, _, _, var, _, _))| (r, var))
-    .map_err(|e| {
-        e.map(|(s, _k)| ParserError {
-            context: i, // we need to reset the context to the whole line
-            kind: ParserErrorKind::UnexpectedToken(s.fragment().to_string()),
-            pos: s,
-        })
-    })
+    // .map_err(|e| {
+    //     e.map(|(s, _k)| ParserError {
+    //         context: i, // we need to reset the context to the whole line
+    //         kind: ParserErrorKind::UnexpectedToken(s.fragment().to_string()),
+    //         pos: s,
+    //     })
+    // })
 }

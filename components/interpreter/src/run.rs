@@ -9,6 +9,7 @@ pub(crate) fn eval(node: &Node<Statement>, state: &State) -> InterpreterResult<N
         Statement::Element(e) => println!("# element: {:?}", e.ident.fragment()),
         Statement::Expression(expr) => println!("# expr: {:?}", expr),
         Statement::Text(t) => println!("# text: {:?}", t),
+        Statement::Binding(_, _) => {}
     }
     for child in node.children() {
         let _ = eval(&child, state);
@@ -17,7 +18,6 @@ pub(crate) fn eval(node: &Node<Statement>, state: &State) -> InterpreterResult<N
 }
 
 // pub(crate) fn traverse(node: &Node<Statement>, state: &State) -> InterpreterResult<Node<AstryxNode>> {
-
 
 //     match node.borrow().clone() {
 //         Statement::Element(e) => println!("# element: {:?}, {}", e.ident.fragment(), node.children().len()),
