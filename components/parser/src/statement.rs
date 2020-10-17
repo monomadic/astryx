@@ -1,6 +1,6 @@
 use crate::{
     models::Statement,
-    ParserError, element::element, function::function_call, Span, text::piped_string,
+    ParserError, element::element, function::function_call, Span, text::piped_string, Expression,
 };
 use nom::{
     branch::alt,
@@ -28,7 +28,8 @@ use nom::{
 
 pub(crate) fn statement<'a>(i: Span<'a>) -> IResult<Span, Statement<'a>, ParserError<Span<'a>>> {
     all_consuming(alt((
-        map(function_call, |f| Statement::FunctionCall(f)),
+        // map(function_call, |f| Statement::FunctionCall(f)),
+        map(expression, |e| Statement::Expression(e)),
         map(element, |e| Statement::Element(e)),
         map(piped_string, |e| Statement::Text(e)),
         // map(alpha1, |e| Statement::Element(e)),
@@ -40,6 +41,10 @@ pub(crate) fn statement<'a>(i: Span<'a>) -> IResult<Span, Statement<'a>, ParserE
             pos: s.pos,
         })
     })
+}
+
+fn expression<'a>(i: Span<'a>) -> IResult<Span, Expression<'a>, ParserError<Span<'a>>> {
+    map(function_call, |f| Expression::FunctionCall(f))(i)
 }
 
 #[test]
