@@ -44,7 +44,7 @@ pub(crate) fn statement<'a>(i: Span<'a>) -> IResult<Span, Statement<'a>, ParserE
     })
 }
 
-fn expression<'a>(i: Span<'a>) -> IResult<Span, Expression<'a>, ParserError<Span<'a>>> {
+pub(crate) fn expression<'a>(i: Span<'a>) -> IResult<Span, Expression<'a>, ParserError<Span<'a>>> {
     alt((
         map(function_call, |f| Expression::FunctionCall(f)),
         map(variable, |v| Expression::Reference(v)),

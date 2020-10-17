@@ -1,4 +1,4 @@
-use crate::{error::ParserErrorKind, FunctionCall, ParserError, Span, Variable, variable::variable};
+use crate::{error::ParserErrorKind, FunctionCall, ParserError, Span, Variable, variable::variable, statement::expression, Expression};
 use nom::{
     character::complete::{space0, char},
     character::complete::{alpha1, multispace0},
@@ -10,8 +10,8 @@ use nom::{
 
 fn function_call_argument<'a>(
     i: Span<'a>,
-) -> IResult<Span<'a>, (Span<'a>, Variable<'a>), ParserError<Span<'a>>> {
-    tuple((alpha1, terminated(multispace0, char(':')), space0, cut(variable)))(i)
+) -> IResult<Span<'a>, (Span<'a>, Expression<'a>), ParserError<Span<'a>>> {
+    tuple((alpha1, terminated(multispace0, char(':')), space0, cut(expression)))(i)
         .map(|(r, (ident, _, _, value))| (r, (ident, value)))
         .map_err(|e:nom::Err<_>| {
             e.map(|e| ParserError {
@@ -24,7 +24,7 @@ fn function_call_argument<'a>(
 
 fn function_call_arguments<'a>(
     i: Span<'a>,
-) -> IResult<Span<'a>, Vec<(Span<'a>, Variable<'a>)>, ParserError<Span<'a>>> {
+) -> IResult<Span<'a>, Vec<(Span<'a>, Expression<'a>)>, ParserError<Span<'a>>> {
     many0(function_call_argument)(i)
         // .map_err(|e:nom::Err<ParserError<_>>| {
         //     e.map(|s| ParserError {

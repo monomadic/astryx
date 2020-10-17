@@ -27,7 +27,7 @@ pub enum Expression<'a> {
 #[derive(Debug, Clone)]
 pub struct FunctionCall<'a> {
     pub ident: Span<'a>,
-    pub arguments: Vec<(Span<'a>, Variable<'a>)>,
+    pub arguments: Vec<(Span<'a>, Expression<'a>)>,
 }
 
 #[derive(Debug, Clone)]
