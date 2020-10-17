@@ -1,9 +1,11 @@
 use crate::error::*;
 use rctree::Node;
+use interpreter::State;
 
 pub(crate) fn build<'a>(file: &'a str) -> AstryxResult<'a, ()> {
+    let state = &mut State::new();
     crate::render::render(file)
-        .and_then(|nodes| interpreter::run(nodes).map_err(AstryxError::from))
+        .and_then(|nodes| interpreter::run(nodes, state).map_err(AstryxError::from))
         .map_err(AstryxError::from)
         .map(|_| ()) // gotta terminate with an empty tuple so we still get the error.
 

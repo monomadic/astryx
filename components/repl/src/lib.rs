@@ -8,7 +8,7 @@ pub fn run() -> Result<(), String> {
     //     println!("No previous history.");
     // }
 
-    let mut state = State::new();
+    let state = &mut State::new();
 
     loop {
         let readline = rl.readline(">> ");
@@ -18,7 +18,7 @@ pub fn run() -> Result<(), String> {
 
                 // ast dump (start line with :)
                 if line.chars().collect::<Vec<char>>()[0] == ':' {
-                    println!("ast dump: {:?}", parser::run(&crop_letters(&line, 1)))
+                    println!("ast: {:?}", parser::run(&crop_letters(&line, 1)))
                 }
 
                 // command (start line with .)
@@ -29,7 +29,8 @@ pub fn run() -> Result<(), String> {
                         _ => println!("no such command: {}", line),
                     }
                 } else {
-                    eval(&line)
+                    println!("{:?}", parser::run(&line)
+                        .map(|s| interpreter::run(s, state)))
                 }
             },
             Err(ReadlineError::Interrupted) => {
@@ -56,12 +57,4 @@ fn crop_letters(s: &str, pos: usize) -> &str {
         Some((pos, _)) => &s[pos..],
         None => "",
     }
-}
-
-fn eval(i: &str) {
-    let result = parser::run(i);
-    // match i {
-    //     _ => println!("{:?}", i)
-    // }
-    println!("{:?}", result);
 }

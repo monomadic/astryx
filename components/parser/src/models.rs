@@ -22,6 +22,7 @@ pub enum Statement<'a> {
 pub enum Expression<'a> {
     FunctionCall(FunctionCall<'a>),
     Reference(Variable<'a>),
+    Literal(Variable<'a>),
 }
 
 #[derive(Debug, Clone)]
