@@ -16,6 +16,12 @@ pub fn run() -> Result<(), String> {
             Ok(line) => {
                 rl.add_history_entry(line.as_str());
 
+                // ast dump (start line with :)
+                if line.chars().collect::<Vec<char>>()[0] == ':' {
+                    println!("ast dump: {:?}", parser::run(&crop_letters(&line, 1)))
+                }
+
+                // command (start line with .)
                 if line.chars().collect::<Vec<char>>()[0] == '.' {
                     match line.as_str() {
                         ".quit" | ".exit" | ".q" => break,
@@ -43,6 +49,13 @@ pub fn run() -> Result<(), String> {
     // rl.save_history("history.txt").unwrap();
 
     Ok(())
+}
+
+fn crop_letters(s: &str, pos: usize) -> &str {
+    match s.char_indices().skip(pos).next() {
+        Some((pos, _)) => &s[pos..],
+        None => "",
+    }
 }
 
 fn eval(i: &str) {
