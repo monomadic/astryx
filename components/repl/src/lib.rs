@@ -16,10 +16,14 @@ pub fn run() -> Result<(), String> {
             Ok(line) => {
                 rl.add_history_entry(line.as_str());
 
-                match line.as_str() {
-                    ".quit" | ".exit" | ".q" => break,
-                    ".state" | ".s" => println!("State: {:?}", state),
-                    _ => eval(&line),
+                if line.chars().collect::<Vec<char>>()[0] == '.' {
+                    match line.as_str() {
+                        ".quit" | ".exit" | ".q" => break,
+                        ".state" | ".s" => println!("state: {:?}", state),
+                        _ => println!("no such command: {}", line),
+                    }
+                } else {
+                    eval(&line)
                 }
             },
             Err(ReadlineError::Interrupted) => {
@@ -31,7 +35,7 @@ pub fn run() -> Result<(), String> {
                 break
             },
             Err(err) => {
-                println!("Error: {:?}", err);
+                println!("error: {:?}", err);
                 break
             }
         }

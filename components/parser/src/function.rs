@@ -1,4 +1,4 @@
-use crate::{error::ParserErrorKind, FunctionCall, ParserError, Span, Variable, variable::variable, statement::expression, Expression};
+use crate::{error::ParserErrorKind, FunctionCall, ParserError, Span, statement::expression, Expression};
 use nom::{
     character::complete::{space0, char},
     character::complete::{alpha1, multispace0},
