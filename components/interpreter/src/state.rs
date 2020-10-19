@@ -64,7 +64,15 @@ impl State {
         // html::render::render(self.document.root());
     }
 
-    pub fn interpolate(&self, _components: Vec<StringToken>) -> InterpreterResult<String> {
-        Ok(String::new())
+    pub fn interpolate(&self, components: Vec<StringToken>) -> InterpreterResult<String> {
+        Ok(components
+            .into_iter()
+            .map(|st| match st {
+                StringToken::Text(span) => span.fragment().to_string(),
+                StringToken::Variable(v) => String::new(),
+            })
+            .collect::<Vec<String>>()
+            .into_iter()
+            .collect())
     }
 }

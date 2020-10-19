@@ -59,7 +59,7 @@ fn run() -> Result<String, String> {
         Command::New => new_project().map_err(|e| format!("error creating new project: {:?}", e)),
         Command::Repl => repl::run(),
     }
-    .map(|_| "done.".to_string())
+    .map(|_| "\ndone.".to_string())
 }
 
 /// set up a new project in the current directory

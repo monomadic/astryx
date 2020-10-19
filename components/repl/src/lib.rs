@@ -29,10 +29,11 @@ pub fn run() -> Result<(), String> {
                         ".state" | ".s" => println!("state: {:?}", state),
                         _ => println!("no such command: {}", line),
                     }
-                } else {
-                    println!("{:?}", parser::run(&line)
-                        .map(|s| interpreter::run(s, state)))
+                    continue
                 }
+
+                println!("{:?}", parser::run(&line)
+                    .map(|s| interpreter::run(s, state)))
             },
             Err(ReadlineError::Interrupted) => {
                 println!("CTRL-C");
