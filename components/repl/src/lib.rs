@@ -18,7 +18,8 @@ pub fn run() -> Result<(), String> {
 
                 // ast dump (start line with :)
                 if line.chars().collect::<Vec<char>>()[0] == ':' {
-                    println!("ast: {:?}", parser::run(&crop_letters(&line, 1)))
+                    println!("ast: {:?}", parser::run(&crop_letters(&line, 1)));
+                    continue
                 }
 
                 // command (start line with .)
