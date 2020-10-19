@@ -21,14 +21,33 @@ pub struct HTMLElement {
 }
 
 impl HTMLElement {
-    pub fn new(ident: &str) -> Result<Self, HTMLError> {
+    pub fn new(ident: &str, attributes: Attributes) -> Result<Self, HTMLError> {
         Ok(HTMLElement {
             ident: ident.into(),
-            attributes: HashMap::new(),
+            attributes,
         })
     }
 
     pub fn open_tag(&self) -> String {
-        format!("<{}>", self.ident)
+        format!("<{}{}>", self.ident, attributes_to_string(&self.attributes))
+    }
+
+    pub fn close_tag(&self) -> String {
+        format!("</{}>", self.ident)
+    }
+}
+
+fn attributes_to_string(attributes: &Attributes) -> String {
+	// format attributes
+    if !attributes.is_empty() {
+        format!(
+            " {}",
+            attributes
+                .iter()
+                .map(|(k, v)| format!("{}=\"{}\"", k, v))
+                .collect::<Vec<String>>()
+                .join(" "))
+    } else {
+        String::new()
     }
 }

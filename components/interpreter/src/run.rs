@@ -2,37 +2,54 @@ use crate::{models::Value, state::State, InterpreterResult};
 use html::HTMLElement;
 use parser::{Expression, Span, Statement};
 use rctree::Node;
+use std::collections::HashMap;
 
 pub(crate) fn eval(node: &Node<Statement>, state: &mut State) -> InterpreterResult<()> {
     // println!("node {:?}", node);
     match node.borrow().clone() {
         Statement::Element(e) => {
-            let element = HTMLElement::new(e.ident.fragment()).expect("valid html");
+            let mut attributes: HashMap<String, String> = HashMap::new();
+
+            for (ident, variable) in e.attributes {
+                attributes.insert(
+                    ident.fragment().to_string(),
+                    state.eval(&Expression::Reference(variable))?.into()
+                );
+            }
+
+            let element = HTMLElement::new(e.ident.fragment(), attributes).expect("valid html");
             print!("{}", element.open_tag());
-            state.push_element(e)?;
+            // state.push_element(e)?;
+            for child in node.children() {
+                let _ = eval(&child, state);
+            }
+            print!("{}", element.close_tag());
         }
         Statement::Expression(expr) => {
-            eval_expression(&expr, state);
+            eval_expression(&expr, state)?;
         }
-        Statement::Text(t) => print!("{}", state.interpolate(t)?),
+        Statement::Text(t) => {
+            print!("{}", state.interpolate(t)?);
+        },
         Statement::Binding(ident, expr) => {
-            eval_binding(&ident, &expr, state);
+            eval_binding(&ident, &expr, state)?;
         } // todo: return err
-    }
-    for child in node.children() {
-        let _ = eval(&child, state);
-    }
-
-    // closing element node here
-    match node.borrow().clone() {
-        Statement::Element(e) => {
-            print!("</{}>", &e.ident.fragment());
-        }
-        _ => (),
     }
 
     Ok(())
 }
+
+// fn eval_element(e: &Element, state: &mut State) -> InterpreterResult<()> {
+//     let element = HTMLElement::new(e.ident.fragment()).expect("valid html");
+//     print!("{}", element.open_tag());
+//     // state.push_element(e)?;
+//     for child in node.children() {
+//         let _ = eval(&child, state);
+//     }
+//     print!("{}", element.close_tag());
+
+//     Ok(())
+// }
 
 fn eval_binding(ident: &Span, expr: &Expression, state: &mut State) -> InterpreterResult<()> {
     state.bind(ident.fragment(), state.eval(expr)?)

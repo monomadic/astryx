@@ -10,3 +10,11 @@ pub enum AstryxNode {
 pub enum Value {
     String(String),
 }
+
+impl Into<String> for Value {
+    fn into(self) -> String {
+        match self {
+            Value::String(s) => s,
+        }
+    }
+}

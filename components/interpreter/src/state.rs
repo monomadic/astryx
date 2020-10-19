@@ -31,7 +31,7 @@ impl State {
     }
 
     pub fn push_element(&mut self, el: Element) -> InterpreterResult<()> {
-        let node = Node::new(AstryxNode::HTMLElement(HTMLElement::new("hi").unwrap()));
+        let node = Node::new(AstryxNode::HTMLElement(HTMLElement::new("hi", HashMap::new()).unwrap()));
 
         let nodeptr = node.downgrade();
 
