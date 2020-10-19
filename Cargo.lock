@@ -392,6 +392,7 @@ name = "interpreter"
 version = "0.1.0"
 dependencies = [
  "glob",
+ "html",
  "parser",
  "rctree",
 ]

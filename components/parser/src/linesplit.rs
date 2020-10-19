@@ -22,6 +22,8 @@ pub(crate) fn take_lines(i: &str) -> IResult<Span, Vec<Line>> {
 fn test_take_lines() {
     assert!(take_lines("").is_ok());
     assert!(take_lines("\n").is_ok());
+
+    assert_eq!(take_lines("\na\n").unwrap().1.len(), 1);
     assert_eq!(take_lines("a\n").unwrap().1.len(), 1);
     assert_eq!(take_lines("a\nb").unwrap().0.to_string(), "");
     assert_eq!(take_lines("a\nb").unwrap().1[0].content.to_string(), "a");
@@ -83,12 +85,12 @@ fn take_children(i: Span) -> IResult<Span, Line> {
 /// take a single line in the format (indent, content) and chomp newline
 fn line(i: Span) -> IResult<Span, (usize, Span)> {
     tuple((
+        opt(many0(tuple((space0, newline)))), // throw away blank lines
         nom::multi::many0_count(one_of(" \t")),
         is_not("\n"),
         opt(newline),
-        opt(many0(tuple((space0, newline)))), // throw away blank lines
     ))(i)
-    .map(|(r, (indent, line, _, _))| (r, (indent, Span::new(line.fragment()))))
+    .map(|(r, (_, indent, line, _))| (r, (indent, Span::new(line.fragment()))))
 }
 
 /// returns the position of the first non-whitespace character,

@@ -1,20 +1,12 @@
 use crate::error::*;
-use rctree::Node;
 use interpreter::State;
+use rctree::Node;
 
 pub(crate) fn build<'a>(file: &'a str) -> AstryxResult<'a, ()> {
     let state = &mut State::new();
-    crate::render::render(file)
-        .and_then(|nodes| interpreter::run(nodes, state).map_err(AstryxError::from))
+    parser::run(file)
         .map_err(AstryxError::from)
-        .map(|_| ()) // gotta terminate with an empty tuple so we still get the error.
-
-    // std::fs::read_to_string(&path)
-    //     .map_err(AstryxError::from)
-    //     .and_then(|file| crate::render::render(&file))
-    //     .and_then(|nodes| interpreter::run(nodes).map_err(AstryxError::from))?;
-
-    // Ok(())
+        .and_then(|nodes| interpreter::run(nodes, state).map_err(AstryxError::from))
 }
 
 fn _print_node<T: std::fmt::Debug>(node: Node<T>) {

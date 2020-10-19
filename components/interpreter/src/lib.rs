@@ -23,6 +23,7 @@ pub type InterpreterResult<T> = Result<T, InterpreterError>;
 
 /// run the interpreter on an AST tree and return a HTMLNode tree for each page
 pub fn run(nodes: Vec<Node<Statement>>, state: &mut State) -> InterpreterResult<()> {
+    // println!("run {:?}", nodes);
     nodes
         .iter()
         .map(|node| run::eval(node, state))

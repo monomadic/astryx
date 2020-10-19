@@ -60,6 +60,8 @@ pub fn run<'a>(i: &'a str) -> Result<Vec<Node<Statement<'a>>>, ParserError<Span<
     //     .map(parse_line)
     //     .collect();
 
+    // println!("lines: {:?}", i);
+
     lines
         .into_iter()
         .map(parse_line)

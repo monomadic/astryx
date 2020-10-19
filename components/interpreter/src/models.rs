@@ -1,11 +1,12 @@
+use html::HTMLElement;
 
 #[derive(Debug)]
 pub enum AstryxNode {
-    Element,
-    Text,
+    HTMLElement(HTMLElement),
+    Root,
 }
 
 #[derive(Debug)]
 pub enum Value {
-    String(String)
+    String(String),
 }

@@ -1,6 +1,8 @@
+use crate::{models::Value, AstryxNode, InterpreterError, InterpreterResult};
+use html::HTMLElement;
+use parser::{Element, Expression};
+use rctree::Node;
 use std::collections::HashMap;
-use crate::{models::Value, InterpreterResult, InterpreterError};
-use parser::Expression;
 
 type LocalData = HashMap<String, Value>;
 
@@ -10,20 +12,43 @@ pub struct State {
     // pub(crate) pages: Layouts,
     // pub(crate) imports: Imports,
     // pub(crate) pwd: String,
+    document: Node<AstryxNode>, // cursor ref to the current node in the output tree
 }
 
 impl State {
     pub fn new() -> Self {
         State {
             locals: LocalData::new(),
+            document: Node::new(AstryxNode::Root),
         }
     }
 
     pub fn bind(&mut self, ident: &str, value: Value) -> InterpreterResult<()> {
         match self.locals.insert(ident.into(), value) {
             Some(_) => Ok(()),
-            None => Err(InterpreterError::Unhandled)
+            None => Err(InterpreterError::Unhandled),
         }
+    }
+
+    pub fn push_element(&mut self, el: Element) -> InterpreterResult<()> {
+        let node = Node::new(AstryxNode::HTMLElement(HTMLElement::new("hi")));
+
+        let nodeptr = node.downgrade();
+
+        self.document.append(node);
+
+        // let parent = &mut self.document.downgrade();
+        // parent.append(node);
+
+        self.document = nodeptr.upgrade().expect("node to upgrade");
+
+        // self.document.append(node);
+
+        // for child in self.document.children() {
+        //     println!("child {:?}", child);
+        // }
+
+        Ok(())
     }
 
     pub fn eval(&self, expr: &Expression) -> InterpreterResult<Value> {
@@ -32,6 +57,10 @@ impl State {
         //     Expression::Reference(_) => {}
         //     Expression::Literal(v) => {}
         // }
-        Ok(Value::String("stringy".into()))
+        Ok(Value::String(format!("{:?}", expr)))
+    }
+
+    pub fn render(&self) {
+        // html::render::render(self.document.root());
     }
 }
