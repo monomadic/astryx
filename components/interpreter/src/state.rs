@@ -1,6 +1,6 @@
 use crate::{models::Value, AstryxNode, InterpreterError, InterpreterResult};
 use html::HTMLElement;
-use parser::{Element, Expression};
+use parser::{Element, Expression, StringToken};
 use rctree::Node;
 use std::collections::HashMap;
 
@@ -31,7 +31,7 @@ impl State {
     }
 
     pub fn push_element(&mut self, el: Element) -> InterpreterResult<()> {
-        let node = Node::new(AstryxNode::HTMLElement(HTMLElement::new("hi")));
+        let node = Node::new(AstryxNode::HTMLElement(HTMLElement::new("hi").unwrap()));
 
         let nodeptr = node.downgrade();
 
@@ -62,5 +62,9 @@ impl State {
 
     pub fn render(&self) {
         // html::render::render(self.document.root());
+    }
+
+    pub fn interpolate(&self, _components: Vec<StringToken>) -> InterpreterResult<String> {
+        Ok(String::new())
     }
 }

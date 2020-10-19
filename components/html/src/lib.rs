@@ -1,6 +1,8 @@
 use std::collections::HashMap;
+use error::HTMLError;
 pub mod render;
-pub mod program;
+// pub mod program;
+pub mod error;
 
 #[derive(Debug, Clone)]
 pub enum HTMLNode {
@@ -19,10 +21,14 @@ pub struct HTMLElement {
 }
 
 impl HTMLElement {
-    pub fn new(ident: &str) -> Self {
-        HTMLElement {
+    pub fn new(ident: &str) -> Result<Self, HTMLError> {
+        Ok(HTMLElement {
             ident: ident.into(),
             attributes: HashMap::new(),
-        }
+        })
+    }
+
+    pub fn open_tag(&self) -> String {
+        format!("<{}>", self.ident)
     }
 }

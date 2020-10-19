@@ -13,12 +13,12 @@ pub struct ParserError<I> {
     pub context: I,
 }
 
-#[derive(Debug)]
-pub struct Position {
-    pub line: u32,
-    pub column: usize,
-    pub offset: usize,
-}
+// #[derive(Debug)]
+// pub struct Position {
+//     pub line: u32,
+//     pub column: usize,
+//     pub offset: usize,
+// }
 
 impl <'a>ParseError<Span<'a>> for ParserError<Span<'a>> {
     fn from_error_kind(input: Span<'a>, _kind: ErrorKind) -> Self {
@@ -74,15 +74,15 @@ impl <'a>ParseError<Span<'a>> for ParserError<Span<'a>> {
 
 // this is selfish and a perf hit, but I don't want to expose Span
 // it's not that bad as these aren't heap allocated
-impl<'a> From<Span<'a>> for Position {
-    fn from(span: Span) -> Position {
-        Position {
-            line: span.location_line(),
-            offset: span.location_offset(),
-            column: span.get_column(),
-        }
-    }
-}
+// impl<'a> From<Span<'a>> for Position {
+//     fn from(span: Span) -> Position {
+//         Position {
+//             line: span.location_line(),
+//             offset: span.location_offset(),
+//             column: span.get_column(),
+//         }
+//     }
+// }
 
 // impl From<Span<'_>> for Position {
 //     fn from(span: Span) -> Position {

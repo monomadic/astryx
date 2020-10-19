@@ -1,23 +1,36 @@
-
-use crate::{InterpreterResult, state::State, models::Value};
-use parser::{Expression, Statement, Span};
+use crate::{models::Value, state::State, InterpreterResult};
+use html::HTMLElement;
+use parser::{Expression, Span, Statement};
 use rctree::Node;
 
 pub(crate) fn eval(node: &Node<Statement>, state: &mut State) -> InterpreterResult<()> {
-    println!("node {:?}", node);
+    // println!("node {:?}", node);
     match node.borrow().clone() {
         Statement::Element(e) => {
-            println!("# element: {:?}", &e.ident.fragment());
+            let element = HTMLElement::new(e.ident.fragment()).expect("valid html");
+            print!("{}", element.open_tag());
             state.push_element(e)?;
-        },
-        Statement::Expression(expr) => { eval_expression(&expr, state); },
-        Statement::Text(t) => println!("# text: {:?}", t),
-        Statement::Binding(ident, expr) => { eval_binding(&ident, &expr, state); } // todo: return err
+        }
+        Statement::Expression(expr) => {
+            eval_expression(&expr, state);
+        }
+        Statement::Text(t) => print!("{}", state.interpolate(t)?),
+        Statement::Binding(ident, expr) => {
+            eval_binding(&ident, &expr, state);
+        } // todo: return err
     }
     for child in node.children() {
         let _ = eval(&child, state);
     }
+
     // closing element node here
+    match node.borrow().clone() {
+        Statement::Element(e) => {
+            print!("</{}>", &e.ident.fragment());
+        }
+        _ => (),
+    }
+
     Ok(())
 }
 
@@ -28,7 +41,7 @@ fn eval_binding(ident: &Span, expr: &Expression, state: &mut State) -> Interpret
 fn eval_expression(expr: &Expression, state: &mut State) -> InterpreterResult<Value> {
     match expr {
         Expression::FunctionCall(f) => println!("calling {:?}", f),
-        _ => ()
+        _ => (),
     };
 
     Ok(Value::String("eval expr".into()))
