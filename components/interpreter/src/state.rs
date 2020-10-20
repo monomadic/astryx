@@ -52,12 +52,11 @@ impl State {
     }
 
     pub fn eval(&self, expr: &Expression) -> InterpreterResult<Value> {
-        // match expr {
-        //     Expression::FunctionCall(_) => {}
-        //     Expression::Reference(_) => {}
-        //     Expression::Literal(v) => {}
-        // }
-        Ok(Value::String(format!("{:?}", expr)))
+        Ok(match expr {
+            Expression::FunctionCall(f) => Value::String(format!("{:?}", f)),
+            Expression::Reference(r) => Value::String(format!("{:?}", r)),
+            Expression::Literal(v) => Value::String(format!("{:?}", v)),
+        })
     }
 
     pub fn render(&self) {
