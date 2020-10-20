@@ -1,4 +1,4 @@
-use crate::{variable::variable, ParserError, Span, StringToken, Variable};
+use crate::{variable::variable, ParserError, Span, StringToken, Variable, Expression, statement::expression};
 use nom::{
     branch::alt,
     bytes::complete::{is_not, tag},
@@ -24,7 +24,7 @@ fn test_piped_string() {
 
 fn tokenised_string<'a>(i: Span<'a>) -> IResult<Span<'a>, Vec<StringToken>, ParserError<Span<'a>>> {
     nom::multi::many0(alt((
-        map(interpolated_variable, |v| StringToken::Variable(v)),
+        map(interpolated_expression, |expr| StringToken::Expression(expr)),
         map(raw_text, |s| StringToken::Text(s)),
     )))(i)
 }
@@ -33,14 +33,14 @@ fn raw_text<'a>(i: Span<'a>) -> IResult<Span<'a>, Span<'a>, ParserError<Span<'a>
     is_not("\n")(i)
 }
 
-fn interpolated_variable<'a>(
+fn interpolated_expression<'a>(
     i: Span<'a>,
-) -> IResult<Span<'a>, Variable<'a>, ParserError<Span<'a>>> {
+) -> IResult<Span<'a>, Expression<'a>, ParserError<Span<'a>>> {
     nom::sequence::tuple((
         multispace0,
         tag("${"),
         multispace0,
-        variable,
+        expression,
         multispace0,
         char('}'),
     ))(i)

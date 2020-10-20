@@ -1,4 +1,4 @@
-use crate::{models::Value, state::State, InterpreterResult};
+use crate::{state::State, InterpreterResult};
 use html::HTMLElement;
 use parser::{Expression, Span, Statement};
 use rctree::Node;
@@ -26,7 +26,7 @@ pub(crate) fn eval(node: &Node<Statement>, state: &mut State) -> InterpreterResu
             print!("{}", element.close_tag());
         }
         Statement::Expression(expr) => {
-            eval_expression(&expr, state)?;
+            state.eval(&expr)?;
         }
         Statement::Text(t) => {
             print!("{}", state.interpolate(t)?);
@@ -55,14 +55,15 @@ fn eval_binding(ident: &Span, expr: &Expression, state: &mut State) -> Interpret
     state.bind(ident.fragment(), state.eval(expr)?)
 }
 
-fn eval_expression(expr: &Expression, state: &mut State) -> InterpreterResult<Value> {
-    match expr {
-        Expression::FunctionCall(f) => println!("calling {:?}", f),
-        _ => (),
-    };
+// fn eval_expression(expr: &Expression, state: &mut State) -> InterpreterResult<Value> {
+//     match expr {
+//         Expression::FunctionCall(f) => println!("calling {}", f.ident.fragment()),
+//         Expression::Reference(_) => {}
+//         Expression::Literal(_) => {}
+//     };
 
-    Ok(Value::String("eval expr".into()))
-}
+//     Ok(Value::String("eval expr".into()))
+// }
 
 // pub(crate) fn traverse(node: &Node<Statement>, state: &State) -> InterpreterResult<Node<AstryxNode>> {
 

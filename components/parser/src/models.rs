@@ -80,5 +80,5 @@ pub struct Element<'a> {
 #[derive(Debug, Clone)]
 pub enum StringToken<'a> {
     Text(Span<'a>),
-    Variable(Variable<'a>),
+    Expression(Expression<'a>),
 }

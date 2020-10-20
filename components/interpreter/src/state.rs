@@ -1,6 +1,5 @@
 use crate::{models::Value, AstryxNode, InterpreterError, InterpreterResult};
-use html::HTMLElement;
-use parser::{Element, Expression, StringToken};
+use parser::{Expression, StringToken};
 use rctree::Node;
 use std::collections::HashMap;
 
@@ -23,33 +22,32 @@ impl State {
         }
     }
 
+    /// bind a variable to local state
     pub fn bind(&mut self, ident: &str, value: Value) -> InterpreterResult<()> {
-        match self.locals.insert(ident.into(), value) {
-            Some(_) => Ok(()),
-            None => Err(InterpreterError::Unhandled),
-        }
+        let _ = self.locals.insert(ident.into(), value); // return doesn't matter as all state is mutable
+        Ok(()) // force return ok (this could change if mutability rules change)
     }
 
-    pub fn push_element(&mut self, el: Element) -> InterpreterResult<()> {
-        let node = Node::new(AstryxNode::HTMLElement(HTMLElement::new("hi", HashMap::new()).unwrap()));
+    // pub fn push_element(&mut self, el: Element) -> InterpreterResult<()> {
+    //     let node = Node::new(AstryxNode::HTMLElement(HTMLElement::new("hi", HashMap::new()).unwrap()));
 
-        let nodeptr = node.downgrade();
+    //     let nodeptr = node.downgrade();
 
-        self.document.append(node);
+    //     self.document.append(node);
 
-        // let parent = &mut self.document.downgrade();
-        // parent.append(node);
+    //     // let parent = &mut self.document.downgrade();
+    //     // parent.append(node);
 
-        self.document = nodeptr.upgrade().expect("node to upgrade");
+    //     self.document = nodeptr.upgrade().expect("node to upgrade");
 
-        // self.document.append(node);
+    //     // self.document.append(node);
 
-        // for child in self.document.children() {
-        //     println!("child {:?}", child);
-        // }
+    //     // for child in self.document.children() {
+    //     //     println!("child {:?}", child);
+    //     // }
 
-        Ok(())
-    }
+    //     Ok(())
+    // }
 
     pub fn eval(&self, expr: &Expression) -> InterpreterResult<Value> {
         Ok(match expr {
@@ -63,14 +61,15 @@ impl State {
         // html::render::render(self.document.root());
     }
 
+    /// Convert string tokens to a fully interpolated string
     pub fn interpolate(&self, components: Vec<StringToken>) -> InterpreterResult<String> {
         Ok(components
             .into_iter()
             .map(|st| match st {
-                StringToken::Text(span) => span.fragment().to_string(),
-                StringToken::Variable(v) => String::new(),
+                StringToken::Text(span) => Ok(span.fragment().to_string()),
+                StringToken::Expression(expr) => self.eval(&expr).map(|e|e.into()),
             })
-            .collect::<Vec<String>>()
+            .collect::<Result<Vec<String>, InterpreterError>>()?
             .into_iter()
             .collect())
     }

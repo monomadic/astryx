@@ -1,6 +1,6 @@
 use crate::{
-    error::ParserErrorKind, statement::expression, variable::variable, Element, Expression,
-    ParserError, Span, Variable,
+    error::ParserErrorKind, statement::expression, Element, Expression,
+    ParserError, Span,
 };
 use nom::{
     bytes::complete::tag,
