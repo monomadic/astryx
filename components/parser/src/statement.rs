@@ -1,6 +1,6 @@
 use crate::{
     models::Statement,
-    ParserError, element::element, function::function_call, Span, text::piped_string, Expression, variable::variable,
+    ParserError, element::element, function::function_call, Span, text::piped_string, Expression, variable::{literal, variable},
 };
 use nom::{
     branch::alt,
@@ -47,6 +47,7 @@ pub(crate) fn statement<'a>(i: Span<'a>) -> IResult<Span, Statement<'a>, ParserE
 pub(crate) fn expression<'a>(i: Span<'a>) -> IResult<Span, Expression<'a>, ParserError<Span<'a>>> {
     alt((
         map(function_call, |f| Expression::FunctionCall(f)),
+        map(literal, |v| Expression::Literal(v)),
         map(variable, |v| Expression::Reference(v)),
     ))(i)
 }

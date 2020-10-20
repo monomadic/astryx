@@ -54,8 +54,8 @@ impl State {
     pub fn eval(&self, expr: &Expression) -> InterpreterResult<Value> {
         Ok(match expr {
             Expression::FunctionCall(f) => Value::String(format!("{:?}", f)),
-            Expression::Reference(r) => Value::String(format!("{:?}", r)),
-            Expression::Literal(v) => Value::String(format!("{:?}", v)),
+            Expression::Reference(r) => Value::String(format!("r{:?}", r)),
+            Expression::Literal(l) => Value::String(l.to_string()),
         })
     }
 

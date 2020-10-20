@@ -10,10 +10,10 @@ pub(crate) fn eval(node: &Node<Statement>, state: &mut State) -> InterpreterResu
         Statement::Element(e) => {
             let mut attributes: HashMap<String, String> = HashMap::new();
 
-            for (ident, variable) in e.attributes {
+            for (ident, expr) in e.attributes {
                 attributes.insert(
                     ident.fragment().to_string(),
-                    state.eval(&Expression::Reference(variable))?.into()
+                    state.eval(&expr)?.into()
                 );
             }
 
