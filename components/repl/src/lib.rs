@@ -70,21 +70,19 @@ pub fn run() -> Result<(), String> {
 fn repl(editor: &mut Editor<()>, state: State) {
     // let state = &mut State::new();
 
-    let line = read_line(editor, state.clone()).unwrap();
+    let line = read_line(editor, state.clone());
 
-    // if let Some(line) = read_line(editor, state) {
-    let statements = parser::run(&line);
-    println!("{:?}", &statements);
+    if let Some(line) = read_line(editor, state) {
+        let statements = parser::run(&line);
+        println!("{:?}", &statements);
 
-    let temp_state = &mut state.clone();
-    let _ = interpreter::run(statements.unwrap(), temp_state);
+        let temp_state = &mut state.clone();
+        let _ = interpreter::run(statements.unwrap(), temp_state);
 
-        
-    // }
+        let new_state = temp_state.clone();
 
-    let new_state = temp_state.clone();
-
-    repl(editor, new_state);
+        repl(editor, new_state);
+    }
 }
 
 fn read_line(rl: &mut Editor<()>, state: State) -> Option<String> {
