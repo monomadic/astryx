@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 type LocalData<'a> = HashMap<String, Expression<'a>>;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct State<'a> {
     locals: LocalData<'a>,
     // pub(crate) pages: Layouts,
