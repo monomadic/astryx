@@ -11,26 +11,33 @@ pub(crate) fn eval<'a>(node: &Node<Statement<'a>>, state: &mut State<'a>) -> Int
             let mut attributes: HashMap<String, String> = HashMap::new();
 
             for (ident, expr) in e.attributes {
-                attributes.insert(
-                    ident.fragment().to_string(),
-                    state.eval(&expr)?.into()
-                );
+                attributes.insert(ident.fragment().to_string(), state.eval(&expr)?.into());
             }
 
+            use std::io::{self, Write};
+            let stdout = std::io::stdout();
+            let mut writer = stdout.lock();
+
             let element = HTMLElement::new(e.ident.fragment(), attributes).expect("valid html");
-            print!("{}", element.open_tag());
+
+            // writer.write_all(&element.open_tag().as_bytes()).unwrap();
+            element.write_open_tag(&mut writer);
+
+            // print!("{}", element.open_tag());
             // state.push_element(e)?;
             for child in node.children() {
                 let _ = eval(&child, state);
             }
-            print!("{}", element.close_tag());
+
+            element.write_close_tag(&mut writer);
+            // print!("{}", element.close_tag());
         }
         Statement::Expression(expr) => {
             state.eval(&expr)?;
         }
         Statement::Text(t) => {
             print!("{}", state.interpolate(t)?);
-        },
+        }
         Statement::Binding(ident, expr) => {
             eval_binding(&ident, expr, state)?;
         } // todo: return err
@@ -51,7 +58,11 @@ pub(crate) fn eval<'a>(node: &Node<Statement<'a>>, state: &mut State<'a>) -> Int
 //     Ok(())
 // }
 
-fn eval_binding<'a>(ident: &Span<'a>, expr: Expression<'a>, state: &mut State<'a>) -> InterpreterResult<()> {
+fn eval_binding<'a>(
+    ident: &Span<'a>,
+    expr: Expression<'a>,
+    state: &mut State<'a>,
+) -> InterpreterResult<()> {
     state.bind(ident.fragment(), expr)
 }
 

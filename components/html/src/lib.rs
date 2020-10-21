@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use error::HTMLError;
+use std::{collections::HashMap, io::Write};
 pub mod render;
 // pub mod program;
 pub mod error;
@@ -16,8 +16,8 @@ type Attributes = HashMap<String, String>;
 pub struct HTMLElement {
     ident: String,
     attributes: Attributes,
-	// pub classes: Vec<String>,
-	// pub styles: Vec<String>, // should be type safe
+    // pub classes: Vec<String>,
+    // pub styles: Vec<String>, // should be type safe
 }
 
 impl HTMLElement {
@@ -32,13 +32,21 @@ impl HTMLElement {
         format!("<{}{}>", self.ident, attributes_to_string(&self.attributes))
     }
 
+    pub fn write_open_tag<W: Write>(&self, writer: &mut W) {
+        writer.write_all(&self.open_tag().as_bytes()).unwrap();
+    }
+
     pub fn close_tag(&self) -> String {
         format!("</{}>", self.ident)
+    }
+
+    pub fn write_close_tag<W: Write>(&self, writer: &mut W) {
+        writer.write_all(&self.close_tag().as_bytes()).unwrap();
     }
 }
 
 fn attributes_to_string(attributes: &Attributes) -> String {
-	// format attributes
+    // format attributes
     if !attributes.is_empty() {
         format!(
             " {}",
@@ -46,7 +54,8 @@ fn attributes_to_string(attributes: &Attributes) -> String {
                 .iter()
                 .map(|(k, v)| format!("{}=\"{}\"", k, v))
                 .collect::<Vec<String>>()
-                .join(" "))
+                .join(" ")
+        )
     } else {
         String::new()
     }
