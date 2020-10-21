@@ -32,8 +32,19 @@ pub fn run() -> Result<(), String> {
                     continue
                 }
 
-                println!("{:?}", parser::run(&line)
-                    .map(|s| interpreter::run(s, state)))
+                let statements = parser::run(&line);
+                println!("{:?}", &statements);
+
+                let result = interpreter::run(statements.unwrap(), state);
+
+                // let statements = parser::run(&line)
+                //     .map_err(AstryxError::from)
+                //     .and_then(|nodes| interpreter::run(nodes, state).map_err(AstryxError::from));
+                // let nodes = statements.map(|s| interpreter::run(s, state));
+
+                // build::build(&file).map_err(|e| display_error(&e, path))
+
+                // println!("{:?}", &statements);
             },
             Err(ReadlineError::Interrupted) => {
                 println!("CTRL-C");

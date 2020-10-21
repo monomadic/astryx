@@ -1,4 +1,4 @@
-use crate::{variable::variable, ParserError, Span, StringToken, Variable, Expression, statement::expression};
+use crate::{ParserError, Span, StringToken, Expression, statement::expression};
 use nom::{
     branch::alt,
     bytes::complete::{is_not, tag},

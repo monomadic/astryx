@@ -1,30 +1,29 @@
-use crate::{models::Value, AstryxNode, InterpreterError, InterpreterResult};
+use crate::{models::Value, InterpreterError, InterpreterResult};
 use parser::{Expression, StringToken};
-use rctree::Node;
 use std::collections::HashMap;
 
-type LocalData = HashMap<String, Value>;
+type LocalData<'a> = HashMap<String, Expression<'a>>;
 
 #[derive(Debug)]
-pub struct State {
-    locals: LocalData,
+pub struct State<'a> {
+    locals: LocalData<'a>,
     // pub(crate) pages: Layouts,
     // pub(crate) imports: Imports,
     // pub(crate) pwd: String,
-    document: Node<AstryxNode>, // cursor ref to the current node in the output tree
+    // document: Node<AstryxNode>, // cursor ref to the current node in the output tree
 }
 
-impl State {
+impl <'a>State<'a> {
     pub fn new() -> Self {
         State {
             locals: LocalData::new(),
-            document: Node::new(AstryxNode::Root),
+            // document: Node::new(AstryxNode::Root),
         }
     }
 
     /// bind a variable to local state
-    pub fn bind(&mut self, ident: &str, value: Value) -> InterpreterResult<()> {
-        let _ = self.locals.insert(ident.into(), value); // return doesn't matter as all state is mutable
+    pub fn bind(&mut self, ident: &str, expr: Expression<'a>) -> InterpreterResult<()> {
+        let _ = self.locals.insert(ident.into(), expr); // return doesn't matter as all state is mutable
         Ok(()) // force return ok (this could change if mutability rules change)
     }
 

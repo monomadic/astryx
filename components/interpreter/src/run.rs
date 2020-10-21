@@ -4,7 +4,7 @@ use parser::{Expression, Span, Statement};
 use rctree::Node;
 use std::collections::HashMap;
 
-pub(crate) fn eval(node: &Node<Statement>, state: &mut State) -> InterpreterResult<()> {
+pub(crate) fn eval<'a>(node: &Node<Statement<'a>>, state: &mut State<'a>) -> InterpreterResult<()> {
     // println!("node {:?}", node);
     match node.borrow().clone() {
         Statement::Element(e) => {
@@ -32,7 +32,7 @@ pub(crate) fn eval(node: &Node<Statement>, state: &mut State) -> InterpreterResu
             print!("{}", state.interpolate(t)?);
         },
         Statement::Binding(ident, expr) => {
-            eval_binding(&ident, &expr, state)?;
+            eval_binding(&ident, expr, state)?;
         } // todo: return err
     }
 
@@ -51,8 +51,8 @@ pub(crate) fn eval(node: &Node<Statement>, state: &mut State) -> InterpreterResu
 //     Ok(())
 // }
 
-fn eval_binding(ident: &Span, expr: &Expression, state: &mut State) -> InterpreterResult<()> {
-    state.bind(ident.fragment(), state.eval(expr)?)
+fn eval_binding<'a>(ident: &Span<'a>, expr: Expression<'a>, state: &mut State<'a>) -> InterpreterResult<()> {
+    state.bind(ident.fragment(), expr)
 }
 
 // fn eval_expression(expr: &Expression, state: &mut State) -> InterpreterResult<Value> {
