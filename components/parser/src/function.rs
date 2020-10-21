@@ -1,7 +1,9 @@
-use crate::{error::ParserErrorKind, FunctionCall, ParserError, Span, statement::expression, Expression};
+use crate::{
+    error::ParserErrorKind, statement::expression, Expression, FunctionCall, ParserError, Span,
+};
 use nom::{
-    character::complete::{space0, char},
     character::complete::{alpha1, multispace0},
+    character::complete::{char, space0},
     combinator::cut,
     multi::many0,
     sequence::{terminated, tuple},
@@ -11,40 +13,40 @@ use nom::{
 fn function_call_argument<'a>(
     i: Span<'a>,
 ) -> IResult<Span<'a>, (Span<'a>, Expression<'a>), ParserError<Span<'a>>> {
-    tuple((alpha1, terminated(multispace0, char(':')), space0, cut(expression)))(i)
-        .map(|(r, (ident, _, _, value))| (r, (ident, value)))
-        .map_err(|e:nom::Err<_>| {
-            e.map(|e| ParserError {
-                context: i,
-                kind: ParserErrorKind::ExpectedValue,
-                pos: e.context,
-            })
+    tuple((
+        alpha1,
+        terminated(multispace0, char(':')),
+        space0,
+        cut(expression),
+    ))(i)
+    .map(|(r, (ident, _, _, value))| (r, (ident, value)))
+    .map_err(|e: nom::Err<_>| {
+        e.map(|e| ParserError {
+            context: i,
+            kind: ParserErrorKind::ExpectedValue,
+            pos: e.context,
         })
+    })
 }
 
 fn function_call_arguments<'a>(
     i: Span<'a>,
 ) -> IResult<Span<'a>, Vec<(Span<'a>, Expression<'a>)>, ParserError<Span<'a>>> {
     many0(function_call_argument)(i)
-        // .map_err(|e:nom::Err<ParserError<_>>| {
-        //     e.map(|s| ParserError {
-        //         context: i,
-        //         kind: ParserErrorKind::UnexpectedToken("g".into()),
-        //         pos: s.context.into(),
-        //     })
-        // })
+    // .map_err(|e:nom::Err<ParserError<_>>| {
+    //     e.map(|s| ParserError {
+    //         context: i,
+    //         kind: ParserErrorKind::UnexpectedToken("g".into()),
+    //         pos: s.context.into(),
+    //     })
+    // })
 }
 
 pub(crate) fn function_call<'a>(
     i: Span<'a>,
 ) -> IResult<Span<'a>, FunctionCall<'a>, ParserError<Span<'a>>> {
-    tuple((
-        alpha1,
-        char('('),
-        function_call_arguments,
-        cut(char(')')),
-    ))(i)
-    .map(|(r, (ident, _, arguments, _))| (r, FunctionCall { ident, arguments }))
+    tuple((alpha1, char('('), function_call_arguments, cut(char(')'))))(i)
+        .map(|(r, (ident, _, arguments, _))| (r, FunctionCall { ident, arguments }))
     // .map_err(|e| {
     //     e.map(|s| ParserError {
     //         context: i,

@@ -56,7 +56,7 @@ impl Literal<'_> {
     }
 }
 
-impl <'a>Display for Literal<'a> {
+impl<'a> Display for Literal<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self)
     }

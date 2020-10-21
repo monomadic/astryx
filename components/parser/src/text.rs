@@ -1,4 +1,4 @@
-use crate::{ParserError, Span, StringToken, Expression, statement::expression};
+use crate::{statement::expression, Expression, ParserError, Span, StringToken};
 use nom::{
     branch::alt,
     bytes::complete::{is_not, tag},
@@ -11,8 +11,7 @@ use nom::{
 pub(crate) fn piped_string<'a>(
     i: Span<'a>,
 ) -> IResult<Span<'a>, Vec<StringToken>, ParserError<Span<'a>>> {
-    nom::sequence::tuple((tag("| "), tokenised_string))(i)
-        .map(|(r, (_, value))| (r, value))
+    nom::sequence::tuple((tag("| "), tokenised_string))(i).map(|(r, (_, value))| (r, value))
 }
 
 #[test]
@@ -24,7 +23,9 @@ fn test_piped_string() {
 
 fn tokenised_string<'a>(i: Span<'a>) -> IResult<Span<'a>, Vec<StringToken>, ParserError<Span<'a>>> {
     nom::multi::many0(alt((
-        map(interpolated_expression, |expr| StringToken::Expression(expr)),
+        map(interpolated_expression, |expr| {
+            StringToken::Expression(expr)
+        }),
         map(raw_text, |s| StringToken::Text(s)),
     )))(i)
 }

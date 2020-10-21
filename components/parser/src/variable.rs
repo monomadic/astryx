@@ -1,7 +1,12 @@
-use crate::{Span, Variable, ParserError, error::ParserErrorKind, Literal};
+use crate::{error::ParserErrorKind, Literal, ParserError, Span, Variable};
 use nom::{
-    branch::alt, bytes::complete::{tag, is_not}, character::complete::{alphanumeric1, char}, combinator::map,
-    sequence::{tuple, delimited}, IResult, number::complete::double,
+    branch::alt,
+    bytes::complete::{is_not, tag},
+    character::complete::{alphanumeric1, char},
+    combinator::map,
+    number::complete::double,
+    sequence::{delimited, tuple},
+    IResult,
 };
 
 // should this actually be called a reference? probably....
@@ -37,7 +42,7 @@ pub(crate) fn literal<'a>(i: Span<'a>) -> IResult<Span<'a>, Literal<'a>, ParserE
         // map(relative_path, |s: Span| Variable::RelativePath(s)),
         // map(alphanumeric1, |s: Span| Variable::Reference(s)),
         // map(argument_idx,   |i| Property::ArgumentIndex(i.parse::<usize>().unwrap())),
-        map(double,         |f| Literal::Float(i, f)),
+        map(double, |f| Literal::Float(i, f)),
         // map(digit1,         |i:&str| Property::Number(i.parse::<i64>().unwrap_or(0))),
         // map(boolean,        |b| Property::Boolean(b)),
         // map(dotted_symbol,  |s| Property::DottedSymbol(String::from(s))),

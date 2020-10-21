@@ -1,6 +1,6 @@
 use error::{display_error, AstryxResult};
-use structopt::StructOpt;
 use repl;
+use structopt::StructOpt;
 
 mod build;
 mod error;
