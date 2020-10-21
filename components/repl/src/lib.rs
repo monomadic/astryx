@@ -8,7 +8,7 @@ pub fn run() -> Result<(), String> {
     //     println!("No previous history.");
     // }
 
-    let state = &mut State::new();
+    // let state = &mut State::new();
 
     repl(&mut rl, State::new());
 

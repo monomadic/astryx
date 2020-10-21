@@ -16,6 +16,7 @@ fn attribute_assignment<'a>(
     i: Span<'a>,
 ) -> IResult<Span<'a>, (Span<'a>, Expression), ParserError<Span<'a>>> {
     nom::sequence::tuple((
+        multispace0,
         alpha1,
         terminated(multispace0, char('=')),
         space0,
@@ -28,7 +29,7 @@ fn attribute_assignment<'a>(
     //         pos: span.into(),
     //     })
     // })
-    .map(|(r, (ident, _, _, value))| (r, (ident, value)))
+    .map(|(r, (_, ident, _, _, value))| (r, (ident, value)))
 }
 
 // pub(crate) fn attribute<'a>(i: Span<'a>) -> IResult<Span<'a>, Vec<Span<'a>>, ParserError<Span<'a>>> {
@@ -45,7 +46,7 @@ pub(crate) fn element<'a>(i: Span<'a>) -> IResult<Span<'a>, Element<'a>, ParserE
     tuple((
         tag("%"),
         alphanumeric1,
-        opt(char(' ')),
+        space0,
         many0(attribute_assignment),
     ))(i)
     .map(|(r, (_, ident, _, attributes))| (r, Element { ident, attributes }))
