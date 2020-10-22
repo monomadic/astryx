@@ -14,10 +14,6 @@ pub enum Writer {
 #[derive(Debug, Clone)]
 pub struct State<'a> {
     locals: LocalData<'a>,
-    // pub(crate) pages: Layouts,
-    // pub(crate) imports: Imports,
-    // pub(crate) pwd: String,
-    // document: Node<AstryxNode>, // cursor ref to the current node in the output tree
     pub writer: Writer,
 }
 
@@ -46,39 +42,12 @@ impl<'a> State<'a> {
         }
     }
 
-    // pub fn set_writer(&mut self, writer: Writer)
-
-    // pub fn push_element(&mut self, el: Element) -> InterpreterResult<()> {
-    //     let node = Node::new(AstryxNode::HTMLElement(HTMLElement::new("hi", HashMap::new()).unwrap()));
-
-    //     let nodeptr = node.downgrade();
-
-    //     self.document.append(node);
-
-    //     // let parent = &mut self.document.downgrade();
-    //     // parent.append(node);
-
-    //     self.document = nodeptr.upgrade().expect("node to upgrade");
-
-    //     // self.document.append(node);
-
-    //     // for child in self.document.children() {
-    //     //     println!("child {:?}", child);
-    //     // }
-
-    //     Ok(())
-    // }
-
     pub fn eval(&self, expr: &Expression) -> InterpreterResult<Value> {
         Ok(match expr {
             Expression::FunctionCall(f) => Value::String(format!("{:?}", f)),
             Expression::Reference(r) => Value::String(format!("r{:?}", r)),
             Expression::Literal(l) => Value::String(l.to_string()),
         })
-    }
-
-    pub fn render(&self) {
-        // html::render::render(self.document.root());
     }
 
     /// Convert string tokens to a fully interpolated string

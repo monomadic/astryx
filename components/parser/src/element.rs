@@ -21,25 +21,8 @@ fn attribute_assignment<'a>(
         space0,
         cut(expression),
     ))(i)
-    // .map_err(|e: nom::Err<(_, _)>| {
-    //     e.map(|(span, _kind)| ParserError {
-    //         context: span,
-    //         kind: ParserErrorKind::SyntaxError,
-    //         pos: span.into(),
-    //     })
-    // })
     .map(|(r, (_, ident, _, _, value))| (r, (ident, value)))
 }
-
-// pub(crate) fn attribute<'a>(i: Span<'a>) -> IResult<Span<'a>, Vec<Span<'a>>, ParserError<Span<'a>>> {
-//     // alt((
-//     //     // map(decorator, |d| Attribute::Decorator(d)),
-//     //     // map(dotted_symbol, |s| Attribute::Class(s)),
-//     //     // attribute_assignment,
-//     //     // map(symbolic1, |s| Attribute::Symbol(String::from(s))),
-//     // ))(i)
-//     many0(attribute_assignment)(i)
-// }
 
 pub(crate) fn element<'a>(i: Span<'a>) -> IResult<Span<'a>, Element<'a>, ParserError<Span<'a>>> {
     tuple((tag("%"), alphanumeric1, space0, many0(attribute_assignment)))(i)
