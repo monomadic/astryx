@@ -1,9 +1,12 @@
 use crate::error::*;
-use interpreter::State;
+use interpreter::{State, Writer};
 use rctree::Node;
 
 pub(crate) fn build<'a>(file: &'a str) -> AstryxResult<'a, ()> {
     let state = &mut State::new();
+    state.writer = Writer::File("index.html".to_string());
+    // state.writer = Writer::StdOut;
+
     parser::run(file)
         .map_err(AstryxError::from)
         .and_then(|nodes| interpreter::run(nodes, state).map_err(AstryxError::from))

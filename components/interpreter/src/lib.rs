@@ -9,7 +9,7 @@
 
 pub use error::InterpreterError;
 pub use models::AstryxNode;
-pub use state::State;
+pub use state::{State, Writer};
 
 use parser::Statement;
 use rctree::Node;
@@ -24,8 +24,5 @@ pub type InterpreterResult<T> = Result<T, InterpreterError>;
 /// run the interpreter on an AST tree and return a HTMLNode tree for each page
 pub fn run<'a>(nodes: Vec<Node<Statement<'a>>>, state: &mut State<'a>) -> InterpreterResult<()> {
     // println!("run {:?}", nodes);
-    nodes
-        .iter()
-        .map(|node| run::eval(node, state))
-        .collect()
+    nodes.iter().map(|node| run::eval(node, state)).collect()
 }

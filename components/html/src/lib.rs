@@ -1,8 +1,7 @@
 use error::HTMLError;
-use std::{collections::HashMap, io::Write};
-pub mod render;
-// pub mod program;
+use std::collections::HashMap;
 pub mod error;
+pub mod render;
 
 #[derive(Debug, Clone)]
 pub enum HTMLNode {
@@ -32,17 +31,23 @@ impl HTMLElement {
         format!("<{}{}>", self.ident, attributes_to_string(&self.attributes))
     }
 
-    pub fn write_open_tag<W: Write>(&self, writer: &mut W) {
-        writer.write_all(&self.open_tag().as_bytes()).unwrap();
-    }
+    // pub fn write_open_tag<W: Write>(&self, writer: &mut W) {
+    //     writer
+    //         .write_fmt(format_args!("{}", &self.open_tag()))
+    //         .unwrap();
+    // }
 
     pub fn close_tag(&self) -> String {
         format!("</{}>", self.ident)
     }
 
-    pub fn write_close_tag<W: Write>(&self, writer: &mut W) {
-        writer.write_all(&self.close_tag().as_bytes()).unwrap();
-    }
+    // pub fn write_close_tag<W: Write>(&self, writer: &mut W) {
+    //     // let mut buf = BufWriter::new(writer);
+
+    //     writer
+    //         .write_fmt(format_args!("{}", &self.close_tag()))
+    //         .unwrap();
+    // }
 }
 
 fn attributes_to_string(attributes: &Attributes) -> String {
