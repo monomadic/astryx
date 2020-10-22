@@ -1,24 +1,19 @@
+use interpreter::{State, Writer};
 use rustyline::error::ReadlineError;
 use rustyline::Editor;
-use interpreter::State;
 
 pub fn run() -> Result<(), String> {
     let mut rl = Editor::<()>::new();
-    // if rl.load_history("history.txt").is_err() {
-    //     println!("No previous history.");
-    // }
-
-    // let state = &mut State::new();
-
-    repl(&mut rl, State::new());
-
+    let mut state = State::new();
+    state.writer = Writer::StdOut;
+    repl(&mut rl, state);
     Ok(())
 }
 
 fn repl(editor: &mut Editor<()>, state: State) {
     if let Some(line) = read_line(editor, state.clone()) {
         let statements = parser::run(&line);
-        println!("{:?}", &statements);
+        println!("{:?}\n", &statements);
 
         let temp_state = &mut state.clone();
         let _ = interpreter::run(statements.unwrap(), temp_state);
@@ -37,8 +32,8 @@ fn read_line(rl: &mut Editor<()>, state: State) -> Option<String> {
 
                 // ast dump (start line with :)
                 if line.chars().collect::<Vec<char>>()[0] == ':' {
-                    println!("ast: {:?}", parser::run(&crop_letters(&line, 1)));
-                    continue
+                    println!("{:?}", parser::run(&crop_letters(&line, 1)));
+                    continue;
                 }
 
                 // command (start line with .)
@@ -48,22 +43,22 @@ fn read_line(rl: &mut Editor<()>, state: State) -> Option<String> {
                         ".state" | ".s" => println!("state: {:?}", state),
                         _ => println!("no such command: {}", line),
                     }
-                    continue
+                    continue;
                 }
 
                 return Some(line);
-            },
+            }
             Err(ReadlineError::Interrupted) => {
                 println!("CTRL-C");
-                break
-            },
+                break;
+            }
             Err(ReadlineError::Eof) => {
                 println!("CTRL-D");
-                break
-            },
+                break;
+            }
             Err(err) => {
                 println!("error: {:?}", err);
-                break
+                break;
             }
         }
     }
