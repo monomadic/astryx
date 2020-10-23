@@ -9,6 +9,7 @@ pub enum Writer {
     None,
     StdOut,
     File(String),
+    Buffer(Vec<u8>),
 }
 
 #[derive(Debug, Clone)]
@@ -39,6 +40,7 @@ impl<'a> State<'a> {
             Writer::File(path) => Ok(Box::new(
                 OpenOptions::new().append(true).open(path).expect("45"),
             )),
+            Writer::Buffer(b) => Ok(Box::new(b.to_vec())),
         }
     }
 

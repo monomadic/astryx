@@ -1,4 +1,4 @@
-use interpreter::{State, Writer};
+use interpreter::{InterpreterResult, State, Writer};
 use rustyline::error::ReadlineError;
 use rustyline::Editor;
 
@@ -12,13 +12,19 @@ pub fn run() -> Result<(), String> {
 
 fn repl(editor: &mut Editor<()>, state: State) {
     if let Some(line) = read_line(editor, state.clone()) {
-        let statements = parser::run(&line);
-        println!("{:?}\n", &statements);
-
         let temp_state = &mut state.clone();
-        let _ = interpreter::run(statements.unwrap(), temp_state);
-        let new_state = temp_state.clone();
 
+        match parser::run(&line) {
+            Ok(statements) => {
+                match interpreter::run(statements, temp_state) {
+                    Ok(_) => {}
+                    Err(e) => println!("interpreter error: {:?}", e),
+                };
+            }
+            Err(e) => println!("parser error: {:?}", e),
+        }
+
+        let new_state = temp_state.clone();
         repl(editor, new_state);
     }
 }

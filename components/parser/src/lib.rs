@@ -36,31 +36,8 @@ mod variable;
 pub use crate::error::ParserError;
 pub use crate::models::*;
 
-// pub fn parse_line<'a>(i: Span<'a>) -> Result<Statement<'a>, ParserError<Span>> {
-//     statement::statement(i)
-//         .map(|(_r, result)| result)
-//         .map_err(|e| match e {
-//             Err::Error(e) | Err::Failure(e) => e,
-//             Err::Incomplete(_) => unreachable!(),
-//         })
-// }
-
-// #[test]
-// fn test_parse_line() {
-//     assert!(parse_line(Span::new("func()")).is_ok());
-//     // assert!(parse_line(Span::new("func(a:1)")).is_ok());
-//     assert!(parse_line(Span::new("func()\nfunc()")).is_err());
-// }
-
 pub fn run<'a>(i: &'a str) -> Result<Vec<Node<Statement<'a>>>, ParserError<Span<'a>>> {
     let (_, lines): (_, Vec<Line>) = linesplit::take_lines(&i).expect("linesplit fail (fix)"); // break document up by whitespace indentation
-
-    // let l: Result<Vec<(Span, Node<Statement<'a>>)>, nom::Err<ParserError<Span<'a>>>> = lines
-    //     .into_iter()
-    //     .map(parse_line)
-    //     .collect();
-
-    // println!("lines: {:?}", i);
 
     lines
         .into_iter()
@@ -78,22 +55,10 @@ pub fn run<'a>(i: &'a str) -> Result<Vec<Node<Statement<'a>>>, ParserError<Span<
 
 fn parse_line<'a>(line: Line<'a>) -> IResult<Span<'a>, Node<Statement<'a>>, ParserError<Span<'a>>> {
     let (r, statement) = statement::statement(line.content)?;
-    // .map_err(|e| {
-    //     e.map(|s| ParserError {
-    //         context: line.content, // we need to reset the context to the whole line
-    //         kind: ParserErrorKind::UnexpectedToken("6".into()),
-    //         pos: s.pos,
-    //     })
-    // })?;
-    // .map_err(|e| e.map(ParserError::from))?; // fix this
-
     let mut node: Node<Statement> = Node::new(statement);
 
     for child in line.children {
-        // println!("line {:?}", &child.content);
-        // let (_, statement) = statement::statement(child.content).unwrap();
         let (_, child_node) = parse_line(child)?;
-        // println!("statement {:?}", &statement);
         node.append(child_node);
     }
 
