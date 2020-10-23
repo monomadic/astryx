@@ -4,7 +4,7 @@ use rctree::Node;
 
 pub(crate) fn build<'a>(file: &'a str) -> AstryxResult<'a, ()> {
     let state = &mut State::new();
-    state.writer = Writer::File("index.html".to_string());
+    // state.writer = Writer::File("index.html".to_string());
     // state.writer = Writer::StdOut;
 
     parser::run(file)

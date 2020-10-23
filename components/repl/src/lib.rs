@@ -1,4 +1,4 @@
-use interpreter::{InterpreterResult, State, Writer};
+use interpreter::{State, Writer};
 use rustyline::error::ReadlineError;
 use rustyline::Editor;
 
