@@ -1,4 +1,6 @@
 
+set_output("stdout")
+
 %h1 style="color: red;"
   %a href="#"
     | blah

@@ -1,5 +1,5 @@
 use crate::error::*;
-use interpreter::{State, Writer};
+use interpreter::State;
 use rctree::Node;
 
 pub(crate) fn build<'a>(file: &'a str) -> AstryxResult<'a, ()> {

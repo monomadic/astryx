@@ -3,4 +3,5 @@ pub enum InterpreterError {
     Unhandled,
     Generic(String),
     NoWriter,
+    FunctionNotFound(String),
 }

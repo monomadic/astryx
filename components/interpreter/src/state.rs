@@ -1,5 +1,5 @@
-use crate::{models::Value, InterpreterError, InterpreterResult};
-use parser::{Expression, StringToken};
+use crate::{models::Value, run::eval, InterpreterError, InterpreterResult};
+use parser::{Expression, FunctionCall, StringToken};
 use std::{collections::HashMap, fs::OpenOptions, io::Write};
 
 type LocalData<'a> = HashMap<String, Expression<'a>>;
@@ -46,10 +46,28 @@ impl<'a> State<'a> {
 
     pub fn eval(&self, expr: &Expression) -> InterpreterResult<Value> {
         Ok(match expr {
-            Expression::FunctionCall(f) => Value::String(format!("{:?}", f)),
+            Expression::FunctionCall(f) => self.call(&f)?,
             Expression::Reference(r) => Value::String(format!("r{:?}", r)),
             Expression::Literal(l) => Value::String(l.to_string()),
         })
+    }
+
+    /// execute a function
+    pub fn call(&self, f: &FunctionCall) -> InterpreterResult<Value> {
+        // create a new state with the function arguments
+        let state = self.clone();
+        let ident = f.ident.to_string();
+
+        // // find function in local state
+        // match state.locals.get(&ident) {
+        //     Some(r) => {}
+        //     None => {
+        //         return Err(InterpreterError::FunctionNotFound(ident));
+        //     }
+        // }
+
+        // eval(, state);
+        Ok(Value::String(format!("f--{:?}", f)))
     }
 
     /// Convert string tokens to a fully interpolated string
