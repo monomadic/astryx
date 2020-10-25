@@ -13,12 +13,12 @@ pub(crate) fn eval_statement<'a>(
         Statement::Element(e) => {
             let mut attributes: HashMap<String, String> = HashMap::new();
 
-            // for (ident, expr) in e.attributes {
-            //     attributes.insert(
-            //         ident.fragment().to_string(),
-            //         state.eval_expression(&expr)?.into(),
-            //     );
-            // }
+            for (ident, expr) in e.attributes {
+                attributes.insert(
+                    ident.fragment().to_string(),
+                    eval_expression(Rc::clone(&state), &expr)?.into(),
+                );
+            }
 
             let element = HTMLElement::new(e.ident.fragment(), attributes).expect("valid html");
 
@@ -87,7 +87,7 @@ fn eval_function<'a>(
             unimplemented!()
         }
         Object::BuiltinFunction(builtin) => {
-            println!("ARGS {:?}", func.arguments);
+            // println!("ARGS {:?}", func.arguments);
             builtin(eval_function_arguments(Rc::clone(&state), &func.arguments)?)
         }
         // _ => Err(InterpreterError::ReferenceIsNotAFunction),
