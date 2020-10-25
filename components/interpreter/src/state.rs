@@ -1,6 +1,6 @@
 use crate::{models::Object, InterpreterError, InterpreterResult};
 use parser::{Expression, FunctionCall, StringToken};
-use std::{collections::HashMap, fs::OpenOptions, io::Write};
+use std::{cell::RefCell, collections::HashMap, fs::OpenOptions, io::Write, rc::Rc};
 
 type LocalData<'a> = HashMap<String, Object<'a>>;
 
@@ -14,14 +14,15 @@ pub enum Writer {
 
 #[derive(Debug, Clone)]
 pub struct State<'a> {
-    locals: LocalData<'a>,
+    local: LocalData<'a>,
+    outer: Option<Rc<RefCell<State>>>,
     pub writer: Writer,
 }
 
 impl<'a> State<'a> {
     pub fn new() -> Self {
         State {
-            locals: LocalData::new(),
+            local: LocalData::new(),
             // document: Node::new(AstryxNode::Root),
             writer: Writer::None,
         }
