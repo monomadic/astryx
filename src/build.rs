@@ -1,9 +1,13 @@
 use crate::error::*;
-use interpreter::State;
+use interpreter::{State, Writer};
 use rctree::Node;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 pub(crate) fn build<'a>(file: &'a str) -> AstryxResult<'a, ()> {
-    let state = &mut State::new();
+    let mut state = State::new();
+    state.writer = Writer::StdOut;
+    let state = Rc::new(RefCell::new(state));
     // state.writer = Writer::File("index.html".to_string());
     // state.writer = Writer::StdOut;
 

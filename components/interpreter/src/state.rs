@@ -12,27 +12,54 @@ pub enum Writer {
     Buffer(Vec<u8>),
 }
 
-#[derive(Debug, Clone)]
+impl Default for Writer {
+    fn default() -> Self {
+        Writer::None
+    }
+}
+
+#[derive(Clone, Default)]
 pub struct State<'a> {
     local: LocalData<'a>,
-    outer: Option<Rc<RefCell<State>>>,
+    outer: Option<Rc<RefCell<State<'a>>>>,
     pub writer: Writer,
 }
 
 impl<'a> State<'a> {
+    // replace with default()
     pub fn new() -> Self {
         State {
             local: LocalData::new(),
             // document: Node::new(AstryxNode::Root),
             writer: Writer::None,
+            outer: None,
+        }
+    }
+
+    pub fn get(&self, name: &str) -> Option<Object<'a>> {
+        match self.local.get(name) {
+            Some(value) => Some(value.clone()),
+            None => self
+                .outer
+                .as_ref()
+                .and_then(|o| o.borrow().get(name).clone()),
         }
     }
 
     /// bind a variable to local state
     pub fn bind(&mut self, ident: &str, obj: Object<'a>) -> InterpreterResult<()> {
-        let _ = self.locals.insert(ident.into(), obj); // return doesn't matter as all state is mutable
-        Ok(()) // force return ok (this could change if mutability rules change)
+        let _ = self.local.insert(ident.into(), obj); // return doesn't matter as all state is mutable
+        Ok(()) // force return ok (this could change if mutability rules change, or overwriting builtins)
     }
+
+    pub fn extend(outer: Rc<RefCell<Self>>) -> Self {
+        Self {
+            outer: Some(outer),
+            ..Default::default()
+        }
+    }
+
+    // pub fn root()
 
     pub fn get_mut_writer(&mut self) -> InterpreterResult<Box<dyn Write>> {
         match &self.writer {
@@ -59,6 +86,8 @@ impl<'a> State<'a> {
     pub fn eval_function(&self, f: &FunctionCall) -> InterpreterResult<Object> {
         // get the function expression from the state
         let func = self.eval_expression(&f.ident)?;
+
+        // let state = Rc::clone(self);
 
         // // find function in local state
         // match state.locals.get(&ident) {
@@ -93,4 +122,16 @@ impl<'a> State<'a> {
             .write_fmt(format_args!("{}", i))
             .map_err(|_| InterpreterError::Generic("IO".into()))
     }
+}
+
+pub fn eval_expression<'a>(
+    state: Rc<RefCell<State>>,
+    expr: &Expression,
+) -> InterpreterResult<Object<'a>> {
+    Ok(match expr {
+        // Expression::FunctionCall(f) => state.eval_function(&f)?,
+        Expression::FunctionCall(f) => Object::String(format!("f{:?}", f)),
+        Expression::Reference(r) => Object::String(format!("r{:?}", r)),
+        Expression::Literal(l) => Object::String(l.to_string()),
+    })
 }

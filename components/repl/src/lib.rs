@@ -1,35 +1,38 @@
 use interpreter::{State, Writer};
 use rustyline::error::ReadlineError;
 use rustyline::Editor;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 pub fn run() -> Result<(), String> {
     let mut rl = Editor::<()>::new();
-    let mut state = State::new();
+    let mut state = State::default();
     state.writer = Writer::StdOut;
+
+    let state = Rc::new(RefCell::new(state));
+
+    //
     repl(&mut rl, state);
     Ok(())
 }
 
-fn repl(editor: &mut Editor<()>, state: State) {
-    if let Some(line) = read_line(editor, state.clone()) {
-        let temp_state = &mut state.clone();
-
+fn repl<'a>(editor: &mut Editor<()>, state: Rc<RefCell<State<'a>>>) {
+    if let Some(line) = read_line(editor, Rc::clone(&state)) {
         match parser::run(&line) {
             Ok(statements) => {
-                match interpreter::run(statements, temp_state) {
-                    Ok(_) => {}
-                    Err(e) => println!("interpreter error: {:?}", e),
-                };
+                // match interpreter::run(statements, Rc::clone(&state)) {
+                //     Ok(_) => {}
+                //     Err(e) => println!("interpreter error: {:?}", e),
+                // };
             }
             Err(e) => println!("parser error: {:?}", e),
         }
 
-        let new_state = temp_state.clone();
-        repl(editor, new_state);
+        repl(editor, Rc::clone(&state));
     }
 }
 
-fn read_line(rl: &mut Editor<()>, state: State) -> Option<String> {
+fn read_line(rl: &mut Editor<()>, state: Rc<RefCell<State>>) -> Option<String> {
     loop {
         let readline = rl.readline(">> ");
         match readline {
@@ -46,7 +49,7 @@ fn read_line(rl: &mut Editor<()>, state: State) -> Option<String> {
                 if line.chars().collect::<Vec<char>>()[0] == '.' {
                     match line.as_str() {
                         ".quit" | ".exit" | ".q" => break,
-                        ".state" | ".s" => println!("state: {:?}", state),
+                        ".state" | ".s" => println!("state"),
                         _ => println!("no such command: {}", line),
                     }
                     continue;

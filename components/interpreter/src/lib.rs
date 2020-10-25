@@ -15,17 +15,33 @@ use parser::Statement;
 use rctree::Node;
 
 mod error;
+mod eval;
 mod models;
 mod run;
 mod state;
+use std::cell::RefCell;
+use std::rc::Rc;
+mod builtins;
 
 pub type InterpreterResult<T> = Result<T, InterpreterError>;
 
 /// run the interpreter on an AST tree and return a HTMLNode tree for each page
-pub fn run<'a>(nodes: Vec<Node<Statement<'a>>>, state: &'a mut State<'a>) -> InterpreterResult<()> {
+pub fn run<'a>(
+    nodes: Vec<Node<Statement<'a>>>,
+    state: Rc<RefCell<State<'a>>>,
+) -> InterpreterResult<()> {
     // println!("run {:?}", nodes);
+
+    // let state = Rc::new(RefCell::new(state));
+    // let builtins = Rc::new(RefCell::new(builtins::builtin_state()));
+
+    // let inner = state.borrow_mut();
+    let inner = builtins::import(state);
+
+    // let inner_state = Rc::new(RefCell::new(State::extend(state)));
+
     nodes
         .iter()
-        .map(|node| run::eval_statement(node, state))
+        .map(|node| eval::eval_statement(node, Rc::clone(&inner)))
         .collect()
 }

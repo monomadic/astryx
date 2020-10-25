@@ -1,5 +1,5 @@
 
-set_output("stdout")
+print(text: "hello")
 
 %h1 style="color: red;"
   %a href="#"

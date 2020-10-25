@@ -4,4 +4,6 @@ pub enum InterpreterError {
     Generic(String),
     NoWriter,
     FunctionNotFound(String),
+    ReferenceIsNotAFunction,
+    InvalidReference(String),
 }
