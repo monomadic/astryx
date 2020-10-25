@@ -1,6 +1,6 @@
 use crate::{models::Object, state::State, InterpreterError, InterpreterResult};
 use html::HTMLElement;
-use parser::{Expression, FunctionCall, Span, Statement};
+use parser::{Expression, FunctionCall, Literal, Span, Statement};
 use rctree::Node;
 use std::cell::RefCell;
 use std::{collections::HashMap, rc::Rc};
@@ -31,7 +31,7 @@ pub(crate) fn eval_statement<'a>(
             state.borrow_mut().write(&element.close_tag())?;
         }
         Statement::Expression(expr) => {
-            eval_expression(state, expr)?;
+            eval_expression(state, &expr)?;
         }
         Statement::Text(t) => {
             // state.borrow_mut().write(&state.interpolate(t)?)?;
@@ -45,7 +45,7 @@ pub(crate) fn eval_statement<'a>(
 
             // let state = Rc::clone(&state);
 
-            let obj = eval_expression(Rc::clone(&state), expr)?;
+            let obj = eval_expression(Rc::clone(&state), &expr)?;
             state.borrow_mut().bind(ident.fragment(), obj.clone())?;
         }
     }
@@ -55,13 +55,16 @@ pub(crate) fn eval_statement<'a>(
 
 fn eval_expression<'a>(
     state: Rc<RefCell<State<'a>>>,
-    expr: Expression<'a>,
+    expr: &Expression<'a>,
 ) -> InterpreterResult<Object<'a>> {
     match expr {
         // Expression::FunctionCall(f) => state.eval_function(&f)?,
         Expression::FunctionCall(f) => eval_function(Rc::clone(&state), &f),
         Expression::Reference(r) => eval_reference(&r, Rc::clone(&state)),
-        Expression::Literal(l) => unimplemented!(),
+        Expression::Literal(l) => match l {
+            Literal::String(s) => Ok(Object::String(s.fragment().to_string())),
+            Literal::Float(_, _) => unimplemented!(),
+        },
     }
 }
 
@@ -70,7 +73,7 @@ fn eval_function<'a>(
     func: &FunctionCall<'a>,
 ) -> InterpreterResult<Object<'a>> {
     let ident_ref = *(func.clone()).ident;
-    let function = eval_expression(Rc::clone(&state), ident_ref)?;
+    let function = eval_expression(Rc::clone(&state), &ident_ref)?;
 
     match function {
         Object::FunctionLiteral { params, statements } => {
@@ -83,13 +86,27 @@ fn eval_function<'a>(
             // apply_function(&function, &vec![])
             unimplemented!()
         }
-        Object::BuiltinFunction(func) => func(vec![Object::String("argument".into())]),
+        Object::BuiltinFunction(builtin) => {
+            println!("ARGS {:?}", func.arguments);
+            builtin(eval_function_arguments(Rc::clone(&state), &func.arguments)?)
+        }
         // _ => Err(InterpreterError::ReferenceIsNotAFunction),
         Object::String(s) => {
             println!("sss{:?}", s);
             unimplemented!()
         }
     }
+}
+
+fn eval_function_arguments<'a>(
+    state: Rc<RefCell<State<'a>>>,
+    args: &Vec<(Span<'a>, Expression<'a>)>,
+) -> InterpreterResult<Vec<Object<'a>>> {
+    args.into_iter()
+        .map(|(_ident, expr)| eval_expression(Rc::clone(&state), expr))
+        // .collect::<Vec<InterpreterResult<Object<'a>>>>()
+        .collect::<Result<Vec<Object<'a>>, InterpreterError>>()
+    // .collect()
 }
 
 fn apply_function<'a>(func: &Object, arguments: &Vec<Object>) -> InterpreterResult<Object<'a>> {

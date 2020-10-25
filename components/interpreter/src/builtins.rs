@@ -5,7 +5,7 @@ use std::rc::Rc;
 pub(crate) fn print(args: Vec<Object>) -> InterpreterResult<Object> {
     let display = args
         .iter()
-        .map(|o| format!("{}", o))
+        .map(|o| format!("{}", o.to_string()))
         .collect::<Vec<String>>()
         .join(", ");
 
@@ -16,7 +16,7 @@ pub(crate) fn print(args: Vec<Object>) -> InterpreterResult<Object> {
 pub(crate) fn debug(args: Vec<Object>) -> InterpreterResult<Object> {
     let display = args
         .iter()
-        .map(|o| format!("{:?}", o))
+        .map(|o| format!("{}", o.to_string()))
         .collect::<Vec<String>>()
         .join(", ");
 
@@ -29,6 +29,10 @@ pub(crate) fn import<'a>(state: Rc<RefCell<State<'a>>>) -> Rc<RefCell<State<'a>>
     let _ = state
         .borrow_mut()
         .bind("print", Object::BuiltinFunction(print));
+
+    let _ = state
+        .borrow_mut()
+        .bind("debug", Object::BuiltinFunction(debug));
 
     state
 }

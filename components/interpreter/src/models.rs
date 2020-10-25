@@ -20,18 +20,39 @@ pub enum Object<'a> {
     BuiltinFunction(BuiltinFunction),
 }
 
-impl std::fmt::Debug for Object<'_> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        match self {
-            // _ => f.debug_map().finish(),
-            _ => f.write_str("0"), // FIX
-        }
-    }
-}
+// impl std::fmt::Debug for Object<'_> {
+//     fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+//         match self {
+//             Object::BuiltinFunction(_) => write!(fmt, "__builtin"),
+//             _ => write!(fmt, "{:?}", self), // FIX
+//         }
 
-impl std::fmt::Display for Object<'_> {
-    fn fmt(&self, _: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        todo!()
+//         // write!(fmt, "debug")
+//     }
+// }
+
+// impl std::fmt::Display for Object<'_> {
+//     fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+//         match self {
+//             Object::BuiltinFunction(_) => write!(fmt, "__builtin"),
+//             // _ => write!(fmt, "{}", self.to_string()), // FIX
+//             _ => write!(fmt, "__unknown"),
+//         }
+//         // write!(fmt, "display")
+//         // write!(fmt, "{:?}", self.to_string())
+//     }
+// }
+
+impl ToString for Object<'_> {
+    fn to_string(&self) -> String {
+        match self {
+            Object::BuiltinFunction(_) => format!("__BuiltinFunction"),
+            Object::String(s) => s.into(),
+            Object::FunctionLiteral { params, statements } => format!("__FunctionLiteral"),
+        }
+        // write!(fmt, "display")
+        // write!(fmt, "{:?}", self.to_string())
+        // format!("writer")
     }
 }
 

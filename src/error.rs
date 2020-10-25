@@ -69,7 +69,7 @@ fn interpreter_reason(kind: &InterpreterError) -> String {
         InterpreterError::Generic(e) => format!("{:?}", e),
         InterpreterError::FunctionNotFound(f) => format!("function not found {:?}", f),
         InterpreterError::ReferenceIsNotAFunction => format!("ReferenceIsNotAFunction"),
-        InterpreterError::InvalidReference(_) => unimplemented!(),
+        InterpreterError::InvalidReference(r) => format!("invalid reference: {}", r),
     }
 }
 
