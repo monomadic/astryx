@@ -1,11 +1,14 @@
 use crate::{
-    models::Statement,
-    ParserError, element::element, function::function_call, Span, text::piped_string, Expression, variable::{literal, variable},
+    element::element, function::function_call, models::Statement, text::piped_string,
+    variable::literal, Expression, ParserError, Span,
 };
 use nom::{
     branch::alt,
+    bytes::complete::tag,
+    character::complete::{alphanumeric1, space0, space1},
     combinator::{all_consuming, map},
-    IResult, sequence::{terminated, tuple}, bytes::complete::tag, character::complete::{alphanumeric1, space0, space1},
+    sequence::{terminated, tuple},
+    IResult,
 };
 
 // fn array<'a>(i: Span) -> IResult<Span, Span, ParserError<Span>> {
@@ -34,6 +37,7 @@ pub(crate) fn statement<'a>(i: Span<'a>) -> IResult<Span, Statement<'a>, ParserE
         map(element, |e| Statement::Element(e)),
         map(piped_string, |e| Statement::Text(e)),
         // map(alpha1, |e| Statement::Element(e)),
+        // return_statement
     )))(i)
     .map_err(|e| {
         e.map(|s| ParserError {
@@ -48,7 +52,7 @@ pub(crate) fn expression<'a>(i: Span<'a>) -> IResult<Span, Expression<'a>, Parse
     alt((
         map(function_call, |f| Expression::FunctionCall(f)),
         map(literal, |v| Expression::Literal(v)),
-        map(variable, |v| Expression::Reference(v)),
+        map(alphanumeric1, |s| Expression::Reference(s)),
     ))(i)
 }
 

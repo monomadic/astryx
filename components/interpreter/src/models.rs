@@ -1,4 +1,5 @@
 use html::HTMLElement;
+use parser::Statement;
 
 #[derive(Debug)]
 pub enum AstryxNode {
@@ -6,15 +7,20 @@ pub enum AstryxNode {
     Root,
 }
 
-#[derive(Debug)]
-pub enum Value {
+#[derive(Debug, Clone)]
+pub enum Object<'a> {
     String(String),
+    FunctionLiteral {
+        params: Vec<String>,
+        statements: Vec<Statement<'a>>,
+    },
 }
 
-impl Into<String> for Value {
+impl Into<String> for Object<'_> {
     fn into(self) -> String {
         match self {
-            Value::String(s) => s,
+            Object::String(s) => s,
+            Object::FunctionLiteral { params, statements } => format!("({:?})", params),
         }
     }
 }

@@ -67,6 +67,7 @@ fn interpreter_reason(kind: &InterpreterError) -> String {
         }
         InterpreterError::Unhandled => format!("unhandler interpreter error."),
         InterpreterError::Generic(e) => format!("{:?}", e),
+        InterpreterError::FunctionNotFound(f) => format!("function not found {:?}", f)
     }
 }
 

@@ -11,28 +11,28 @@ use nom::{
 
 // should this actually be called a reference? probably....
 
-pub(crate) fn variable<'a>(i: Span<'a>) -> IResult<Span<'a>, Variable<'a>, ParserError<Span<'a>>> {
-    alt((
-        // map(hash, JsonValue::Object),
-        // map(array, JsonValue::Array),
-        // map(quoted_string, |s: Span| Variable::QuotedString(s)),
-        map(relative_path, |s: Span| Variable::RelativePath(s)),
-        map(alphanumeric1, |s: Span| Variable::Reference(s)),
-        // map(argument_idx,   |i| Property::ArgumentIndex(i.parse::<usize>().unwrap())),
-        // map(double,         |f| Property::Float(f)),
-        // map(digit1,         |i:&str| Property::Number(i.parse::<i64>().unwrap_or(0))),
-        // map(boolean,        |b| Property::Boolean(b)),
-        // map(dotted_symbol,  |s| Property::DottedSymbol(String::from(s))),
-        // map(symbol,         |s| Property::Symbol(String::from(s))),
-    ))(i)
-    .map_err(|e| {
-        e.map(|(s, _k)| ParserError {
-            context: i, // we need to reset the context to the whole line
-            kind: ParserErrorKind::UnexpectedToken("variable".into()),
-            pos: s,
-        })
-    })
-}
+// pub(crate) fn variable<'a>(i: Span<'a>) -> IResult<Span<'a>, Variable<'a>, ParserError<Span<'a>>> {
+//     alt((
+//         // map(hash, JsonValue::Object),
+//         // map(array, JsonValue::Array),
+//         // map(quoted_string, |s: Span| Variable::QuotedString(s)),
+//         map(relative_path, |s: Span| Variable::RelativePath(s)),
+//         map(alphanumeric1, |s: Span| Variable::Reference(s)),
+//         // map(argument_idx,   |i| Property::ArgumentIndex(i.parse::<usize>().unwrap())),
+//         // map(double,         |f| Property::Float(f)),
+//         // map(digit1,         |i:&str| Property::Number(i.parse::<i64>().unwrap_or(0))),
+//         // map(boolean,        |b| Property::Boolean(b)),
+//         // map(dotted_symbol,  |s| Property::DottedSymbol(String::from(s))),
+//         // map(symbol,         |s| Property::Symbol(String::from(s))),
+//     ))(i)
+//     .map_err(|e| {
+//         e.map(|(s, _k)| ParserError {
+//             context: i, // we need to reset the context to the whole line
+//             kind: ParserErrorKind::UnexpectedToken("variable".into()),
+//             pos: s,
+//         })
+//     })
+// }
 
 pub(crate) fn literal<'a>(i: Span<'a>) -> IResult<Span<'a>, Literal<'a>, ParserError<Span<'a>>> {
     alt((

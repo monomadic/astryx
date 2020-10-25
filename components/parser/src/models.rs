@@ -22,13 +22,13 @@ pub enum Statement<'a> {
 #[derive(Debug, Clone)]
 pub enum Expression<'a> {
     FunctionCall(FunctionCall<'a>),
-    Reference(Variable<'a>),
+    Reference(Span<'a>),
     Literal(Literal<'a>),
 }
 
 #[derive(Debug, Clone)]
 pub struct FunctionCall<'a> {
-    pub ident: Span<'a>,
+    pub ident: Box<Expression<'a>>,
     pub arguments: Vec<(Span<'a>, Expression<'a>)>,
 }
 
@@ -47,14 +47,14 @@ pub enum Literal<'a> {
     Float(Span<'a>, f64),
 }
 
-impl Literal<'_> {
-    pub fn to_string(&self) -> String {
-        match self {
-            Literal::String(s) => s.fragment().to_string(),
-            Literal::Float(_s, f) => f.to_string(),
-        }
-    }
-}
+// impl Literal<'a> {
+//     pub fn to_string(&self) -> String {
+//         match self {
+//             Literal::String(s) => s.fragment().to_string(),
+//             Literal::Float(_s, f) => f.to_string(),
+//         }
+//     }
+// }
 
 impl<'a> Display for Literal<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

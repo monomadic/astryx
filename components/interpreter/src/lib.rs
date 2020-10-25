@@ -22,7 +22,10 @@ mod state;
 pub type InterpreterResult<T> = Result<T, InterpreterError>;
 
 /// run the interpreter on an AST tree and return a HTMLNode tree for each page
-pub fn run<'a>(nodes: Vec<Node<Statement<'a>>>, state: &mut State<'a>) -> InterpreterResult<()> {
+pub fn run<'a>(nodes: Vec<Node<Statement<'a>>>, state: &'a mut State<'a>) -> InterpreterResult<()> {
     // println!("run {:?}", nodes);
-    nodes.iter().map(|node| run::eval(node, state)).collect()
+    nodes
+        .iter()
+        .map(|node| run::eval_statement(node, state))
+        .collect()
 }

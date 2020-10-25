@@ -1,8 +1,8 @@
-use crate::{models::Value, run::eval, InterpreterError, InterpreterResult};
+use crate::{models::Object, InterpreterError, InterpreterResult};
 use parser::{Expression, FunctionCall, StringToken};
 use std::{collections::HashMap, fs::OpenOptions, io::Write};
 
-type LocalData<'a> = HashMap<String, Expression<'a>>;
+type LocalData<'a> = HashMap<String, Object<'a>>;
 
 #[derive(Debug, Clone)]
 pub enum Writer {
@@ -28,8 +28,8 @@ impl<'a> State<'a> {
     }
 
     /// bind a variable to local state
-    pub fn bind(&mut self, ident: &str, expr: Expression<'a>) -> InterpreterResult<()> {
-        let _ = self.locals.insert(ident.into(), expr); // return doesn't matter as all state is mutable
+    pub fn bind(&mut self, ident: &str, obj: Object<'a>) -> InterpreterResult<()> {
+        let _ = self.locals.insert(ident.into(), obj); // return doesn't matter as all state is mutable
         Ok(()) // force return ok (this could change if mutability rules change)
     }
 
@@ -44,19 +44,20 @@ impl<'a> State<'a> {
         }
     }
 
-    pub fn eval(&self, expr: &Expression) -> InterpreterResult<Value> {
+    // pub fn eval_statement()
+
+    pub fn eval_expression(&self, expr: &Expression) -> InterpreterResult<Object> {
         Ok(match expr {
-            Expression::FunctionCall(f) => self.call(&f)?,
-            Expression::Reference(r) => Value::String(format!("r{:?}", r)),
-            Expression::Literal(l) => Value::String(l.to_string()),
+            Expression::FunctionCall(f) => self.eval_function(&f)?,
+            Expression::Reference(r) => Object::String(format!("r{:?}", r)),
+            Expression::Literal(l) => Object::String(l.to_string()),
         })
     }
 
     /// execute a function
-    pub fn call(&self, f: &FunctionCall) -> InterpreterResult<Value> {
-        // create a new state with the function arguments
-        let state = self.clone();
-        let ident = f.ident.to_string();
+    pub fn eval_function(&self, f: &FunctionCall) -> InterpreterResult<Object> {
+        // get the function expression from the state
+        let func = self.eval_expression(&f.ident)?;
 
         // // find function in local state
         // match state.locals.get(&ident) {
@@ -67,7 +68,7 @@ impl<'a> State<'a> {
         // }
 
         // eval(, state);
-        Ok(Value::String(format!("f--{:?}", f)))
+        Ok(Object::String(format!("f--{:?}", f)))
     }
 
     /// Convert string tokens to a fully interpolated string
@@ -76,7 +77,8 @@ impl<'a> State<'a> {
             .into_iter()
             .map(|st| match st {
                 StringToken::Text(span) => Ok(span.fragment().to_string()),
-                StringToken::Expression(expr) => self.eval(&expr).map(|e| e.into()),
+                // StringToken::Expression(expr) => self.eval(&expr).map(|e| e.into()),
+                StringToken::Expression(expr) => Ok(format!("expression")),
             })
             .collect::<Result<Vec<String>, InterpreterError>>()?
             .into_iter()
