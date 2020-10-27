@@ -45,6 +45,12 @@ pub struct FunctionCall<'a> {
     pub arguments: Vec<(Span<'a>, Expression<'a>)>,
 }
 
+impl FunctionCall<'_> {
+    pub fn inspect(&self) -> String {
+        format!("{}()", "print")
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum Variable<'a> {
     RelativePath(Span<'a>),
