@@ -79,6 +79,7 @@ impl<'a> State<'a> {
             Expression::FunctionCall(f) => self.eval_function(&f)?,
             Expression::Reference(r) => Object::String(format!("r{:?}", r)),
             Expression::Literal(l) => Object::String(l.to_string()),
+            Expression::RelativePath(_) => unimplemented!(),
         })
     }
 
@@ -133,5 +134,6 @@ pub fn eval_expression<'a>(
         Expression::FunctionCall(f) => Object::String(format!("f{:?}", f)),
         Expression::Reference(r) => Object::String(format!("r{:?}", r)),
         Expression::Literal(l) => Object::String(l.to_string()),
+        Expression::RelativePath(_) => unimplemented!(),
     })
 }

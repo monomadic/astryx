@@ -1,6 +1,10 @@
 use crate::{
-    element::element, function::function_call, models::Statement, text::piped_string,
-    variable::literal, Expression, ParserError, Span,
+    element::element,
+    function::function_call,
+    models::Statement,
+    text::piped_string,
+    variable::{literal, relative_path},
+    Expression, ParserError, Span,
 };
 use nom::{
     branch::alt,
@@ -52,6 +56,7 @@ pub(crate) fn statement<'a>(i: Span<'a>) -> IResult<Span, Statement<'a>, ParserE
 pub(crate) fn expression<'a>(i: Span<'a>) -> IResult<Span, Expression<'a>, ParserError<Span<'a>>> {
     alt((
         map(function_call, |f| Expression::FunctionCall(f)),
+        map(relative_path, |s| Expression::RelativePath(s)),
         map(literal, |v| Expression::Literal(v)),
         map(alphanumeric1, |s| Expression::Reference(s)),
     ))(i)
@@ -80,18 +85,23 @@ fn binding<'a>(i: Span<'a>) -> IResult<Span, (Span<'a>, Expression<'a>), ParserE
     .map(|(r, (_, _, ident, _, _, expr))| (r, (ident, expr)))
 }
 
-#[test]
-fn test_binding() {
-    assert!(binding(Span::new("let a=5")).is_ok());
-    // assert_eq!(binding(Span::new("let a=5")).unwrap().0.fragment().to_string(), "a");
-    assert!(binding(Span::new("let a = 5")).is_ok());
-    assert!(binding(Span::new("let print = print()")).is_ok());
-    assert!(binding(Span::new("let print = fn print()")).is_ok());
-    assert!(binding(Span::new("g()")).is_err());
-}
+#[cfg(test)]
+mod test {
+    use super::*;
 
-#[test]
-fn test_statement() {
-    assert!(statement(Span::new("")).is_err()); // do not allow blank lines to slip through
-    assert!(statement(Span::new("g()")).is_ok());
+    #[test]
+    fn test_binding() {
+        assert!(binding(Span::new("let a=5")).is_ok());
+        // assert_eq!(binding(Span::new("let a=5")).unwrap().0.fragment().to_string(), "a");
+        assert!(binding(Span::new("let a = 5")).is_ok());
+        assert!(binding(Span::new("let print = print()")).is_ok());
+        assert!(binding(Span::new("let print = fn print()")).is_ok());
+        assert!(binding(Span::new("g()")).is_err());
+    }
+
+    #[test]
+    fn test_statement() {
+        assert!(statement(Span::new("")).is_err()); // do not allow blank lines to slip through
+        assert!(statement(Span::new("g()")).is_ok());
+    }
 }

@@ -35,8 +35,20 @@ impl Statement<'_> {
 #[derive(Debug, Clone)]
 pub enum Expression<'a> {
     FunctionCall(FunctionCall<'a>),
+    RelativePath(Span<'a>),
     Reference(Span<'a>),
     Literal(Literal<'a>),
+}
+
+impl Expression<'_> {
+    pub fn inspect(&self) -> String {
+        match self {
+            Expression::FunctionCall(f) => f.inspect(),
+            Expression::RelativePath(_) => unimplemented!(),
+            Expression::Reference(span) => span.fragment().to_string(),
+            Expression::Literal(l) => l.inspect(),
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -47,18 +59,26 @@ pub struct FunctionCall<'a> {
 
 impl FunctionCall<'_> {
     pub fn inspect(&self) -> String {
-        format!("{}()", "print")
+        format!(
+            "{}({})",
+            self.ident.inspect(),
+            self.arguments
+                .iter()
+                .map(|(k, v)| format!("{}: {}", k, v.inspect()))
+                .collect::<Vec<String>>()
+                .join(", ")
+        )
     }
 }
 
-#[derive(Debug, Clone)]
-pub enum Variable<'a> {
-    RelativePath(Span<'a>),
-    QuotedString(Span<'a>), // todo: make this Value(Value)?
-    Reference(Span<'a>),
-    // TemplateFile(TemplateFile),
-    // FunctionCall()
-}
+// #[derive(Debug, Clone)]
+// pub enum Variable<'a> {
+//     RelativePath(Span<'a>),
+//     QuotedString(Span<'a>), // todo: make this Value(Value)?
+//     Reference(Span<'a>),
+//     // TemplateFile(TemplateFile),
+//     // FunctionCall()
+// }
 
 #[derive(Debug, Clone)]
 pub enum Literal<'a> {

@@ -5,7 +5,7 @@ use nom::{
     character::complete::{alpha1, multispace0},
     character::complete::{char, space0},
     combinator::cut,
-    multi::{many0, separated_list},
+    multi::separated_list,
     sequence::{preceded, terminated, tuple},
     IResult,
 };
@@ -34,7 +34,7 @@ fn function_call_arguments<'a>(
 ) -> IResult<Span<'a>, Vec<(Span<'a>, Expression<'a>)>, ParserError<Span<'a>>> {
     // many0(function_call_argument)(i)
 
-    separated_list(preceded(space0, char(',')), function_call_argument)(i)
+    separated_list(tuple((space0, char(','), space0)), function_call_argument)(i)
     // .map_err(|e:nom::Err<ParserError<_>>| {
     //     e.map(|s| ParserError {
     //         context: i,
@@ -74,7 +74,10 @@ mod test {
     #[test]
     fn test_function_call_arguments() {
         assert_eq!(
-            function_call_arguments(Span::new("a,b")).unwrap().1.len(),
+            function_call_arguments(Span::new("a:a,b:b"))
+                .unwrap()
+                .1
+                .len(),
             2
         );
     }
@@ -84,8 +87,19 @@ mod test {
         assert!(function_call(Span::new("g()")).is_ok());
 
         assert_eq!(
-            &function_call(Span::new("print()")).unwrap().1.inspect(),
-            "print()"
+            &function_call(Span::new("print(text: \"hello\")"))
+                .unwrap()
+                .1
+                .inspect(),
+            "print(text: \"hello\")"
+        );
+
+        assert_eq!(
+            &function_call(Span::new("print(text: \"hello\", another: \"hi\")"))
+                .unwrap()
+                .1
+                .inspect(),
+            "print(text: \"hello\")"
         );
 
         // check ident Span
