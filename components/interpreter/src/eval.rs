@@ -34,7 +34,8 @@ pub(crate) fn eval_statement<'a>(
             eval_expression(state, &expr)?;
         }
         Statement::Text(t) => {
-            // state.borrow_mut().write(&state.interpolate(t)?)?;
+            let text = state.borrow_mut().interpolate(t)?;
+            state.borrow_mut().write(&text)?;
         }
         Statement::Binding(ident, expr) => {
             // let obj = state.borrow().eval_expression(&expr)?;
