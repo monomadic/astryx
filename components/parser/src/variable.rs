@@ -76,3 +76,25 @@ fn path_characters(i: Span) -> IResult<Span, Span> {
 fn path_prefix(i: Span) -> IResult<Span, Span> {
     alt((tag("./"), tag("../")))(i)
 }
+
+impl Literal<'_> {
+    pub fn inspect(&self) -> String {
+        match self {
+            Literal::String(s) => s.fragment().to_string(),
+            Literal::Float(_, f) => f.to_string(),
+        }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_literal() {
+        assert_eq!(
+            literal(Span::new("4")).unwrap().1.inspect(),
+            String::from("4")
+        );
+    }
+}

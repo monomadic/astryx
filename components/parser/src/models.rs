@@ -20,6 +20,18 @@ pub enum Statement<'a> {
     Comment(Span<'a>),
 }
 
+impl Statement<'_> {
+    pub fn inspect(&self) -> String {
+        match self {
+            Statement::Expression(e) => "expr".into(),
+            Statement::Binding(_, _) => "expr".into(),
+            Statement::Element(_) => "expr".into(),
+            Statement::Text(t) => "expr".into(),
+            Statement::Comment(_) => "expr".into(),
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum Expression<'a> {
     FunctionCall(FunctionCall<'a>),

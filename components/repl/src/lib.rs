@@ -17,28 +17,53 @@ pub fn run() -> Result<(), String> {
 }
 
 fn repl<'a>(editor: &mut Editor<()>, state: Rc<RefCell<State<'a>>>) {
-    if let Some(line) = read_line(editor, Rc::clone(&state)) {
-        match parser::run(&line) {
-            Ok(statements) => {
-                // match interpreter::run(statements, Rc::clone(&state)) {
-                //     Ok(_) => {}
-                //     Err(e) => println!("interpreter error: {:?}", e),
-                // };
-            }
-            Err(e) => println!("parser error: {:?}", e),
-        }
+    let line = editor.readline(">> ");
 
-        repl(editor, Rc::clone(&state));
-    }
+    // let response = read_line(line, Rc::clone(&state)).unwrap();
+
+    let response = "let a = 2".to_string();
+
+    editor.add_history_entry(response);
+
+    let local = Rc::new(RefCell::new(State::extend(state)));
+
+    // let statements = parser::run(&response).unwrap();
+    // let result = interpreter::run(&statements, local).unwrap();
+
+    let mut state = State::new();
+    state.writer = Writer::StdOut;
+
+    let state = Rc::new(RefCell::new(state));
+    // state.writer = Writer::File("index.html".to_string());
+    // state.writer = Writer::StdOut;
+
+    // parser::run(&response).map(|nodes| interpreter::run(&nodes, state));
+
+    // let statements = parser::run(&line).unwrap();
+    // interpreter::run(statements, Rc::clone(&state));
+
+    // if let Some(line) = read_line(editor, Rc::clone(&state)) {
+
+    //     // match parser::run(&line) {
+    //     //     Ok(statements) => {
+    //     //         // for statement in statements {
+    //     //         //     println!("{}", statement.borrow().inspect());
+    //     //         //     interpreter::run(vec![statement], Rc::clone(&state));
+    //     //         // }
+    //     //         match interpreter::run(statements, Rc::clone(&state)) {
+    //     //             Ok(_) => repl(editor, Rc::clone(&state)),
+    //     //             Err(e) => println!("interpreter error: {:?}", e),
+    //     //         };
+    //     //     }
+    //     //     Err(e) => println!("parser error: {:?}", e),
+    //     // }
+    // }
 }
 
-fn read_line(rl: &mut Editor<()>, state: Rc<RefCell<State>>) -> Option<String> {
+fn read_line(readline: Result<String, ReadlineError>, state: Rc<RefCell<State>>) -> Option<String> {
     loop {
-        let readline = rl.readline(">> ");
         match readline {
             Ok(line) => {
-                rl.add_history_entry(line.as_str());
-
                 // ast dump (start line with :)
                 if line.chars().collect::<Vec<char>>()[0] == ':' {
                     println!("{:?}", parser::run(&crop_letters(&line, 1)));
@@ -55,7 +80,9 @@ fn read_line(rl: &mut Editor<()>, state: Rc<RefCell<State>>) -> Option<String> {
                     continue;
                 }
 
+                // println!("{}", state.borrow_mut().local.inspect());
                 return Some(line);
+                // return None;
             }
             Err(ReadlineError::Interrupted) => {
                 println!("CTRL-C");

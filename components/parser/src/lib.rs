@@ -42,7 +42,7 @@ pub fn run<'a>(i: &'a str) -> Result<Vec<Node<Statement<'a>>>, ParserError<Span<
     lines
         .into_iter()
         .map(parse_line)
-        .collect::<Result<Vec<(Span, Node<Statement<'a>>)>, nom::Err<ParserError<Span<'a>>>>>()
+        .collect::<Result<Vec<(Span, Node<Statement<'_>>)>, nom::Err<ParserError<Span<'a>>>>>()
         .map_err(|e| match e {
             // convert to a regular result, nom is awful in this situation.
             Err::Error(e) | Err::Failure(e) => e,

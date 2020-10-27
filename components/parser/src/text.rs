@@ -54,3 +54,13 @@ fn interpolated_expression<'a>(
     //     })
     // })
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_interpolated_expression() {
+        assert!(interpolated_expression(Span::new("")).is_err());
+    }
+}
