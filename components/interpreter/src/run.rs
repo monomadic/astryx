@@ -1,9 +1,12 @@
-use crate::{state::{eval_expression, State}, InterpreterResult};
+use crate::{
+    state::{eval_expression, State},
+    InterpreterResult,
+};
 use html::HTMLElement;
 use parser::Statement;
 use rctree::Node;
-use std::{collections::HashMap, rc::Rc};
 use std::cell::RefCell;
+use std::{collections::HashMap, rc::Rc};
 
 pub(crate) fn eval_statement<'a>(
     node: &Node<Statement<'a>>,
@@ -48,6 +51,7 @@ pub(crate) fn eval_statement<'a>(
             let obj = eval_expression(Rc::clone(&state), &expr)?;
             state.borrow_mut().bind(ident.fragment(), obj.clone())?;
         }
+        Statement::Comment(_) => {}
     }
 
     Ok(())

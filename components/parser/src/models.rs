@@ -17,6 +17,7 @@ pub enum Statement<'a> {
     Binding(Span<'a>, Expression<'a>),
     Element(Element<'a>),
     Text(Vec<StringToken<'a>>), // todo: replace with interpolatedstring
+    Comment(Span<'a>),
 }
 
 #[derive(Debug, Clone)]

@@ -32,6 +32,7 @@ use nom::{
 pub(crate) fn statement<'a>(i: Span<'a>) -> IResult<Span, Statement<'a>, ParserError<Span<'a>>> {
     all_consuming(alt((
         // map(function_call, |f| Statement::FunctionCall(f)),
+        map(comment, |s| Statement::Comment(s)),
         map(binding, |(ident, expr)| Statement::Binding(ident, expr)),
         map(expression, |e| Statement::Expression(e)),
         map(element, |e| Statement::Element(e)),
@@ -54,6 +55,17 @@ pub(crate) fn expression<'a>(i: Span<'a>) -> IResult<Span, Expression<'a>, Parse
         map(literal, |v| Expression::Literal(v)),
         map(alphanumeric1, |s| Expression::Reference(s)),
     ))(i)
+}
+
+fn comment<'a>(i: Span<'a>) -> IResult<Span<'a>, Span<'a>, ParserError<Span<'a>>> {
+    tag("--")(i).map(|(r, _)| (Span::new(""), r))
+    // .map_err(|e| {
+    //     e.map(|(span, _kind)| ParserError {
+    //         context: span,
+    //         kind: ParserErrorKind::SyntaxError,
+    //         pos: span.into(),
+    //     })
+    // })
 }
 
 fn binding<'a>(i: Span<'a>) -> IResult<Span, (Span<'a>, Expression<'a>), ParserError<Span<'a>>> {

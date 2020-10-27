@@ -49,6 +49,7 @@ pub(crate) fn eval_statement<'a>(
             let obj = eval_expression(Rc::clone(&state), &expr)?;
             state.borrow_mut().bind(ident.fragment(), obj.clone())?;
         }
+        Statement::Comment(_) => {}
     }
 
     Ok(())
