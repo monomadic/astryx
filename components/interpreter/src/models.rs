@@ -20,6 +20,18 @@ pub enum Object<'a> {
     BuiltinFunction(BuiltinFunction),
 }
 
+impl Object<'_> {
+    pub fn inspect(&self) -> String {
+        match self {
+            Object::String(s) => s.to_string(),
+            Object::FunctionLiteral { params, statements } => {
+                format!("{:?}{:?}", params, statements)
+            }
+            Object::BuiltinFunction(_) => unimplemented!(),
+        }
+    }
+}
+
 // impl std::fmt::Debug for Object<'_> {
 //     fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
 //         match self {

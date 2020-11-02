@@ -50,7 +50,10 @@ pub(crate) fn eval_statement<'a>(
             state.borrow_mut().bind(ident.fragment(), obj.clone())?;
         }
         Statement::Comment(_) => {}
-        Statement::ForLoop { ident, expr } => {}
+        Statement::ForLoop { ident, expr } => {
+            let iterable = eval_expression(Rc::clone(&state), &expr)?;
+            println!("for loop: {:?}", iterable.inspect());
+        }
     }
 
     Ok(())
@@ -68,7 +71,7 @@ fn eval_expression<'a>(
             Literal::String(s) => Ok(Object::String(s.fragment().to_string())),
             Literal::Float(_, _) => unimplemented!(),
         },
-        Expression::RelativePath(_) => unimplemented!(),
+        Expression::RelativePath(s) => Ok(Object::String(s.fragment().to_string())),
     }
 }
 
