@@ -80,6 +80,7 @@ impl<'a> State<'a> {
             Expression::Reference(r) => Object::String(format!("r{:?}", r)),
             Expression::Literal(l) => Object::String(l.to_string()),
             Expression::RelativePath(_) => unimplemented!(),
+            Expression::Array(_) => unimplemented!(),
         })
     }
 
@@ -135,5 +136,6 @@ pub fn eval_expression<'a>(
         Expression::Reference(r) => Object::String(format!("r{:?}", r)),
         Expression::Literal(l) => Object::String(l.to_string()),
         Expression::RelativePath(_) => unimplemented!(),
+        Expression::Array(_) => unimplemented!(),
     })
 }

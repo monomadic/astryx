@@ -43,6 +43,7 @@ pub enum Expression<'a> {
     RelativePath(Span<'a>),
     Reference(Span<'a>),
     Literal(Literal<'a>),
+    Array(Vec<Expression<'a>>),
 }
 
 impl Expression<'_> {
@@ -52,6 +53,7 @@ impl Expression<'_> {
             Expression::RelativePath(_) => unimplemented!(),
             Expression::Reference(span) => span.fragment().to_string(),
             Expression::Literal(l) => l.inspect(),
+            Expression::Array(_) => unimplemented!(),
         }
     }
 }

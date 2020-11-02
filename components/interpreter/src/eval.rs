@@ -72,6 +72,7 @@ fn eval_expression<'a>(
             Literal::Float(_, _) => unimplemented!(),
         },
         Expression::RelativePath(s) => Ok(Object::String(s.fragment().to_string())),
+        Expression::Array(_) => unimplemented!(),
     }
 }
 
