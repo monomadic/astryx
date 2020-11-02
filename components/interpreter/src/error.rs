@@ -6,4 +6,5 @@ pub enum InterpreterError {
     FunctionNotFound(String),
     ReferenceIsNotAFunction,
     InvalidReference(String),
+    UnexpectedToken { expected: String, got: String },
 }

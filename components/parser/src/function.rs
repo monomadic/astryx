@@ -6,7 +6,7 @@ use nom::{
     character::complete::{char, space0},
     combinator::cut,
     multi::separated_list,
-    sequence::{preceded, terminated, tuple},
+    sequence::{terminated, tuple},
     IResult,
 };
 

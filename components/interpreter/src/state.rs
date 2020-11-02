@@ -59,7 +59,12 @@ impl<'a> State<'a> {
         }
     }
 
-    // pub fn root()
+    // pub fn root(&self) -> Rc<RefCell<State<'a>>> {
+    //     match self.outer {
+    //         Some(o) => o.borrow().root(),
+    //         None => Rc::new(RefCell::new(self)),
+    //     }
+    // }
 
     pub fn get_mut_writer(&mut self) -> InterpreterResult<Box<dyn Write>> {
         match &self.writer {
@@ -126,16 +131,16 @@ impl<'a> State<'a> {
     }
 }
 
-pub fn eval_expression<'a>(
-    state: Rc<RefCell<State>>,
-    expr: &Expression,
-) -> InterpreterResult<Object<'a>> {
-    Ok(match expr {
-        // Expression::FunctionCall(f) => state.eval_function(&f)?,
-        Expression::FunctionCall(f) => Object::String(format!("f{:?}", f)),
-        Expression::Reference(r) => Object::String(format!("r{:?}", r)),
-        Expression::Literal(l) => Object::String(l.to_string()),
-        Expression::RelativePath(_) => unimplemented!(),
-        Expression::Array(_) => unimplemented!(),
-    })
-}
+// pub fn eval_expression<'a>(
+//     state: Rc<RefCell<State>>,
+//     expr: &Expression,
+// ) -> InterpreterResult<Object<'a>> {
+//     Ok(match expr {
+//         // Expression::FunctionCall(f) => state.eval_function(&f)?,
+//         Expression::FunctionCall(f) => Object::String(format!("f{:?}", f)),
+//         Expression::Reference(r) => Object::String(format!("r{:?}", r)),
+//         Expression::Literal(l) => Object::String(l.to_string()),
+//         Expression::RelativePath(_) => unimplemented!(),
+//         Expression::Array(_) => unimplemented!(),
+//     })
+// }

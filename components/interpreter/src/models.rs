@@ -18,6 +18,7 @@ pub enum Object<'a> {
         statements: Vec<Statement<'a>>,
     },
     BuiltinFunction(BuiltinFunction),
+    Array(Vec<Object<'a>>),
 }
 
 impl Object<'_> {
@@ -28,6 +29,7 @@ impl Object<'_> {
                 format!("{:?}{:?}", params, statements)
             }
             Object::BuiltinFunction(_) => unimplemented!(),
+            Object::Array(_) => unimplemented!(),
         }
     }
 }
@@ -61,6 +63,7 @@ impl ToString for Object<'_> {
             Object::BuiltinFunction(_) => format!("__BuiltinFunction"),
             Object::String(s) => s.into(),
             Object::FunctionLiteral { params, statements } => format!("__FunctionLiteral"),
+            Object::Array(_) => unimplemented!(),
         }
         // write!(fmt, "display")
         // write!(fmt, "{:?}", self.to_string())
@@ -74,6 +77,7 @@ impl Into<String> for Object<'_> {
             Object::String(s) => s,
             Object::FunctionLiteral { params, statements } => format!("({:?})", params),
             Object::BuiltinFunction(_) => unimplemented!(),
+            Object::Array(_) => unimplemented!(),
         }
     }
 }

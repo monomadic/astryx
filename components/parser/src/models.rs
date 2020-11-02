@@ -50,7 +50,7 @@ impl Expression<'_> {
     pub fn inspect(&self) -> String {
         match self {
             Expression::FunctionCall(f) => f.inspect(),
-            Expression::RelativePath(_) => unimplemented!(),
+            Expression::RelativePath(p) => p.to_string(),
             Expression::Reference(span) => span.fragment().to_string(),
             Expression::Literal(l) => l.inspect(),
             Expression::Array(_) => unimplemented!(),

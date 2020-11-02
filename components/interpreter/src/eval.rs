@@ -51,8 +51,18 @@ pub(crate) fn eval_statement<'a>(
         }
         Statement::Comment(_) => {}
         Statement::ForLoop { ident, expr } => {
-            let iterable = eval_expression(Rc::clone(&state), &expr)?;
-            println!("for loop: {:?}", iterable.inspect());
+            let iter: Object = eval_expression(Rc::clone(&state), &expr)?;
+
+            if let Object::Array(path) = iter {
+                println!("array");
+            } else {
+                println!("not array {:?}", iter.inspect());
+                return Err(InterpreterError::UnexpectedToken {
+                    expected: String::from("Array"),
+                    got: iter.inspect(),
+                });
+            }
+            println!("for {} in {}", ident.to_string(), expr.inspect());
         }
     }
 
@@ -89,7 +99,7 @@ fn eval_function<'a>(
             statements: _,
         } => {
             // extend state scope into function
-            let new_env = Rc::new(RefCell::new(State::extend(state)));
+            let _new_env = Rc::new(RefCell::new(State::extend(state)));
 
             // insert args into new scope
             // let arguments = eval_expressions(args, env)?;
@@ -106,6 +116,7 @@ fn eval_function<'a>(
             println!("sss{:?}", s);
             unimplemented!()
         }
+        Object::Array(_) => unimplemented!(),
     }
 }
 
