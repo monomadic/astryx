@@ -50,6 +50,7 @@ pub(crate) fn eval_statement<'a>(
             state.borrow_mut().bind(ident.fragment(), obj.clone())?;
         }
         Statement::Comment(_) => {}
+        Statement::ForLoop { ident, expr } => {}
     }
 
     Ok(())
@@ -79,7 +80,10 @@ fn eval_function<'a>(
     let function = eval_expression(Rc::clone(&state), &ident_ref)?;
 
     match function {
-        Object::FunctionLiteral { params, statements } => {
+        Object::FunctionLiteral {
+            params: _,
+            statements: _,
+        } => {
             // extend state scope into function
             let new_env = Rc::new(RefCell::new(State::extend(state)));
 

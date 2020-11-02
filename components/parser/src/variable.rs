@@ -2,9 +2,8 @@ use crate::{error::ParserErrorKind, Literal, ParserError, Span};
 use nom::{
     branch::alt,
     bytes::complete::{is_not, tag},
-    character::complete::{alphanumeric1, char},
+    character::complete::char,
     combinator::map,
-    error::ParseError,
     number::complete::double,
     sequence::{delimited, tuple},
     IResult,

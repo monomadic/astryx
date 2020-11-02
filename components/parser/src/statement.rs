@@ -37,6 +37,7 @@ pub(crate) fn statement<'a>(i: Span<'a>) -> IResult<Span, Statement<'a>, ParserE
     all_consuming(alt((
         // map(function_call, |f| Statement::FunctionCall(f)),
         map(comment, |s| Statement::Comment(s)),
+        map(for_loop, |(ident, expr)| Statement::ForLoop { ident, expr }),
         map(binding, |(ident, expr)| Statement::Binding(ident, expr)),
         map(expression, |e| Statement::Expression(e)),
         map(element, |e| Statement::Element(e)),
@@ -51,6 +52,24 @@ pub(crate) fn statement<'a>(i: Span<'a>) -> IResult<Span, Statement<'a>, ParserE
             pos: s.pos,
         })
     })
+}
+
+fn for_loop<'a>(i: Span<'a>) -> IResult<Span, (Span<'a>, Expression<'a>), ParserError<Span<'a>>> {
+    tuple((
+        tag("for"),
+        space1,
+        alphanumeric1,
+        terminated(space0, tag("in")),
+        space0,
+        expression,
+    ))(i)
+    .map(|(r, (_, _, ident, _, _, expr))| (r, (ident, expr)))
+}
+
+#[derive(Debug, Clone)]
+pub struct ForLoop<'a> {
+    pub index: Span<'a>,
+    pub iterable: Expression<'a>,
 }
 
 pub(crate) fn expression<'a>(i: Span<'a>) -> IResult<Span, Expression<'a>, ParserError<Span<'a>>> {

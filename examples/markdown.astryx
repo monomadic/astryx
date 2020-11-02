@@ -1,7 +1,7 @@
 
 page(path: ./index.html, stylesheet: ./style.css)
-  for post in files(./posts/*.md)
-    aiv .title
-      h1
+  for post in ./posts/*.md
+    %div
+      %h1
         | ${ post.title }
       | ${ post }

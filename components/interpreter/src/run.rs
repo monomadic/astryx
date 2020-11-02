@@ -52,6 +52,7 @@ pub(crate) fn eval_statement<'a>(
             state.borrow_mut().bind(ident.fragment(), obj.clone())?;
         }
         Statement::Comment(_) => {}
+        Statement::ForLoop { ident, expr } => {}
     }
 
     Ok(())

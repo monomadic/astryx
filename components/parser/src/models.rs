@@ -18,6 +18,10 @@ pub enum Statement<'a> {
     Element(Element<'a>),
     Text(Vec<StringToken<'a>>), // todo: replace with interpolatedstring
     Comment(Span<'a>),
+    ForLoop {
+        ident: Span<'a>,
+        expr: Expression<'a>,
+    },
 }
 
 impl Statement<'_> {
@@ -28,6 +32,7 @@ impl Statement<'_> {
             Statement::Element(_) => "expr".into(),
             Statement::Text(t) => "expr".into(),
             Statement::Comment(_) => "expr".into(),
+            Statement::ForLoop { ident, expr } => unimplemented!(),
         }
     }
 }
