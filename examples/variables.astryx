@@ -1,0 +1,8 @@
+-- assign variables with the let keyword.
+let a = "hello"
+
+-- you can print any object to stdout with the print() function.
+print(text: a)
+
+-- you can also use variables in interpolated strings.
+| ${a}

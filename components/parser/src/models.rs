@@ -95,6 +95,15 @@ pub enum Literal<'a> {
     Float(Span<'a>, f64),
 }
 
+// impl Literal {
+//     pub fn to_object(&self) -> Object {
+//         match self {
+//             Literal::String(s) => Object::String(s),
+//             Literal::Float(_, _) => {}
+//         }
+//     }
+// }
+
 // impl Literal<'a> {
 //     pub fn to_string(&self) -> String {
 //         match self {

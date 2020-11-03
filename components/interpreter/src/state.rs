@@ -46,6 +46,12 @@ impl<'a> State<'a> {
         }
     }
 
+    /// fetch a variable from state and throw an error upon failure
+    pub fn require(&self, name: &str) -> InterpreterResult<Object<'a>> {
+        self.get(name)
+            .ok_or(InterpreterError::InvalidReference(String::from(name)))
+    }
+
     /// bind a variable to local state
     pub fn bind(&mut self, ident: &str, obj: Object<'a>) -> InterpreterResult<()> {
         let _ = self.local.insert(ident.into(), obj); // return doesn't matter as all state is mutable
@@ -80,14 +86,14 @@ impl<'a> State<'a> {
     // pub fn eval_statement()
 
     pub fn eval_expression(&self, expr: &Expression) -> InterpreterResult<Object> {
-        Ok(match expr {
-            Expression::FunctionCall(f) => self.eval_function(&f)?,
-            Expression::Reference(r) => Object::String(format!("r{:?}", r)),
-            Expression::Literal(l) => Object::String(l.to_string()),
+        match expr {
+            Expression::FunctionCall(f) => self.eval_function(&f),
+            Expression::Reference(r) => self.require(r.to_string().as_str()),
+            Expression::Literal(l) => Ok(Object::String(l.to_string())),
             Expression::RelativePath(_) => unimplemented!(),
             Expression::Array(_) => unimplemented!(),
             Expression::GlobPattern(_) => unimplemented!(),
-        })
+        }
     }
 
     /// execute a function
@@ -114,9 +120,9 @@ impl<'a> State<'a> {
         Ok(components
             .into_iter()
             .map(|st| match st {
-                StringToken::Text(span) => Ok(span.fragment().to_string()),
+                StringToken::Text(span) => Ok(span.to_string()),
                 // StringToken::Expression(expr) => self.eval(&expr).map(|e| e.into()),
-                StringToken::Expression(expr) => Ok(format!("expression")),
+                StringToken::Expression(expr) => Ok(self.eval_expression(&expr)?.to_string()),
             })
             .collect::<Result<Vec<String>, InterpreterError>>()?
             .into_iter()

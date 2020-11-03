@@ -69,7 +69,6 @@ pub(crate) fn eval_statement<'a>(
                     got: iter.inspect(),
                 });
             }
-            // println!("for {} in {}", ident.to_string(), expr.inspect());
         }
     }
 
