@@ -24,12 +24,18 @@ pub enum Object<'a> {
 impl Object<'_> {
     pub fn inspect(&self) -> String {
         match self {
-            Object::String(s) => s.to_string(),
+            Object::String(s) => format!("{:?}", s),
             Object::FunctionLiteral { params, statements } => {
                 format!("{:?}{:?}", params, statements)
             }
             Object::BuiltinFunction(_) => unimplemented!(),
-            Object::Array(_) => unimplemented!(),
+            Object::Array(v) => format!(
+                "[{}]",
+                v.iter()
+                    .map(Object::inspect)
+                    .collect::<Vec<String>>()
+                    .join(", ")
+            ),
         }
     }
 }

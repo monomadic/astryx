@@ -86,6 +86,7 @@ impl<'a> State<'a> {
             Expression::Literal(l) => Object::String(l.to_string()),
             Expression::RelativePath(_) => unimplemented!(),
             Expression::Array(_) => unimplemented!(),
+            Expression::GlobPattern(_) => unimplemented!(),
         })
     }
 

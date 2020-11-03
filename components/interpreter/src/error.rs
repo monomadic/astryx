@@ -7,4 +7,5 @@ pub enum InterpreterError {
     ReferenceIsNotAFunction,
     InvalidReference(String),
     UnexpectedToken { expected: String, got: String },
+    IOError,
 }

@@ -61,6 +61,20 @@ fn quoted_string(i: Span) -> IResult<Span, Span> {
     delimited(char('\"'), is_not("\""), char('\"'))(i)
 }
 
+/// match glob patterns eg: ./*.txt and ../../*
+pub fn glob_pattern<'a>(i: Span<'a>) -> IResult<Span<'a>, Span<'a>, ParserError<Span<'a>>> {
+    tuple((path_prefix, glob_pattern_characters))(i)
+        // .map(|(r, (prefix, pathname))| (r, Span::new(&format!("{}{}", prefix, pathname)))) // check this!
+        .map(|(r, (_prefix, path))| (r, path)) // fix this so that prefix is included
+        .map_err(|e| {
+            e.map(|(s, _k)| ParserError {
+                context: i, // we need to reset the context to the whole line
+                kind: ParserErrorKind::UnexpectedToken("gg".into()),
+                pos: s,
+            })
+        })
+}
+
 /// match relative paths eg: ./test.txt and ../../test.txt
 pub fn relative_path<'a>(i: Span<'a>) -> IResult<Span<'a>, Span<'a>, ParserError<Span<'a>>> {
     tuple((path_prefix, path_characters))(i)
@@ -75,8 +89,12 @@ pub fn relative_path<'a>(i: Span<'a>) -> IResult<Span<'a>, Span<'a>, ParserError
         })
 }
 
-fn path_characters(i: Span) -> IResult<Span, Span> {
+fn glob_pattern_characters(i: Span) -> IResult<Span, Span> {
     nom::bytes::complete::is_a("./*-_abcdefghijklmnopqrstuvwxyz1234567890ABCDEF")(i)
+}
+
+fn path_characters(i: Span) -> IResult<Span, Span> {
+    nom::bytes::complete::is_a("./-_abcdefghijklmnopqrstuvwxyz1234567890ABCDEF")(i)
 }
 
 // match path prefixes ./ or ../

@@ -73,6 +73,7 @@ fn interpreter_reason(kind: &InterpreterError) -> String {
         InterpreterError::UnexpectedToken { expected, got } => {
             format!("expected {}, got {}", expected, got)
         }
+        InterpreterError::IOError => format!("error reading file"),
     }
 }
 

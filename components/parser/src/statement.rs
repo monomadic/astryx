@@ -3,7 +3,7 @@ use crate::{
     function::function_call,
     models::Statement,
     text::piped_string,
-    variable::{literal, relative_path},
+    variable::{glob_pattern, literal, relative_path},
     Expression, ParserError, Span,
 };
 use nom::{
@@ -59,8 +59,8 @@ fn for_loop<'a>(i: Span<'a>) -> IResult<Span, (Span<'a>, Expression<'a>), Parser
         tag("for"),
         space1,
         alphanumeric1,
-        terminated(space0, tag("in")),
-        space0,
+        terminated(space1, tag("in")),
+        space1,
         expression,
     ))(i)
     .map(|(r, (_, _, ident, _, _, expr))| (r, (ident, expr)))
@@ -75,7 +75,8 @@ pub struct ForLoop<'a> {
 pub(crate) fn expression<'a>(i: Span<'a>) -> IResult<Span, Expression<'a>, ParserError<Span<'a>>> {
     alt((
         map(function_call, |f| Expression::FunctionCall(f)),
-        map(relative_path, |s| Expression::RelativePath(s)),
+        //map(relative_path, |s| Expression::RelativePath(s)),
+        map(glob_pattern, |s| Expression::GlobPattern(s)),
         map(literal, |v| Expression::Literal(v)),
         map(alphanumeric1, |s| Expression::Reference(s)),
     ))(i)
@@ -109,6 +110,17 @@ mod test {
     use super::*;
 
     #[test]
+    fn test_expression() {
+        assert!(expression(Span::new("./posts/*.md")).is_ok());
+    }
+
+    #[test]
+    fn test_for_loop() {
+        // println!("{:?}", for_loop(Span::new("for x in ./posts/*.md")));
+        assert!(for_loop(Span::new("for x in ./posts/*.md")).is_ok());
+    }
+
+    #[test]
     fn test_binding() {
         assert!(binding(Span::new("let a=5")).is_ok());
         // assert_eq!(binding(Span::new("let a=5")).unwrap().0.fragment().to_string(), "a");
@@ -122,5 +134,6 @@ mod test {
     fn test_statement() {
         assert!(statement(Span::new("")).is_err()); // do not allow blank lines to slip through
         assert!(statement(Span::new("g()")).is_ok());
+        assert!(statement(Span::new("for x in ./posts/*.md")).is_ok());
     }
 }

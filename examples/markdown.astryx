@@ -1,6 +1,7 @@
 
-for post in ./posts/*.md
+for post in ./examples/*.md
   %div
+    print(text: post)
     %h1
       | ${ post.title }
     | ${ post }

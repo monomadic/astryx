@@ -40,6 +40,7 @@ impl Statement<'_> {
 #[derive(Debug, Clone)]
 pub enum Expression<'a> {
     FunctionCall(FunctionCall<'a>),
+    GlobPattern(Span<'a>),
     RelativePath(Span<'a>),
     Reference(Span<'a>),
     Literal(Literal<'a>),
@@ -50,6 +51,7 @@ impl Expression<'_> {
     pub fn inspect(&self) -> String {
         match self {
             Expression::FunctionCall(f) => f.inspect(),
+            Expression::GlobPattern(p) => p.to_string(),
             Expression::RelativePath(p) => p.to_string(),
             Expression::Reference(span) => span.fragment().to_string(),
             Expression::Literal(l) => l.inspect(),

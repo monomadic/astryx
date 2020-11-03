@@ -52,9 +52,16 @@ pub(crate) fn eval_statement<'a>(
         Statement::Comment(_) => {}
         Statement::ForLoop { ident, expr } => {
             let iter: Object = eval_expression(Rc::clone(&state), &expr)?;
+            // println!("iter {}", iter.inspect());
 
-            if let Object::Array(path) = iter {
-                println!("array");
+            if let Object::Array(array) = iter {
+                for index in array {
+                    let childstate = state.clone();
+                    childstate.borrow_mut().bind(&ident.to_string(), index)?;
+                    for child in node.children() {
+                        let _ = eval_statement(&child, Rc::clone(&childstate));
+                    }
+                }
             } else {
                 println!("not array {:?}", iter.inspect());
                 return Err(InterpreterError::UnexpectedToken {
@@ -62,14 +69,14 @@ pub(crate) fn eval_statement<'a>(
                     got: iter.inspect(),
                 });
             }
-            println!("for {} in {}", ident.to_string(), expr.inspect());
+            // println!("for {} in {}", ident.to_string(), expr.inspect());
         }
     }
 
     Ok(())
 }
 
-fn eval_expression<'a>(
+pub(crate) fn eval_expression<'a>(
     state: Rc<RefCell<State<'a>>>,
     expr: &Expression<'a>,
 ) -> InterpreterResult<Object<'a>> {
@@ -81,9 +88,38 @@ fn eval_expression<'a>(
             Literal::String(s) => Ok(Object::String(s.fragment().to_string())),
             Literal::Float(_, _) => unimplemented!(),
         },
-        Expression::RelativePath(s) => Ok(Object::String(s.fragment().to_string())),
+        Expression::RelativePath(s) => import_file(s),
         Expression::Array(_) => unimplemented!(),
+        Expression::GlobPattern(s) => import_files(s),
     }
+}
+
+fn import_file<'a>(s: &Span<'a>) -> InterpreterResult<Object<'a>> {
+    std::fs::read_to_string(s.fragment().to_string())
+        .map(Object::String)
+        .map_err(|_| InterpreterError::IOError)
+}
+
+fn import_files<'a>(s: &Span<'a>) -> InterpreterResult<Object<'a>> {
+    let options = glob::MatchOptions {
+        case_sensitive: false,
+        require_literal_separator: false,
+        require_literal_leading_dot: false,
+    };
+
+    let mut files = Vec::new();
+    let globs = glob::glob_with(&s.to_string(), options).map_err(|_| InterpreterError::IOError)?;
+
+    for file in globs {
+        // TODO wrap unwrap in error
+        let path = file.expect("file to unwrap");
+        let filepath: String = path.as_os_str().to_str().unwrap().into();
+        let file_content = std::fs::read_to_string(filepath).unwrap();
+
+        files.push(Object::String(file_content));
+    }
+
+    Ok(Object::Array(files))
 }
 
 fn eval_function<'a>(
