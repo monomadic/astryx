@@ -6,3 +6,6 @@ print(text: "hello")
     | blah
   %a href="#"
     | blah2
+  %div
+    %h2
+      | another header

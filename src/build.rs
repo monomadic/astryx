@@ -1,5 +1,6 @@
 use crate::error::*;
 use interpreter::{State, Writer};
+use program::*;
 use rctree::Node;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -14,7 +15,10 @@ pub(crate) fn build<'a>(file: &'a str) -> AstryxResult<'a, ()> {
     parser::run(file)
         .map_err(AstryxError::from)
         .and_then(|nodes| interpreter::run(&nodes, state).map_err(AstryxError::from))
-        .map(|_| ()) // FIXME: render
+        .map(|p| {
+            println!("\n\n{}", &p.inspect());
+            ()
+        }) // FIXME: render
 }
 
 fn _print_node<T: std::fmt::Debug>(node: Node<T>) {

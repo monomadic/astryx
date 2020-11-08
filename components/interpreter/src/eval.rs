@@ -1,5 +1,5 @@
 use crate::{models::Object, state::State, InterpreterError, InterpreterResult};
-use html::HTMLElement;
+use html::{HTMLElement, HTMLNode};
 use parser::{Expression, FunctionCall, Literal, Span, Statement};
 use program::ProgramNode;
 use rctree::Node;
@@ -24,13 +24,19 @@ pub(crate) fn eval_statement<'a>(
 
             let element = HTMLElement::new(e.ident.fragment(), attributes).expect("valid html");
 
-            state.borrow_mut().write(&element.open_tag())?;
+            let ot = element.clone().open_tag();
+            let ct = element.clone().close_tag();
+
+            let mut element_node = Node::new(ProgramNode::HTMLElement(HTMLNode::Element(element)));
+
+            state.borrow_mut().write(&ot)?;
 
             for child in node.children() {
-                let _ = eval_statement(&child, state.clone(), program);
+                let _ = eval_statement(&child, state.clone(), &mut element_node);
             }
 
-            state.borrow_mut().write(&element.close_tag())?;
+            program.append(element_node);
+            state.borrow_mut().write(&ct)?;
         }
         Statement::Expression(expr) => {
             eval_expression(state, &expr)?;

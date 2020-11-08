@@ -45,6 +45,7 @@ dependencies = [
  "interpreter",
  "nom",
  "parser",
+ "program",
  "rctree",
  "repl",
  "simple-server",

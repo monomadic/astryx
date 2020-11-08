@@ -44,7 +44,10 @@ impl ProgramNode {
     fn inspect(&self) -> String {
         match self {
             ProgramNode::Root => format!("root"),
-            ProgramNode::HTMLElement(_) => format!("el"),
+            ProgramNode::HTMLElement(e) => match e {
+                HTMLNode::Element(el) => format!("el:{}", el.open_tag()),
+                HTMLNode::Text(s) => format!("el:txt {}", s),
+            },
             ProgramNode::CSSRule => format!("css"),
             ProgramNode::SetPwd(_) => format!("set_pwd"),
             ProgramNode::SetOutput(_) => format!("set_output"),
