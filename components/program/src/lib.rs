@@ -29,7 +29,14 @@ pub trait Inspect {
 
 impl Inspect for Node<ProgramNode> {
     fn inspect(&self) -> String {
-        format!("({})", self.borrow().inspect())
+        format!(
+            "({}{})",
+            self.borrow().inspect(),
+            self.children()
+                .map(|c| format!(" {}", c.inspect()))
+                .collect::<Vec<String>>()
+                .join(",")
+        )
     }
 }
 

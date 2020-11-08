@@ -99,7 +99,7 @@ mod test {
                 .unwrap()
                 .1
                 .inspect(),
-            "print(text: \"hello\")"
+            "print(text: \"hello\", another: \"hi\")"
         );
 
         // check ident Span

@@ -12,7 +12,7 @@
 //! use parser;
 //!
 //! let source = "page\n";
-//! let ast = parser::parse(source).unwrap();
+//! let ast = parser::run(source).unwrap();
 //!
 //! ```
 
