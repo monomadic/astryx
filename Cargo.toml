@@ -24,4 +24,5 @@ members = [
   "components/parser",
   "components/repl",
   "components/search",
+  "components/program",
 ]

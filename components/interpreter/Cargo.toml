@@ -12,3 +12,4 @@ glob = "0.3.0"
 rctree = "0.3.3"
 parser = { path = "../parser" }
 html = { path = "../html" }
+program = { path = "../program" }

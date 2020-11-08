@@ -1,6 +1,7 @@
 use crate::{models::Object, state::State, InterpreterError, InterpreterResult};
 use html::HTMLElement;
 use parser::{Expression, FunctionCall, Literal, Span, Statement};
+use program::ProgramNode;
 use rctree::Node;
 use std::cell::RefCell;
 use std::{collections::HashMap, rc::Rc};
@@ -8,6 +9,7 @@ use std::{collections::HashMap, rc::Rc};
 pub(crate) fn eval_statement<'a>(
     node: &Node<Statement<'a>>,
     state: Rc<RefCell<State<'a>>>,
+    program: &mut Node<ProgramNode>,
 ) -> InterpreterResult<()> {
     match node.borrow().clone() {
         Statement::Element(e) => {
@@ -25,7 +27,7 @@ pub(crate) fn eval_statement<'a>(
             state.borrow_mut().write(&element.open_tag())?;
 
             for child in node.children() {
-                let _ = eval_statement(&child, state.clone());
+                let _ = eval_statement(&child, state.clone(), program);
             }
 
             state.borrow_mut().write(&element.close_tag())?;
@@ -59,7 +61,7 @@ pub(crate) fn eval_statement<'a>(
                     let childstate = state.clone();
                     childstate.borrow_mut().bind(&ident.to_string(), index)?;
                     for child in node.children() {
-                        let _ = eval_statement(&child, Rc::clone(&childstate));
+                        let _ = eval_statement(&child, Rc::clone(&childstate), program);
                     }
                 }
             } else {

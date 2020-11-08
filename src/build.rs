@@ -14,6 +14,7 @@ pub(crate) fn build<'a>(file: &'a str) -> AstryxResult<'a, ()> {
     parser::run(file)
         .map_err(AstryxError::from)
         .and_then(|nodes| interpreter::run(&nodes, state).map_err(AstryxError::from))
+        .map(|_| ()) // FIXME: render
 }
 
 fn _print_node<T: std::fmt::Debug>(node: Node<T>) {
