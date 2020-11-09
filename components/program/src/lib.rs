@@ -23,6 +23,31 @@ pub enum Output {
 //     write_to_disk: bool,
 // }
 
+impl ProgramNode {
+    pub fn render_start(&self) -> String {
+        match self {
+            ProgramNode::Root => format!(""),
+            ProgramNode::SetPwd(_) => format!(""),
+            ProgramNode::SetOutput(_) => format!(""),
+            ProgramNode::HTMLElement(e) => match e {
+                HTMLNode::Element(e) => e.open_tag(),
+                HTMLNode::Text(t) => t.clone(),
+            },
+            ProgramNode::CSSRule => format!(""),
+        }
+    }
+
+    pub fn render_end(&self) -> String {
+        match self {
+            ProgramNode::HTMLElement(e) => match e {
+                HTMLNode::Element(e) => e.close_tag(),
+                _ => String::new(),
+            },
+            _ => String::new(),
+        }
+    }
+}
+
 pub trait Inspect {
     fn inspect(&self) -> String;
 }
@@ -52,5 +77,25 @@ impl ProgramNode {
             ProgramNode::SetPwd(_) => format!("set_pwd"),
             ProgramNode::SetOutput(_) => format!("set_output"),
         }
+    }
+}
+
+pub trait Render {
+    fn render(&self) -> String;
+}
+
+impl Render for Node<ProgramNode> {
+    fn render(&self) -> String {
+        let node = self.borrow();
+
+        format!(
+            "{}{}{}",
+            node.render_start(),
+            self.children()
+                .map(|n| n.render())
+                .collect::<Vec<String>>()
+                .join(""),
+            node.render_end()
+        )
     }
 }

@@ -44,6 +44,9 @@ pub(crate) fn eval_statement<'a>(
         Statement::Text(t) => {
             let text = state.borrow_mut().interpolate(t)?;
             state.borrow_mut().write(&text)?;
+
+            let element_node = Node::new(ProgramNode::HTMLElement(HTMLNode::Text(text)));
+            program.append(element_node);
         }
         Statement::Binding(ident, expr) => {
             // let obj = state.borrow().eval_expression(&expr)?;
