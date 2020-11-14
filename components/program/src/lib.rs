@@ -1,5 +1,6 @@
 use html::HTMLNode;
 use rctree::Node;
+use std::collections::HashMap;
 
 pub enum ProgramNode {
     Root,
@@ -81,21 +82,27 @@ impl ProgramNode {
 }
 
 pub trait Render {
-    fn render(&self) -> String;
+    fn render(&self) -> HashMap<String, String>;
 }
 
 impl Render for Node<ProgramNode> {
-    fn render(&self) -> String {
+    fn render(&self) -> HashMap<String, String> {
         let node = self.borrow();
+        let mut pages = HashMap::new();
 
-        format!(
-            "{}{}{}",
-            node.render_start(),
-            self.children()
-                .map(|n| n.render())
-                .collect::<Vec<String>>()
-                .join(""),
-            node.render_end()
-        )
+        pages.insert(
+            String::from("/"),
+            format!(
+                "{}{}{}",
+                node.render_start(),
+                self.children()
+                    .map(|n| n.render())
+                    .collect::<Vec<String>>()
+                    .join(""),
+                node.render_end()
+            ),
+        );
+
+        pages
     }
 }

@@ -52,8 +52,8 @@ fn run() -> Result<String, String> {
         Command::Build { file } => {
             let path = &file.unwrap_or(String::from("site.astryx"));
             let file = std::fs::read_to_string(&path).expect(&format!("could not open {}", path));
-            println!("building: {}\n", &path);
 
+            println!("building: {}\n", &path);
             build::build(&file).map_err(|e| display_error(&e, path))
         }
         Command::New => new_project().map_err(|e| format!("error creating new project: {:?}", e)),
