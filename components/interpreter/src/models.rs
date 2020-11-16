@@ -71,9 +71,6 @@ impl ToString for Object<'_> {
             Object::FunctionLiteral { params, statements } => format!("__FunctionLiteral"),
             Object::Array(_) => unimplemented!(),
         }
-        // write!(fmt, "display")
-        // write!(fmt, "{:?}", self.to_string())
-        // format!("writer")
     }
 }
 

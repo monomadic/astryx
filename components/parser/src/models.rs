@@ -45,6 +45,7 @@ pub enum Expression<'a> {
     Reference(Span<'a>),
     Literal(Literal<'a>),
     Array(Vec<Expression<'a>>),
+    Map(Box<Expression<'a>>, Box<Expression<'a>>),
 }
 
 impl Expression<'_> {
@@ -56,6 +57,7 @@ impl Expression<'_> {
             Expression::Reference(span) => span.fragment().to_string(),
             Expression::Literal(l) => l.inspect(),
             Expression::Array(_) => unimplemented!(),
+            Expression::Map(_, _) => unimplemented!(),
         }
     }
 }

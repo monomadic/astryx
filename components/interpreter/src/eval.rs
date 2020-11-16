@@ -37,7 +37,6 @@ pub(crate) fn eval_statement<'a>(
             }
 
             program.push(ProgramInstruction::Text(element.clone().close_tag()));
-            // state.borrow_mut().write(&ct)?;
         }
         Statement::Expression(expr) => {
             eval_expression(state, &expr)?;
@@ -46,28 +45,20 @@ pub(crate) fn eval_statement<'a>(
             program.push(ProgramInstruction::Text(state.borrow().interpolate(t)?));
         }
         Statement::Binding(ident, expr) => {
-            // let obj = state.borrow().eval_expression(&expr)?;
-            // state.borrow_mut().bind(ident.fragment(), obj)?;
-
-            // let state = state.clone().borrow_mut();
-            // let obj = eval_expression(&expr)?;
-
-            // let state = Rc::clone(&state);
-
             let obj = eval_expression(Rc::clone(&state), &expr)?;
             state.borrow_mut().bind(ident.fragment(), obj.clone())?;
         }
         Statement::Comment(_) => {}
         Statement::ForLoop { ident, expr } => {
             let iter: Object = eval_expression(Rc::clone(&state), &expr)?;
-            // println!("iter {}", iter.inspect());
 
             if let Object::Array(array) = iter {
                 for index in array {
                     let childstate = state.clone();
                     childstate.borrow_mut().bind(&ident.to_string(), index)?;
                     for child in statement.children() {
-                        let _ = eval_statement(&child, Rc::clone(&childstate), program);
+                        println!("iter");
+                        let _ = eval_statement(&child, Rc::clone(&childstate), program)?;
                     }
                 }
             } else {
@@ -98,6 +89,7 @@ pub(crate) fn eval_expression<'a>(
         Expression::RelativePath(s) => import_file(s),
         Expression::Array(_) => unimplemented!(),
         Expression::GlobPattern(s) => import_files(s),
+        Expression::Map(_, _) => unimplemented!(),
     }
 }
 

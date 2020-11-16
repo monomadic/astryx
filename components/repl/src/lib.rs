@@ -1,5 +1,5 @@
 use interpreter::{State, Writer};
-use rustyline::error::ReadlineError;
+// use rustyline::error::ReadlineError;
 use rustyline::Editor;
 use std::cell::RefCell;
 use std::rc::Rc;

@@ -1,8 +1,6 @@
 use crate::error::{AstryxError, AstryxResult};
 use interpreter::State;
-use parser::Statement;
 use program::Project;
-use rctree::Node;
 use std::cell::RefCell;
 use std::rc::Rc;
 

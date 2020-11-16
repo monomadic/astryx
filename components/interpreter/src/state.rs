@@ -93,6 +93,7 @@ impl<'a> State<'a> {
             Expression::RelativePath(_) => unimplemented!(),
             Expression::Array(_) => unimplemented!(),
             Expression::GlobPattern(_) => unimplemented!(),
+            Expression::Map(_, _) => unimplemented!(),
         }
     }
 
