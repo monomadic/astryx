@@ -2,6 +2,7 @@ use html::HTMLNode;
 use rctree::Node;
 use std::collections::HashMap;
 
+#[derive(Clone, Debug)]
 pub enum ProgramNode {
     Root,
     SetPwd(String),        // change working directory
@@ -13,6 +14,7 @@ pub enum ProgramNode {
                            // Command, // arbitrary loaders and converters, image optimisers? shell command?
 }
 
+#[derive(Clone, Debug)]
 pub enum Output {
     StdOut,
     File(String),
@@ -81,28 +83,51 @@ impl ProgramNode {
     }
 }
 
-pub trait Render {
-    fn render(&self) -> HashMap<String, String>;
+// pub trait Render {
+//     fn render_pages(&self) -> HashMap<String, String>;
+//     // fn render_css(&self) -> String;
+//     // fn render_js(&self) -> String;
+//     // fn get_file_blobs(&self) -> HashMap<String, Vec<u8>>;
+// }
+
+// fn render_pages(nodes: Node<ProgramNode>) -> HashMap<String, String> {
+//     let node = nodes.borrow();
+//     let mut pages = HashMap::new();
+
+//     pages.insert(
+//         String::from("/"),
+//         format!(
+//             "{}{}{}",
+//             node.render_start(),
+//             nodes
+//                 .children()
+//                 .map(render_pages)
+//                 .map(|(url, page)| page)
+//                 .collect::<Vec<String>>()
+//                 .join(""),
+//             node.render_end()
+//         ),
+//     );
+
+//     pages
+// }
+
+fn render_pages(
+    node: Node<ProgramNode>,
+    pwd: String,
+    output: String,
+    files: &mut HashMap<String, String>,
+) {
+    let n = node.borrow().clone();
+    match n {
+        ProgramNode::Root => println!("root"),
+        ProgramNode::SetPwd(pwd) => render_pages(node, pwd.into(), output),
+        ProgramNode::SetOutput(_) => unimplemented!(),
+        ProgramNode::HTMLElement(_) => unimplemented!(),
+        ProgramNode::CSSRule => unimplemented!(),
+    }
 }
 
-impl Render for Node<ProgramNode> {
-    fn render(&self) -> HashMap<String, String> {
-        let node = self.borrow();
-        let mut pages = HashMap::new();
-
-        pages.insert(
-            String::from("/"),
-            format!(
-                "{}{}{}",
-                node.render_start(),
-                self.children()
-                    .map(|n| n.render())
-                    .collect::<Vec<String>>()
-                    .join(""),
-                node.render_end()
-            ),
-        );
-
-        pages
-    }
+pub fn create_filemap(node: Node<ProgramNode>) -> HashMap<String, String> {
+    render_pages(node, String::from("/"), String::from("stdout"))
 }
