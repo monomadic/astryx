@@ -1,7 +1,9 @@
+-- print to the std output
+print(text: "rendering page...")
 
-print(text: "hello")
-
+-- no page is specified, so / is assumed
 %h1 style="color: red;"
+  | first header
   %a href="#"
     | blah
   %a href="#"

@@ -24,14 +24,16 @@ pub(crate) fn eval_statement<'a>(
 
             let element = HTMLElement::new(e.ident.fragment(), attributes).expect("valid html");
 
+            // todo, these really should be html nodes, so that we can optimise them all later...
+            // examples:
+            // - removing empty or unneeded classes/styles/ids/empty elements (optional)
+            // - link rewriters
+            // - searching for specific elements
+            // - injection? (might need tree for this though...?)
             program.push(ProgramInstruction::Text(element.clone().open_tag()));
 
-            println!("pr: {:?}", program);
-
-            // state.borrow_mut().write(&ot)?;
-
             for child in statement.children() {
-                eval_statement(&child, state.clone(), program);
+                eval_statement(&child, state.clone(), program)?;
             }
 
             program.push(ProgramInstruction::Text(element.clone().close_tag()));
@@ -41,11 +43,7 @@ pub(crate) fn eval_statement<'a>(
             eval_expression(state, &expr)?;
         }
         Statement::Text(t) => {
-            let text = state.borrow_mut().interpolate(t)?;
-            state.borrow_mut().write(&text)?;
-
-            let element_node = ProgramInstruction::Text(text);
-            program.push(element_node);
+            program.push(ProgramInstruction::Text(state.borrow().interpolate(t)?));
         }
         Statement::Binding(ident, expr) => {
             // let obj = state.borrow().eval_expression(&expr)?;
