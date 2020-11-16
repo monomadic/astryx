@@ -19,7 +19,7 @@ mod eval;
 mod models;
 // mod run;
 mod state;
-use program::ProgramNode;
+use program::ProgramInstruction;
 use std::cell::RefCell;
 use std::rc::Rc;
 mod builtins;
@@ -30,13 +30,13 @@ pub type InterpreterResult<T> = Result<T, InterpreterError>;
 pub fn run<'a>(
     nodes: &Vec<Node<Statement<'a>>>,
     state: Rc<RefCell<State<'a>>>,
-) -> InterpreterResult<Node<ProgramNode>> {
+) -> InterpreterResult<Vec<ProgramInstruction>> {
     let inner = builtins::import(state);
-    let mut program = Node::new(ProgramNode::Root);
+    let mut program = Vec::new();
     let _ = nodes
         .iter()
         .map(|node| eval::eval_statement(node, Rc::clone(&inner), &mut program))
         .collect::<InterpreterResult<Vec<()>>>()?;
 
-    Ok(program.root())
+    Ok(program)
 }

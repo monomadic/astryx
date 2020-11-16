@@ -11,7 +11,7 @@ pub(crate) fn build<'a>(file: &'a str) -> AstryxResult<'a, ()> {
         .map_err(AstryxError::from)
         .and_then(|nodes| interpreter::run(&nodes, state).map_err(AstryxError::from))
         .map(|p| {
-            println!("\n\n{:?}", program::create_filemap(p));
+            println!("\n\n{:?}", program::render_project(p));
             ()
         })
 }

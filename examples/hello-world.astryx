@@ -1,12 +1,11 @@
 
 print(text: "hello")
 
-print(route: "/")
-  %h1 style="color: red;"
-    %a href="#"
-      | blah
-    %a href="#"
-      | blah2
-    %div
-      %h2
-        | another header
+%h1 style="color: red;"
+  %a href="#"
+    | blah
+  %a href="#"
+    | blah2
+  %div
+    %h2
+      | another header

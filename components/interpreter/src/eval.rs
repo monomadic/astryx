@@ -1,17 +1,17 @@
 use crate::{models::Object, state::State, InterpreterError, InterpreterResult};
 use html::{HTMLElement, HTMLNode};
 use parser::{Expression, FunctionCall, Literal, Span, Statement};
-use program::ProgramNode;
+use program::ProgramInstruction;
 use rctree::Node;
 use std::cell::RefCell;
 use std::{collections::HashMap, rc::Rc};
 
 pub(crate) fn eval_statement<'a>(
-    node: &Node<Statement<'a>>,
+    statement: &Node<Statement<'a>>,
     state: Rc<RefCell<State<'a>>>,
-    program: &mut Node<ProgramNode>,
+    program: &mut Vec<ProgramInstruction>,
 ) -> InterpreterResult<()> {
-    match node.borrow().clone() {
+    match statement.borrow().clone() {
         Statement::Element(e) => {
             let mut attributes: HashMap<String, String> = HashMap::new();
 
@@ -24,19 +24,18 @@ pub(crate) fn eval_statement<'a>(
 
             let element = HTMLElement::new(e.ident.fragment(), attributes).expect("valid html");
 
-            let ot = element.clone().open_tag();
-            let ct = element.clone().close_tag();
+            program.push(ProgramInstruction::Text(element.clone().open_tag()));
 
-            let mut element_node = Node::new(ProgramNode::HTMLElement(HTMLNode::Element(element)));
+            println!("pr: {:?}", program);
 
-            state.borrow_mut().write(&ot)?;
+            // state.borrow_mut().write(&ot)?;
 
-            for child in node.children() {
-                let _ = eval_statement(&child, state.clone(), &mut element_node);
+            for child in statement.children() {
+                eval_statement(&child, state.clone(), program);
             }
 
-            program.append(element_node);
-            state.borrow_mut().write(&ct)?;
+            program.push(ProgramInstruction::Text(element.clone().close_tag()));
+            // state.borrow_mut().write(&ct)?;
         }
         Statement::Expression(expr) => {
             eval_expression(state, &expr)?;
@@ -45,8 +44,8 @@ pub(crate) fn eval_statement<'a>(
             let text = state.borrow_mut().interpolate(t)?;
             state.borrow_mut().write(&text)?;
 
-            let element_node = Node::new(ProgramNode::HTMLElement(HTMLNode::Text(text)));
-            program.append(element_node);
+            let element_node = ProgramInstruction::Text(text);
+            program.push(element_node);
         }
         Statement::Binding(ident, expr) => {
             // let obj = state.borrow().eval_expression(&expr)?;
@@ -69,7 +68,7 @@ pub(crate) fn eval_statement<'a>(
                 for index in array {
                     let childstate = state.clone();
                     childstate.borrow_mut().bind(&ident.to_string(), index)?;
-                    for child in node.children() {
+                    for child in statement.children() {
                         let _ = eval_statement(&child, Rc::clone(&childstate), program);
                     }
                 }

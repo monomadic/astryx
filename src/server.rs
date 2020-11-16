@@ -33,8 +33,8 @@ pub(crate) fn start<'a>(path: String, port: u32) -> AstryxResult<'a, ()> {
             // }
 
             let body = match render(&file) {
-                Ok(pages) => match pages.get(0) {
-                    Some(page) => format!("{:#?}", page),
+                Ok(project) => match project.pages.get("/") {
+                    Some(page) => page.into(),
                     None => {
                         response.status(StatusCode::NOT_FOUND);
                         format!("<h1>404</h1><p>Path not found: {}<p>", request_path)

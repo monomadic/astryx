@@ -1,13 +1,16 @@
 use html::HTMLNode;
 use rctree::Node;
-use std::collections::HashMap;
+
+mod project;
+pub use project::Project;
 
 #[derive(Clone, Debug)]
-pub enum ProgramNode {
+pub enum ProgramInstruction {
     Root,
     SetPwd(String),        // change working directory
-    SetOutput(Output),     // change output device
+    SetPath(Output),       // change output path
     HTMLElement(HTMLNode), // print a html element to the output device
+    Text(String),          // print text to current output
     CSSRule,               // add a css style rule to the style block
                            // ImageInclude,
                            // JavaScript,
@@ -26,23 +29,24 @@ pub enum Output {
 //     write_to_disk: bool,
 // }
 
-impl ProgramNode {
+impl ProgramInstruction {
     pub fn render_start(&self) -> String {
         match self {
-            ProgramNode::Root => format!(""),
-            ProgramNode::SetPwd(_) => format!(""),
-            ProgramNode::SetOutput(_) => format!(""),
-            ProgramNode::HTMLElement(e) => match e {
+            ProgramInstruction::Root => format!(""),
+            ProgramInstruction::SetPwd(_) => format!(""),
+            ProgramInstruction::SetPath(_) => format!(""),
+            ProgramInstruction::HTMLElement(e) => match e {
                 HTMLNode::Element(e) => e.open_tag(),
                 HTMLNode::Text(t) => t.clone(),
             },
-            ProgramNode::CSSRule => format!(""),
+            ProgramInstruction::CSSRule => format!(""),
+            ProgramInstruction::Text(_) => format!(""),
         }
     }
 
     pub fn render_end(&self) -> String {
         match self {
-            ProgramNode::HTMLElement(e) => match e {
+            ProgramInstruction::HTMLElement(e) => match e {
                 HTMLNode::Element(e) => e.close_tag(),
                 _ => String::new(),
             },
@@ -55,7 +59,7 @@ pub trait Inspect {
     fn inspect(&self) -> String;
 }
 
-impl Inspect for Node<ProgramNode> {
+impl Inspect for Node<ProgramInstruction> {
     fn inspect(&self) -> String {
         format!(
             "({}{})",
@@ -68,66 +72,58 @@ impl Inspect for Node<ProgramNode> {
     }
 }
 
-impl ProgramNode {
+impl ProgramInstruction {
     fn inspect(&self) -> String {
         match self {
-            ProgramNode::Root => format!("root"),
-            ProgramNode::HTMLElement(e) => match e {
+            ProgramInstruction::Root => format!("root"),
+            ProgramInstruction::HTMLElement(e) => match e {
                 HTMLNode::Element(el) => format!("el:{}", el.open_tag()),
                 HTMLNode::Text(s) => format!("el:txt {}", s),
             },
-            ProgramNode::CSSRule => format!("css"),
-            ProgramNode::SetPwd(_) => format!("set_pwd"),
-            ProgramNode::SetOutput(_) => format!("set_output"),
+            ProgramInstruction::CSSRule => format!("css"),
+            ProgramInstruction::SetPwd(_) => format!("set_pwd"),
+            ProgramInstruction::SetPath(_) => format!("set_output"),
+            ProgramInstruction::Text(_) => format!("Text"),
         }
     }
 }
 
-// pub trait Render {
-//     fn render_pages(&self) -> HashMap<String, String>;
-//     // fn render_css(&self) -> String;
-//     // fn render_js(&self) -> String;
-//     // fn get_file_blobs(&self) -> HashMap<String, Vec<u8>>;
-// }
-
-// fn render_pages(nodes: Node<ProgramNode>) -> HashMap<String, String> {
-//     let node = nodes.borrow();
-//     let mut pages = HashMap::new();
-
-//     pages.insert(
-//         String::from("/"),
-//         format!(
-//             "{}{}{}",
-//             node.render_start(),
-//             nodes
-//                 .children()
-//                 .map(render_pages)
-//                 .map(|(url, page)| page)
-//                 .collect::<Vec<String>>()
-//                 .join(""),
-//             node.render_end()
-//         ),
-//     );
-
-//     pages
-// }
-
 fn render_pages(
-    node: Node<ProgramNode>,
+    nodes: &mut Vec<ProgramInstruction>,
     pwd: String,
-    output: String,
-    files: &mut HashMap<String, String>,
+    path: String,
+    project: &mut Project,
 ) {
-    let n = node.borrow().clone();
-    match n {
-        ProgramNode::Root => println!("root"),
-        ProgramNode::SetPwd(pwd) => render_pages(node, pwd.into(), output),
-        ProgramNode::SetOutput(_) => unimplemented!(),
-        ProgramNode::HTMLElement(_) => unimplemented!(),
-        ProgramNode::CSSRule => unimplemented!(),
+    if let Some(node) = nodes.pop() {
+        match node {
+            ProgramInstruction::Root => unimplemented!(),
+            ProgramInstruction::SetPwd(pwd) => render_pages(nodes, pwd.into(), path, project),
+            ProgramInstruction::SetPath(_) => unimplemented!(),
+            ProgramInstruction::HTMLElement(_) => unimplemented!(),
+            ProgramInstruction::CSSRule => unimplemented!(),
+            ProgramInstruction::Text(text) => {
+                project.write_page(&path, &text);
+                render_pages(nodes, pwd, path, project)
+            }
+        };
     }
+
+    // render children
+    // for child in node.children() {}
 }
 
-pub fn create_filemap(node: Node<ProgramNode>) -> HashMap<String, String> {
-    render_pages(node, String::from("/"), String::from("stdout"))
+pub fn render_project(mut program: Vec<ProgramInstruction>) -> Project {
+    let mut project = Project::new();
+    println!("program: {:?}", program);
+
+    program.reverse();
+
+    render_pages(
+        &mut program,
+        String::from("."),
+        String::from("/"),
+        &mut project,
+    );
+
+    project
 }
