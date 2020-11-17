@@ -86,12 +86,8 @@ pub(crate) fn expression<'a>(i: Span<'a>) -> IResult<Span, Expression<'a>, Parse
 fn index<'a>(
     i: Span<'a>,
 ) -> IResult<Span<'a>, (Expression<'a>, Expression<'a>), ParserError<Span<'a>>> {
-    tuple((alphanumeric1, tag("."), alphanumeric1))(i).map(|(r, (ident, _, expr))| {
-        (
-            r,
-            (Expression::Reference(ident), Expression::Reference(expr)),
-        )
-    })
+    tuple((alphanumeric1, tag("."), expression))(i)
+        .map(|(r, (ident, _, expr))| (r, (Expression::Reference(ident), expr)))
     // tag("--")(i).map(|(r, _)| (Span::new(""), r))
 }
 

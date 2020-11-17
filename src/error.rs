@@ -42,11 +42,11 @@ pub(crate) fn html_error_page(content: &str) -> String {
 
 /// convert an error to a display-friendly string
 pub(crate) fn display_error(err: &AstryxError, path: &str) -> String {
-    // println!("error: {:?}", err);
     match &err {
-        AstryxError::ParserError(e) => {
+        AstryxError::ParserError(e) => format!(
+            "error parsing file: {}",
             error_with_line(&e.context, &e.pos, &parser_reason(&e.kind), path)
-        }
+        ),
         AstryxError::InterpreterError(e) => {
             // error_with_line(&e.context, &e.pos, &parser_reason(&e.kind), path)
             format!("Interpreter Error: {}", interpreter_reason(e))
@@ -81,7 +81,7 @@ fn interpreter_reason(kind: &InterpreterError) -> String {
 fn error_with_line(context: &Span, pos: &Span, reason: &str, path: &str) -> String {
     // panic!("context: {:?}", context.fragment());
     [
-        format!("error: {}", reason),
+        format!("{}", reason),
         format!("--> {}:{}:{}", path, pos.location_line(), pos.get_column()),
         String::from("  |"),
         format!("{} | {}", context.location_line(), context), //file.lines().into_iter().enumerate().collect::<Vec<String>>()[context.location_line() as usize]),

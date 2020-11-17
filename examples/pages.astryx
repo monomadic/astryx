@@ -1,13 +1,13 @@
-
 page(path: "/", stylesheet: ./style.css)
 
+  %h1 My Page
   image(src: ./images/mine.png)
 
   for post in ./examples/*.md
-    let meta = post.frontmatter()
+    let meta = frontmatter(post)
 
     page(path: meta.route)
       %div
         %h1
           | ${ meta.title }
-        post.markdown()
+        markdown(file: post)
