@@ -93,7 +93,23 @@ impl<'a> State<'a> {
             Expression::RelativePath(_) => unimplemented!(),
             Expression::Array(_) => unimplemented!(),
             Expression::GlobPattern(_) => unimplemented!(),
-            Expression::Map(_, _) => unimplemented!(),
+            Expression::Index(l, r) => {
+                let lexpr = self.eval_expression(l)?;
+
+                let v = match lexpr {
+                    Object::Map(ref m) => match **r {
+                        Expression::Reference(r) => m.get(r.to_string().as_str()),
+                        _ => None,
+                    },
+                    _ => None,
+                };
+
+                // let v = Some(Object::String("blha".into()));
+
+                // println!("{:?}", self.require(ident.clone().as_str())?.to_string());
+                // fixme: not finding indexes panics
+                Ok(v.unwrap().clone())
+            }
         }
     }
 

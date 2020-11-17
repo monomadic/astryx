@@ -1,6 +1,7 @@
 use crate::InterpreterResult;
 use html::HTMLElement;
 use parser::Statement;
+use std::collections::HashMap;
 
 #[derive(Debug)]
 pub enum AstryxNode {
@@ -19,6 +20,7 @@ pub enum Object<'a> {
     },
     BuiltinFunction(BuiltinFunction),
     Array(Vec<Object<'a>>),
+    Map(HashMap<String, Object<'a>>),
 }
 
 impl Object<'_> {
@@ -36,6 +38,7 @@ impl Object<'_> {
                     .collect::<Vec<String>>()
                     .join(", ")
             ),
+            Object::Map(_) => unimplemented!(),
         }
     }
 }
@@ -70,6 +73,7 @@ impl ToString for Object<'_> {
             Object::String(s) => s.into(),
             Object::FunctionLiteral { params, statements } => format!("__FunctionLiteral"),
             Object::Array(_) => unimplemented!(),
+            Object::Map(_) => unimplemented!(),
         }
     }
 }
@@ -81,6 +85,7 @@ impl Into<String> for Object<'_> {
             Object::FunctionLiteral { params, statements } => format!("({:?})", params),
             Object::BuiltinFunction(_) => unimplemented!(),
             Object::Array(_) => unimplemented!(),
+            Object::Map(_) => unimplemented!(),
         }
     }
 }

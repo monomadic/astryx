@@ -89,7 +89,7 @@ pub(crate) fn eval_expression<'a>(
         Expression::RelativePath(s) => import_file(s),
         Expression::Array(_) => unimplemented!(),
         Expression::GlobPattern(s) => import_files(s),
-        Expression::Map(_, _) => unimplemented!(),
+        Expression::Index(i, e) => unimplemented!(),
     }
 }
 
@@ -152,6 +152,7 @@ fn eval_function<'a>(
             unimplemented!()
         }
         Object::Array(_) => unimplemented!(),
+        Object::Map(_) => unimplemented!(),
     }
 }
 

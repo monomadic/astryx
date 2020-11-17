@@ -1,8 +1,8 @@
 
 for post in ./examples/*.md
-  let title = "Hello."
+  let post = markdown(post)
 
   %div
     %h1
-      | ${ title }
+      | ${ post }
     -- markdown(file: post)

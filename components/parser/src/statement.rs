@@ -3,7 +3,7 @@ use crate::{
     function::function_call,
     models::Statement,
     text::piped_string,
-    variable::{glob_pattern, literal, relative_path},
+    variable::{glob_pattern, literal},
     Expression, ParserError, Span,
 };
 use nom::{
@@ -78,8 +78,21 @@ pub(crate) fn expression<'a>(i: Span<'a>) -> IResult<Span, Expression<'a>, Parse
         //map(relative_path, |s| Expression::RelativePath(s)),
         map(glob_pattern, |s| Expression::GlobPattern(s)),
         map(literal, |v| Expression::Literal(v)),
+        map(index, |(i, e)| Expression::Index(Box::new(i), Box::new(e))),
         map(alphanumeric1, |s| Expression::Reference(s)),
     ))(i)
+}
+
+fn index<'a>(
+    i: Span<'a>,
+) -> IResult<Span<'a>, (Expression<'a>, Expression<'a>), ParserError<Span<'a>>> {
+    tuple((alphanumeric1, tag("."), alphanumeric1))(i).map(|(r, (ident, _, expr))| {
+        (
+            r,
+            (Expression::Reference(ident), Expression::Reference(expr)),
+        )
+    })
+    // tag("--")(i).map(|(r, _)| (Span::new(""), r))
 }
 
 fn comment<'a>(i: Span<'a>) -> IResult<Span<'a>, Span<'a>, ParserError<Span<'a>>> {
@@ -118,6 +131,12 @@ mod test {
     fn test_for_loop() {
         // println!("{:?}", for_loop(Span::new("for x in ./posts/*.md")));
         assert!(for_loop(Span::new("for x in ./posts/*.md")).is_ok());
+    }
+
+    #[test]
+    fn test_index() {
+        // println!("{:?}", for_loop(Span::new("for x in ./posts/*.md")));
+        assert!(index(Span::new("test.blah")).is_ok());
     }
 
     #[test]
