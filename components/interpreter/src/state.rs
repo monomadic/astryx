@@ -1,5 +1,5 @@
 use crate::{models::Object, InterpreterError, InterpreterResult};
-use parser::{Expression, FunctionCall, StringToken};
+use parser::{Expression, FunctionCall, Span, StringToken};
 use std::{cell::RefCell, collections::HashMap, fs::OpenOptions, io::Write, rc::Rc};
 
 type LocalData<'a> = HashMap<String, Object<'a>>;
@@ -83,9 +83,16 @@ impl<'a> State<'a> {
         }
     }
 
-    // pub fn eval_statement()
+    pub fn eval_function_arguments(
+        &self,
+        args: &Vec<(Span<'a>, Expression<'a>)>,
+    ) -> InterpreterResult<Vec<Object<'a>>> {
+        args.into_iter()
+            .map(|(_ident, expr)| self.eval_expression(expr))
+            .collect::<Result<Vec<Object>, InterpreterError>>()
+    }
 
-    pub fn eval_expression(&self, expr: &Expression) -> InterpreterResult<Object> {
+    pub fn eval_expression(&self, expr: &Expression<'a>) -> InterpreterResult<Object<'a>> {
         match expr {
             Expression::FunctionCall(f) => self.eval_function(&f),
             Expression::Reference(r) => self.require(r.to_string().as_str()),
@@ -114,7 +121,7 @@ impl<'a> State<'a> {
     }
 
     /// execute a function
-    pub fn eval_function(&self, f: &FunctionCall) -> InterpreterResult<Object> {
+    pub fn eval_function(&self, f: &FunctionCall<'a>) -> InterpreterResult<Object<'a>> {
         // get the function expression from the state
         let func = self.eval_expression(&f.ident)?;
 
@@ -133,7 +140,7 @@ impl<'a> State<'a> {
     }
 
     /// Convert string tokens to a fully interpolated string
-    pub fn interpolate(&self, components: Vec<StringToken>) -> InterpreterResult<String> {
+    pub fn interpolate(&self, components: Vec<StringToken<'a>>) -> InterpreterResult<String> {
         Ok(components
             .into_iter()
             .map(|st| match st {

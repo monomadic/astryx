@@ -18,7 +18,7 @@ pub(crate) fn eval_statement<'a>(
             for (ident, expr) in e.attributes {
                 attributes.insert(
                     ident.fragment().to_string(),
-                    eval_expression(Rc::clone(&state), &expr)?.into(),
+                    state.borrow().eval_expression(&expr)?.into(),
                 );
             }
 
@@ -39,18 +39,18 @@ pub(crate) fn eval_statement<'a>(
             program.push(ProgramInstruction::Text(element.clone().close_tag()));
         }
         Statement::Expression(expr) => {
-            eval_expression(state, &expr)?;
+            state.borrow().eval_expression(&expr)?;
         }
         Statement::Text(t) => {
             program.push(ProgramInstruction::Text(state.borrow().interpolate(t)?));
         }
         Statement::Binding(ident, expr) => {
-            let obj = eval_expression(Rc::clone(&state), &expr)?;
+            let obj = state.borrow().eval_expression(&expr)?;
             state.borrow_mut().bind(ident.fragment(), obj.clone())?;
         }
         Statement::Comment(_) => {}
         Statement::ForLoop { ident, expr } => {
-            let iter: Object = eval_expression(Rc::clone(&state), &expr)?;
+            let iter: Object = state.borrow().eval_expression(&expr)?;
 
             if let Object::Array(array) = iter {
                 for index in array {
@@ -74,24 +74,24 @@ pub(crate) fn eval_statement<'a>(
     Ok(())
 }
 
-pub(crate) fn eval_expression<'a>(
-    state: Rc<RefCell<State<'a>>>,
-    expr: &Expression<'a>,
-) -> InterpreterResult<Object<'a>> {
-    match expr {
-        // Expression::FunctionCall(f) => state.eval_function(&f)?,
-        Expression::FunctionCall(f) => eval_function(Rc::clone(&state), &f),
-        Expression::Reference(r) => eval_reference(&r, Rc::clone(&state)),
-        Expression::Literal(l) => match l {
-            Literal::String(s) => Ok(Object::String(s.fragment().to_string())),
-            Literal::Float(_, _) => unimplemented!(),
-        },
-        Expression::RelativePath(s) => import_file(s),
-        Expression::Array(_) => unimplemented!(),
-        Expression::GlobPattern(s) => import_files(s),
-        Expression::Index(i, e) => unimplemented!(),
-    }
-}
+// pub(crate) fn eval_expression<'a>(
+//     state: Rc<RefCell<State<'a>>>,
+//     expr: &Expression<'a>,
+// ) -> InterpreterResult<Object<'a>> {
+//     match expr {
+//         // Expression::FunctionCall(f) => state.eval_function(&f)?,
+//         Expression::FunctionCall(f) => eval_function(Rc::clone(&state), &f),
+//         Expression::Reference(r) => eval_reference(&r, Rc::clone(&state)),
+//         Expression::Literal(l) => match l {
+//             Literal::String(s) => Ok(Object::String(s.fragment().to_string())),
+//             Literal::Float(_, _) => unimplemented!(),
+//         },
+//         Expression::RelativePath(s) => import_file(s),
+//         Expression::Array(_) => unimplemented!(),
+//         Expression::GlobPattern(s) => import_files(s),
+//         Expression::Index(i, e) => unimplemented!(),
+//     }
+// }
 
 fn import_file<'a>(s: &Span<'a>) -> InterpreterResult<Object<'a>> {
     std::fs::read_to_string(s.fragment().to_string())
@@ -126,7 +126,7 @@ fn eval_function<'a>(
     func: &FunctionCall<'a>,
 ) -> InterpreterResult<Object<'a>> {
     let ident_ref = *(func.clone()).ident;
-    let function = eval_expression(Rc::clone(&state), &ident_ref)?;
+    let function = state.borrow().eval_expression(&ident_ref)?;
 
     match function {
         Object::FunctionLiteral {
@@ -144,7 +144,7 @@ fn eval_function<'a>(
         }
         Object::BuiltinFunction(builtin) => {
             // println!("ARGS {:?}", func.arguments);
-            builtin(eval_function_arguments(Rc::clone(&state), &func.arguments)?)
+            builtin(state.borrow().eval_function_arguments(&func.arguments)?)
         }
         // _ => Err(InterpreterError::ReferenceIsNotAFunction),
         Object::String(s) => {
@@ -156,16 +156,16 @@ fn eval_function<'a>(
     }
 }
 
-fn eval_function_arguments<'a>(
-    state: Rc<RefCell<State<'a>>>,
-    args: &Vec<(Span<'a>, Expression<'a>)>,
-) -> InterpreterResult<Vec<Object<'a>>> {
-    args.into_iter()
-        .map(|(_ident, expr)| eval_expression(Rc::clone(&state), expr))
-        // .collect::<Vec<InterpreterResult<Object<'a>>>>()
-        .collect::<Result<Vec<Object<'a>>, InterpreterError>>()
-    // .collect()
-}
+// fn eval_function_arguments<'a>(
+//     state: Rc<RefCell<State<'a>>>,
+//     args: &Vec<(Span<'a>, Expression<'a>)>,
+// ) -> InterpreterResult<Vec<Object<'a>>> {
+//     args.into_iter()
+//         .map(|(_ident, expr)| eval_expression(Rc::clone(&state), expr))
+//         // .collect::<Vec<InterpreterResult<Object<'a>>>>()
+//         .collect::<Result<Vec<Object<'a>>, InterpreterError>>()
+//     // .collect()
+// }
 
 fn apply_function<'a>(func: &Object, arguments: &Vec<Object>) -> InterpreterResult<Object<'a>> {
     // assert_argument_count(params.len(), &arguments)?;

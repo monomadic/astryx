@@ -1,12 +1,12 @@
-struct SymbolTableStack {
-    local: HashMap<String, Object>,
-    outer: Option<SymbolTableStack>,
-}
+// struct SymbolTableStack {
+//     local: HashMap<String, Object>,
+//     outer: Option<SymbolTableStack>,
+// }
 
-struct SymbolTable;
+// struct SymbolTable;
 
-impl SymbolTable {
-    fn get(ident: &str) -> Option<Symbol> {}
-}
+// impl SymbolTable {
+//     fn get(ident: &str) -> Option<Symbol> {}
+// }
 
-struct Symbol {}
+// struct Symbol {}
