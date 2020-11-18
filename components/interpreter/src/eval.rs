@@ -1,6 +1,6 @@
 use crate::{models::Object, state::State, InterpreterError, InterpreterResult};
-use html::{HTMLElement, HTMLNode};
-use parser::{Expression, FunctionCall, Literal, Span, Statement};
+use html::HTMLElement;
+use parser::{FunctionCall, Span, Statement};
 use program::ProgramInstruction;
 use rctree::Node;
 use std::cell::RefCell;
@@ -93,34 +93,6 @@ pub(crate) fn eval_statement<'a>(
 //     }
 // }
 
-fn import_file<'a>(s: &Span<'a>) -> InterpreterResult<Object<'a>> {
-    std::fs::read_to_string(s.fragment().to_string())
-        .map(Object::String)
-        .map_err(|_| InterpreterError::IOError)
-}
-
-fn import_files<'a>(s: &Span<'a>) -> InterpreterResult<Object<'a>> {
-    let options = glob::MatchOptions {
-        case_sensitive: false,
-        require_literal_separator: false,
-        require_literal_leading_dot: false,
-    };
-
-    let mut files = Vec::new();
-    let globs = glob::glob_with(&s.to_string(), options).map_err(|_| InterpreterError::IOError)?;
-
-    for file in globs {
-        // TODO wrap unwrap in error
-        let path = file.expect("file to unwrap");
-        let filepath: String = path.as_os_str().to_str().unwrap().into();
-        let file_content = std::fs::read_to_string(filepath).unwrap();
-
-        files.push(Object::String(file_content));
-    }
-
-    Ok(Object::Array(files))
-}
-
 fn eval_function<'a>(
     state: Rc<RefCell<State<'a>>>,
     func: &FunctionCall<'a>,
@@ -155,17 +127,6 @@ fn eval_function<'a>(
         Object::Map(_) => unimplemented!(),
     }
 }
-
-// fn eval_function_arguments<'a>(
-//     state: Rc<RefCell<State<'a>>>,
-//     args: &Vec<(Span<'a>, Expression<'a>)>,
-// ) -> InterpreterResult<Vec<Object<'a>>> {
-//     args.into_iter()
-//         .map(|(_ident, expr)| eval_expression(Rc::clone(&state), expr))
-//         // .collect::<Vec<InterpreterResult<Object<'a>>>>()
-//         .collect::<Result<Vec<Object<'a>>, InterpreterError>>()
-//     // .collect()
-// }
 
 fn apply_function<'a>(func: &Object, arguments: &Vec<Object>) -> InterpreterResult<Object<'a>> {
     // assert_argument_count(params.len(), &arguments)?;

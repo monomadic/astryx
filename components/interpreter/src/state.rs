@@ -99,23 +99,20 @@ impl<'a> State<'a> {
             Expression::Literal(l) => Ok(Object::String(l.to_string())),
             Expression::RelativePath(_) => unimplemented!(),
             Expression::Array(_) => unimplemented!(),
-            Expression::GlobPattern(_) => unimplemented!(),
+            Expression::GlobPattern(s) => crate::util::import_files(s),
             Expression::Index(l, r) => {
                 let lexpr = self.eval_expression(l)?;
 
-                let v = match lexpr {
+                match lexpr {
                     Object::Map(ref m) => match **r {
-                        Expression::Reference(r) => m.get(r.to_string().as_str()),
-                        _ => None,
+                        Expression::Reference(r) => m
+                            .get(r.to_string().as_str())
+                            .map(|o| o.clone())
+                            .ok_or(InterpreterError::UnknownMemberFunction(r.to_string())),
+                        _ => Err(InterpreterError::Generic("aa".into())),
                     },
-                    _ => None,
-                };
-
-                // let v = Some(Object::String("blha".into()));
-
-                // println!("{:?}", self.require(ident.clone().as_str())?.to_string());
-                // fixme: not finding indexes panics
-                Ok(v.unwrap().clone())
+                    _ => Err(InterpreterError::Generic("bb".into())),
+                }
             }
         }
     }

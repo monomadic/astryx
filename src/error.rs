@@ -74,6 +74,7 @@ fn interpreter_reason(kind: &InterpreterError) -> String {
             format!("expected {}, got {}", expected, got)
         }
         InterpreterError::IOError => format!("error reading file"),
+        InterpreterError::UnknownMemberFunction(mf) => format!("missing member function: {}", mf),
     }
 }
 
