@@ -1,16 +1,16 @@
 use parser::Span;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct InterpreterError {
     pub kind: InterpreterErrorKind,
     pub location: Option<Location>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Location {
-    line: u32,
-    column: usize,
-    length: usize,
+    pub line: u32,
+    pub column: usize,
+    pub length: usize,
 }
 
 impl<'a> From<Span<'a>> for Location {
@@ -23,7 +23,7 @@ impl<'a> From<Span<'a>> for Location {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum InterpreterErrorKind {
     Unhandled,
     Generic(String),

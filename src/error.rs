@@ -44,12 +44,29 @@ pub(crate) fn html_error_page(content: &str) -> String {
 pub(crate) fn display_error(err: &AstryxError, path: &str) -> String {
     match &err {
         AstryxError::ParserError(e) => format!(
-            "error parsing file: {}",
-            error_with_line(&e.context, &e.pos, &parser_reason(&e.kind), path)
+            "syntax error: {}",
+            error_with_line(
+                &e.context.to_string(),
+                e.pos.location_line(),
+                e.pos.get_column() as usize,
+                e.pos.location_offset() as usize,
+                &parser_reason(&e.kind),
+                path
+            )
         ),
         AstryxError::InterpreterError(e) => {
-            // error_with_line(&e.context, &e.pos, &parser_reason(&e.kind), path)
-            format!("Interpreter Error: {}", interpreter_reason(e))
+            let location = e.clone().location.unwrap();
+            format!(
+                "logical error: {}",
+                error_with_line(
+                    "codeee",
+                    location.line,
+                    location.column,
+                    location.length,
+                    &interpreter_reason(&e.kind),
+                    path
+                )
+            )
         }
         // AstryxError::HTMLError => format!("HTMLError"),
         AstryxError::IO(_) => format!("IO"),
@@ -60,8 +77,8 @@ fn parser_reason(kind: &ParserErrorKind<Span>) -> String {
     format!("{:?}", kind)
 }
 
-fn interpreter_reason(err: &InterpreterError) -> String {
-    match &err.kind {
+fn interpreter_reason(kind: &InterpreterErrorKind) -> String {
+    match &kind {
         InterpreterErrorKind::NoWriter => {
             format!("cannot write to output without a specified file or stdout target.")
         }
@@ -81,20 +98,46 @@ fn interpreter_reason(err: &InterpreterError) -> String {
 }
 
 // terminal view for errors
-fn error_with_line(context: &Span, pos: &Span, reason: &str, path: &str) -> String {
+fn error_with_line(
+    context: &str,
+    line: u32,
+    col: usize,
+    length: usize,
+    reason: &str,
+    path: &str,
+) -> String {
     // panic!("context: {:?}", context.fragment());
     [
         format!("{}", reason),
-        format!("--> {}:{}:{}", path, pos.location_line(), pos.get_column()),
+        format!("--> {}:{}:{}", path, line, col),
         String::from("  |"),
-        format!("{} | {}", context.location_line(), context), //file.lines().into_iter().enumerate().collect::<Vec<String>>()[context.location_line() as usize]),
+        format!("{} | {}", line, context), //file.lines().into_iter().enumerate().collect::<Vec<String>>()[context.location_line() as usize]),
         format!(
             "  |{space:column$}{caret:offset$}",
             space = " ",
             caret = "^",
-            column = pos.get_column(),
-            offset = pos.location_offset(),
+            column = col,
+            offset = length,
         ),
     ]
     .join("\n")
 }
+
+// // terminal view for errors
+// fn error_with_line(context: &Span, pos: &Span, reason: &str, path: &str) -> String {
+//     // panic!("context: {:?}", context.fragment());
+//     [
+//         format!("{}", reason),
+//         format!("--> {}:{}:{}", path, pos.location_line(), pos.get_column()),
+//         String::from("  |"),
+//         format!("{} | {}", context.location_line(), context), //file.lines().into_iter().enumerate().collect::<Vec<String>>()[context.location_line() as usize]),
+//         format!(
+//             "  |{space:column$}{caret:offset$}",
+//             space = " ",
+//             caret = "^",
+//             column = pos.get_column(),
+//             offset = pos.location_offset(),
+//         ),
+//     ]
+//     .join("\n")
+// }
