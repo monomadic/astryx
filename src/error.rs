@@ -1,5 +1,5 @@
 // use html::HTMLError;
-use interpreter::InterpreterError;
+use interpreter::{InterpreterError, InterpreterErrorKind};
 use parser::{error::ParserErrorKind, ParserError, Span};
 
 pub type AstryxResult<'a, T> = Result<T, AstryxError<'a>>;
@@ -60,21 +60,23 @@ fn parser_reason(kind: &ParserErrorKind<Span>) -> String {
     format!("{:?}", kind)
 }
 
-fn interpreter_reason(kind: &InterpreterError) -> String {
-    match kind {
-        InterpreterError::NoWriter => {
+fn interpreter_reason(err: &InterpreterError) -> String {
+    match &err.kind {
+        InterpreterErrorKind::NoWriter => {
             format!("cannot write to output without a specified file or stdout target.")
         }
-        InterpreterError::Unhandled => format!("unhandler interpreter error."),
-        InterpreterError::Generic(e) => format!("{:?}", e),
-        InterpreterError::FunctionNotFound(f) => format!("function not found {:?}", f),
-        InterpreterError::ReferenceIsNotAFunction => format!("ReferenceIsNotAFunction"),
-        InterpreterError::InvalidReference(r) => format!("invalid reference: {}", r),
-        InterpreterError::UnexpectedToken { expected, got } => {
+        InterpreterErrorKind::Unhandled => format!("unhandler interpreter error."),
+        InterpreterErrorKind::Generic(e) => format!("{:?}", e),
+        InterpreterErrorKind::FunctionNotFound(f) => format!("function not found {:?}", f),
+        InterpreterErrorKind::ReferenceIsNotAFunction => format!("ReferenceIsNotAFunction"),
+        InterpreterErrorKind::InvalidReference(r) => format!("invalid reference: {}", r),
+        InterpreterErrorKind::UnexpectedToken { expected, got } => {
             format!("expected {}, got {}", expected, got)
         }
-        InterpreterError::IOError => format!("error reading file"),
-        InterpreterError::UnknownMemberFunction(mf) => format!("missing member function: {}", mf),
+        InterpreterErrorKind::IOError => format!("error reading file"),
+        InterpreterErrorKind::UnknownMemberFunction(mf) => {
+            format!("missing member function: {}", mf)
+        }
     }
 }
 

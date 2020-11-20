@@ -7,7 +7,7 @@
 //! - executing functions
 //!
 
-pub use error::InterpreterError;
+pub use error::{InterpreterError, InterpreterErrorKind};
 pub use models::AstryxNode;
 pub use state::{State, Writer};
 
@@ -30,13 +30,21 @@ pub type InterpreterResult<T> = Result<T, InterpreterError>;
 pub fn run<'a>(
     nodes: &Vec<Node<Statement<'a>>>,
     state: Rc<RefCell<State<'a>>>,
+    // program: &mut Vec<ProgramInstruction>,
 ) -> InterpreterResult<Vec<ProgramInstruction>> {
-    let inner = builtins::import(state);
+    let inner = &builtins::import(state);
     let mut program = Vec::new();
-    let _ = nodes
-        .iter()
-        .map(|node| eval::eval_statement(node, Rc::clone(&inner), &mut program))
-        .collect::<InterpreterResult<Vec<()>>>()?;
 
-    Ok(program)
+    for node in nodes {
+        eval::eval_statement(&node, Rc::clone(inner), &mut program)?;
+    }
+
+    // let _ = nodes
+    //     .iter()
+    //     .map(|node: &Node<Statement<'a>>| {
+    //         eval::eval_statement(&node, Rc::clone(&inner), &mut program)
+    //     })
+    //     .collect::<InterpreterResult<Vec<()>>>()?;
+
+    Ok(Vec::new())
 }

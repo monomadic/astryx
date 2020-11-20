@@ -1,4 +1,4 @@
-use crate::{models::Object, InterpreterError, InterpreterResult};
+use crate::{models::Object, InterpreterError, InterpreterErrorKind, InterpreterResult};
 use parser::{Expression, FunctionCall, Span, StringToken};
 use std::{cell::RefCell, collections::HashMap, fs::OpenOptions, io::Write, rc::Rc};
 
@@ -47,9 +47,11 @@ impl<'a> State<'a> {
     }
 
     /// fetch a variable from state and throw an error upon failure
-    pub fn require(&self, name: &str) -> InterpreterResult<Object<'a>> {
-        self.get(name)
-            .ok_or(InterpreterError::InvalidReference(String::from(name)))
+    pub fn require(&self, name: &Span) -> InterpreterResult<Object<'a>> {
+        self.get(&name.to_string()).ok_or(InterpreterError {
+            kind: InterpreterErrorKind::InvalidReference(name.to_string()),
+            location: Some((*name).into()),
+        })
     }
 
     /// bind a variable to local state
@@ -74,7 +76,7 @@ impl<'a> State<'a> {
 
     pub fn get_mut_writer(&mut self) -> InterpreterResult<Box<dyn Write>> {
         match &self.writer {
-            Writer::None => Err(InterpreterError::NoWriter),
+            Writer::None => unreachable!(), // remove this
             Writer::StdOut => Ok(Box::new(std::io::stdout())),
             Writer::File(path) => Ok(Box::new(
                 OpenOptions::new().append(true).open(path).expect("45"),
@@ -95,7 +97,7 @@ impl<'a> State<'a> {
     pub fn eval_expression(&self, expr: &Expression<'a>) -> InterpreterResult<Object<'a>> {
         match expr {
             Expression::FunctionCall(f) => self.eval_function(&f),
-            Expression::Reference(r) => self.require(r.to_string().as_str()),
+            Expression::Reference(r) => self.require(r),
             Expression::Literal(l) => Ok(Object::String(l.to_string())),
             Expression::RelativePath(_) => unimplemented!(),
             Expression::Array(_) => unimplemented!(),
@@ -108,10 +110,13 @@ impl<'a> State<'a> {
                         Expression::Reference(r) => m
                             .get(r.to_string().as_str())
                             .map(|o| o.clone())
-                            .ok_or(InterpreterError::UnknownMemberFunction(r.to_string())),
-                        _ => Err(InterpreterError::Generic("aa".into())),
+                            .ok_or(InterpreterError {
+                                kind: InterpreterErrorKind::UnknownMemberFunction(r.to_string()),
+                                location: Some(r.into()),
+                            }),
+                        _ => unimplemented!(),
                     },
-                    _ => Err(InterpreterError::Generic("bb".into())),
+                    _ => unimplemented!(),
                 }
             }
         }
@@ -155,7 +160,10 @@ impl<'a> State<'a> {
 
         writer
             .write_fmt(format_args!("{}", i))
-            .map_err(|_| InterpreterError::Generic("IO".into()))
+            .map_err(|_| InterpreterError {
+                kind: InterpreterErrorKind::IOError,
+                location: None,
+            })
     }
 }
 

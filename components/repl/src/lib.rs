@@ -17,16 +17,16 @@ pub fn run() -> Result<(), String> {
 }
 
 fn repl<'a>(line: &'a str, state: State<'a>) {
-    let statements = parser::run(&line).unwrap();
-    let state = Rc::new(RefCell::new(state));
-    let _ = interpreter::run(&statements, state).unwrap();
+    // let statements = parser::run(&line).unwrap();
+    // let state = Rc::new(RefCell::new(state));
+    // let _ = interpreter::run(&statements, state).unwrap();
 
-    let mut editor = Editor::<()>::new();
-    let l = editor.readline(">> ").unwrap();
-    // let state = State::extend(Rc::clone(&state));
-    let state = State::new();
+    // let mut editor = Editor::<()>::new();
+    // let l = editor.readline(">> ").unwrap();
+    // // let state = State::extend(Rc::clone(&state));
+    // let state = State::new();
 
-    repl(&l, state);
+    // repl(&l, state);
 }
 
 // fn _repl<'a>(line: &'a str, state: Rc<RefCell<State<'a>>>) {

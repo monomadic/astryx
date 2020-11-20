@@ -1,4 +1,6 @@
-use crate::{models::Object, state::State, InterpreterError, InterpreterResult};
+use crate::{
+    models::Object, state::State, InterpreterError, InterpreterErrorKind, InterpreterResult,
+};
 use html::HTMLElement;
 use parser::{FunctionCall, Span, Statement};
 use program::ProgramInstruction;
@@ -62,10 +64,12 @@ pub(crate) fn eval_statement<'a>(
                     }
                 }
             } else {
-                println!("not array {:?}", iter.inspect());
-                return Err(InterpreterError::UnexpectedToken {
-                    expected: String::from("Array"),
-                    got: iter.inspect(),
+                return Err(InterpreterError {
+                    kind: InterpreterErrorKind::UnexpectedToken {
+                        expected: String::from("Array"),
+                        got: iter.inspect(),
+                    },
+                    location: Some(ident.into()),
                 });
             }
         }
@@ -145,5 +149,8 @@ fn eval_reference<'a>(
     state
         .borrow()
         .get(&name.fragment().to_string())
-        .ok_or(InterpreterError::InvalidReference(name.to_string()))
+        .ok_or(InterpreterError {
+            kind: InterpreterErrorKind::InvalidReference(name.to_string()),
+            location: Some((*name).into()),
+        })
 }
