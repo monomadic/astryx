@@ -12,24 +12,24 @@ pub enum AstryxNode {
 pub type BuiltinFunction = fn(Vec<Object>) -> InterpreterResult<Object>;
 
 #[derive(Clone)]
-pub enum Object<'a> {
+pub enum Object {
     String(String),
-    FunctionLiteral {
-        params: Vec<String>,
-        statements: Vec<Statement<'a>>,
-    },
+    // FunctionLiteral {
+    //     params: Vec<String>,
+    //     statements: Vec<Statement<'a>>,
+    // },
     BuiltinFunction(BuiltinFunction),
-    Array(Vec<Object<'a>>),
-    Map(HashMap<String, Object<'a>>),
+    Array(Vec<Object>),
+    Map(HashMap<String, Object>),
 }
 
-impl Object<'_> {
+impl Object {
     pub fn inspect(&self) -> String {
         match self {
             Object::String(s) => format!("{:?}", s),
-            Object::FunctionLiteral { params, statements } => {
-                format!("{:?}{:?}", params, statements)
-            }
+            // Object::FunctionLiteral { params, statements } => {
+            //     format!("{:?}{:?}", params, statements)
+            // }
             Object::BuiltinFunction(_) => unimplemented!(),
             Object::Array(v) => format!(
                 "[{}]",
@@ -66,23 +66,23 @@ impl Object<'_> {
 //     }
 // }
 
-impl ToString for Object<'_> {
+impl ToString for Object {
     fn to_string(&self) -> String {
         match self {
             Object::BuiltinFunction(_) => format!("__BuiltinFunction"),
             Object::String(s) => s.into(),
-            Object::FunctionLiteral { params, statements } => format!("__FunctionLiteral"),
+            // Object::FunctionLiteral { params, statements } => format!("__FunctionLiteral"),
             Object::Array(_) => unimplemented!(),
             Object::Map(_) => unimplemented!(),
         }
     }
 }
 
-impl Into<String> for Object<'_> {
+impl Into<String> for Object {
     fn into(self) -> String {
         match self {
             Object::String(s) => s,
-            Object::FunctionLiteral { params, statements } => format!("({:?})", params),
+            // Object::FunctionLiteral { params, statements } => format!("({:?})", params),
             Object::BuiltinFunction(_) => unimplemented!(),
             Object::Array(_) => unimplemented!(),
             Object::Map(_) => unimplemented!(),

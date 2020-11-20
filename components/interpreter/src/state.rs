@@ -2,7 +2,7 @@ use crate::{models::Object, InterpreterError, InterpreterErrorKind, InterpreterR
 use parser::{Expression, FunctionCall, Span, StringToken};
 use std::{cell::RefCell, collections::HashMap, fs::OpenOptions, io::Write, rc::Rc};
 
-type LocalData<'a> = HashMap<String, Object<'a>>;
+type LocalData = HashMap<String, Object>;
 
 #[derive(Debug, Clone)]
 pub enum Writer {
@@ -20,7 +20,7 @@ impl Default for Writer {
 
 #[derive(Clone, Default)]
 pub struct State<'a> {
-    local: LocalData<'a>,
+    local: LocalData,
     outer: Option<Rc<RefCell<State<'a>>>>,
     pub writer: Writer,
 }
@@ -36,7 +36,7 @@ impl<'a> State<'a> {
         }
     }
 
-    pub fn get(&self, name: &str) -> Option<Object<'a>> {
+    pub fn get(&self, name: &str) -> Option<Object> {
         match self.local.get(name) {
             Some(value) => Some(value.clone()),
             None => self
@@ -47,7 +47,7 @@ impl<'a> State<'a> {
     }
 
     /// fetch a variable from state and throw an error upon failure
-    pub fn require(&self, name: &Span) -> InterpreterResult<Object<'a>> {
+    pub fn require(&self, name: &Span) -> InterpreterResult<Object> {
         self.get(&name.to_string()).ok_or(InterpreterError {
             kind: InterpreterErrorKind::InvalidReference(name.to_string()),
             location: Some((*name).into()),
@@ -55,8 +55,8 @@ impl<'a> State<'a> {
     }
 
     /// bind a variable to local state
-    pub fn bind(&mut self, ident: &str, obj: Object<'a>) -> InterpreterResult<()> {
-        let _ = self.local.insert(ident.into(), obj); // return doesn't matter as all state is mutable
+    pub fn bind(&mut self, ident: &str, obj: Object) -> InterpreterResult<()> {
+        let _ = self.local.insert(ident.into(), obj.clone()); // return doesn't matter as all state is mutable
         Ok(()) // force return ok (this could change if mutability rules change, or overwriting builtins)
     }
 
@@ -88,13 +88,13 @@ impl<'a> State<'a> {
     pub fn eval_function_arguments(
         &self,
         args: &Vec<(Span<'a>, Expression<'a>)>,
-    ) -> InterpreterResult<Vec<Object<'a>>> {
+    ) -> InterpreterResult<Vec<Object>> {
         args.into_iter()
             .map(|(_ident, expr)| self.eval_expression(expr))
             .collect::<Result<Vec<Object>, InterpreterError>>()
     }
 
-    pub fn eval_expression(&self, expr: &Expression<'a>) -> InterpreterResult<Object<'a>> {
+    pub fn eval_expression(&self, expr: &Expression<'a>) -> InterpreterResult<Object> {
         match expr {
             Expression::FunctionCall(f) => self.eval_function(&f),
             Expression::Reference(r) => self.require(r),
@@ -123,7 +123,7 @@ impl<'a> State<'a> {
     }
 
     /// execute a function
-    pub fn eval_function(&self, f: &FunctionCall<'a>) -> InterpreterResult<Object<'a>> {
+    pub fn eval_function(&self, f: &FunctionCall<'a>) -> InterpreterResult<Object> {
         // get the function expression from the state
         let func = self.eval_expression(&f.ident)?;
 

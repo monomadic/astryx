@@ -1,5 +1,4 @@
--- print to the std output
-print(text: "rendering page...")
+
 
 -- no page is specified, so / is assumed
 %h1 style="color: red;"

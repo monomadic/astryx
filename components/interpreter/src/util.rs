@@ -1,7 +1,8 @@
 use crate::{models::Object, InterpreterError, InterpreterErrorKind, InterpreterResult};
+use glob::Paths;
 use parser::Span;
 
-pub(crate) fn import_files<'a>(s: &Span<'a>) -> InterpreterResult<Object<'a>> {
+pub(crate) fn import_files<'a>(s: &Span<'a>) -> InterpreterResult<Object> {
     let options = glob::MatchOptions {
         case_sensitive: false,
         require_literal_separator: false,
@@ -9,7 +10,7 @@ pub(crate) fn import_files<'a>(s: &Span<'a>) -> InterpreterResult<Object<'a>> {
     };
 
     let mut files = Vec::new();
-    let globs = glob::glob_with(&s.to_string(), options).map_err(|_| InterpreterError {
+    let globs: Paths = glob::glob_with(&s.to_string(), options).map_err(|_| InterpreterError {
         kind: InterpreterErrorKind::IOError,
         location: Some((*s).into()),
     })?;
@@ -26,7 +27,7 @@ pub(crate) fn import_files<'a>(s: &Span<'a>) -> InterpreterResult<Object<'a>> {
     Ok(Object::Array(files))
 }
 
-pub(crate) fn import_file<'a>(s: &Span<'a>) -> InterpreterResult<Object<'a>> {
+pub(crate) fn import_file<'a>(s: &Span<'a>) -> InterpreterResult<Object> {
     std::fs::read_to_string(s.fragment().to_string())
         .map(Object::String)
         .map_err(|_| InterpreterError {

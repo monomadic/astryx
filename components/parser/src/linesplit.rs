@@ -14,8 +14,8 @@ pub struct Line<'a> {
     pub children: Vec<Line<'a>>,
 }
 
-pub(crate) fn take_lines(i: &str) -> IResult<Span, Vec<Line>> {
-    cut(many0(take_children))(Span::new(i))
+pub(crate) fn take_lines<'a>(i: &'a str) -> IResult<Span<'a>, Vec<Line<'a>>> {
+    cut(many0(take_children))(Span::new(&i))
 }
 
 #[test]

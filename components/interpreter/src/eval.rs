@@ -100,24 +100,24 @@ pub(crate) fn eval_statement<'a>(
 fn eval_function<'a>(
     state: Rc<RefCell<State<'a>>>,
     func: &FunctionCall<'a>,
-) -> InterpreterResult<Object<'a>> {
+) -> InterpreterResult<Object> {
     let ident_ref = *(func.clone()).ident;
     let function = state.borrow().eval_expression(&ident_ref)?;
 
     match function {
-        Object::FunctionLiteral {
-            params: _,
-            statements: _,
-        } => {
-            // extend state scope into function
-            let _new_env = Rc::new(RefCell::new(State::extend(state)));
+        // Object::FunctionLiteral {
+        //     params: _,
+        //     statements: _,
+        // } => {
+        //     // extend state scope into function
+        //     let _new_env = Rc::new(RefCell::new(State::extend(state)));
 
-            // insert args into new scope
-            // let arguments = eval_expressions(args, env)?;
+        //     // insert args into new scope
+        //     // let arguments = eval_expressions(args, env)?;
 
-            // apply_function(&function, &vec![])
-            unimplemented!()
-        }
+        //     // apply_function(&function, &vec![])
+        //     unimplemented!()
+        // }
         Object::BuiltinFunction(builtin) => {
             // println!("ARGS {:?}", func.arguments);
             builtin(state.borrow().eval_function_arguments(&func.arguments)?)
@@ -132,7 +132,7 @@ fn eval_function<'a>(
     }
 }
 
-fn apply_function<'a>(func: &Object, arguments: &Vec<Object>) -> InterpreterResult<Object<'a>> {
+fn apply_function<'a>(func: &Object, arguments: &Vec<Object>) -> InterpreterResult<Object> {
     // assert_argument_count(params.len(), &arguments)?;
     // let new_env = extend_function_env(params, arguments, env);
 
@@ -142,10 +142,7 @@ fn apply_function<'a>(func: &Object, arguments: &Vec<Object>) -> InterpreterResu
     unimplemented!()
 }
 
-fn eval_reference<'a>(
-    name: &Span<'a>,
-    state: Rc<RefCell<State<'a>>>,
-) -> InterpreterResult<Object<'a>> {
+fn eval_reference<'a>(name: &Span<'a>, state: Rc<RefCell<State<'a>>>) -> InterpreterResult<Object> {
     state
         .borrow()
         .get(&name.fragment().to_string())
