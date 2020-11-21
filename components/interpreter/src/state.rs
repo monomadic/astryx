@@ -98,7 +98,10 @@ impl<'a> State<'a> {
         match expr {
             Expression::FunctionCall(f) => self.eval_function(&f),
             Expression::Reference(r) => self.require(r),
-            Expression::Literal(l) => Ok(Object::String(l.to_string())),
+            Expression::Literal(l) => match l {
+                parser::Literal::String(s) => Ok(Object::String(s.to_string())),
+                parser::Literal::Float(s, f) => unimplemented!(),
+            },
             Expression::RelativePath(_) => unimplemented!(),
             Expression::Array(_) => unimplemented!(),
             Expression::GlobPattern(s) => crate::util::import_files(s),
@@ -116,7 +119,8 @@ impl<'a> State<'a> {
                             }),
                         _ => unimplemented!(),
                     },
-                    _ => unimplemented!(),
+                    Object::String(s) => Ok(Object::String(s)),
+                    _ => panic!("{}", lexpr.inspect()),
                 }
             }
         }
@@ -124,18 +128,28 @@ impl<'a> State<'a> {
 
     /// execute a function
     pub fn eval_function(&self, f: &FunctionCall<'a>) -> InterpreterResult<Object> {
-        // get the function expression from the state
-        let func = self.eval_expression(&f.ident)?;
+        // get the function closure from local state as Object::BuiltInFunction(f)
+        let func: Object = self
+            .eval_expression(&f.ident)
+            .map_err(|e| InterpreterError {
+                kind: InterpreterErrorKind::FunctionNotFound(f.ident.inspect()),
+                location: e.location,
+            })?;
 
-        // let state = Rc::clone(self);
+        // this needs to be rewritten, to put the arguments into a
+        // new scope and send that to the function closure.
+        let args = f
+            .arguments
+            .iter()
+            .map(|(_ident, expr)| self.eval_expression(expr))
+            .collect::<Result<Vec<Object>, _>>()?;
 
-        // // find function in local state
-        // match state.locals.get(&ident) {
-        //     Some(r) => {}
-        //     None => {
-        //         return Err(InterpreterError::FunctionNotFound(ident));
-        //     }
-        // }
+        // let state = State::extend(Rc::new(RefCell::new(*self)));
+
+        let _ = match func {
+            Object::BuiltinFunction(builtin) => builtin(args),
+            _ => unimplemented!(),
+        };
 
         // eval(, state);
         Ok(Object::String(format!("f--{:?}", f)))

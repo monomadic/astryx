@@ -27,12 +27,12 @@ pub enum Statement<'a> {
 impl Statement<'_> {
     pub fn inspect(&self) -> String {
         match self {
-            Statement::Expression(e) => "expr".into(),
-            Statement::Binding(_, _) => "expr".into(),
-            Statement::Element(_) => "expr".into(),
-            Statement::Text(t) => "expr".into(),
-            Statement::Comment(_) => "expr".into(),
-            Statement::ForLoop { ident, expr } => unimplemented!(),
+            Statement::Expression(_) => unimplemented!(),
+            Statement::Binding(_, _) => unimplemented!(),
+            Statement::Element(_) => unimplemented!(),
+            Statement::Text(_) => unimplemented!(),
+            Statement::Comment(_) => unimplemented!(),
+            Statement::ForLoop { ident: _, expr: _ } => unimplemented!(),
         }
     }
 }

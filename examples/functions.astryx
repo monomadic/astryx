@@ -1,6 +1,6 @@
 
 -- builtin functions
-print(text: "hello, world!")
-print(text: "blub blub")
+debug(text: "hello, world!")
+log(text: "blub blub")
 
 -- defining functions

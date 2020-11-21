@@ -30,7 +30,7 @@ impl Object {
             // Object::FunctionLiteral { params, statements } => {
             //     format!("{:?}{:?}", params, statements)
             // }
-            Object::BuiltinFunction(_) => unimplemented!(),
+            Object::BuiltinFunction(f) => format!("builtin_{:?}()", f),
             Object::Array(v) => format!(
                 "[{}]",
                 v.iter()
@@ -70,7 +70,7 @@ impl ToString for Object {
     fn to_string(&self) -> String {
         match self {
             Object::BuiltinFunction(_) => format!("__BuiltinFunction"),
-            Object::String(s) => s.into(),
+            Object::String(s) => s.clone(),
             // Object::FunctionLiteral { params, statements } => format!("__FunctionLiteral"),
             Object::Array(_) => unimplemented!(),
             Object::Map(_) => unimplemented!(),

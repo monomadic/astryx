@@ -11,7 +11,7 @@ use std::{collections::HashMap, rc::Rc};
 pub(crate) fn eval_statement<'a>(
     statement: &Node<Statement<'a>>,
     state: Rc<RefCell<State<'a>>>,
-    program: &mut Vec<ProgramInstruction>,
+    program: &mut Vec<ProgramInstruction>, // could this be passed around in a RefCell inside state?
 ) -> InterpreterResult<()> {
     match statement.borrow().clone() {
         Statement::Element(e) => {
@@ -59,7 +59,6 @@ pub(crate) fn eval_statement<'a>(
                     let childstate = state.clone();
                     childstate.borrow_mut().bind(&ident.to_string(), index)?;
                     for child in statement.children() {
-                        println!("iter");
                         let _ = eval_statement(&child, Rc::clone(&childstate), program)?;
                     }
                 }
