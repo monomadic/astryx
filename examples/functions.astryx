@@ -6,3 +6,5 @@ log(text: "blub blub")
 -- object member functions
 %h1
   | a
+
+| "hello"
