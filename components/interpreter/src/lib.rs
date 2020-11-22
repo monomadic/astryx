@@ -46,5 +46,5 @@ pub fn run<'a>(
     //     })
     //     .collect::<InterpreterResult<Vec<()>>>()?;
 
-    Ok(Vec::new())
+    Ok(program)
 }

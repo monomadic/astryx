@@ -113,8 +113,9 @@ fn render_pages(
 }
 
 pub fn render_project(mut program: Vec<ProgramInstruction>) -> Project {
-    let mut project = Project::new();
     println!("program: {:?}", program);
+
+    let mut project = Project::new();
 
     program.reverse();
 

@@ -3,4 +3,6 @@
 debug(text: "hello, world!")
 log(text: "blub blub")
 
--- defining functions
+-- object member functions
+%h1
+  | a
