@@ -29,7 +29,7 @@ pub type InterpreterResult<T> = Result<T, InterpreterError>;
 /// run the interpreter on an AST tree and return a HTMLNode tree for each page
 pub fn run<'a>(
     nodes: &Vec<Node<Statement<'a>>>,
-    state: Rc<RefCell<State<'a>>>,
+    state: Rc<RefCell<State>>,
     // program: &mut Vec<ProgramInstruction>,
 ) -> InterpreterResult<Vec<ProgramInstruction>> {
     let inner = &builtins::import(state);

@@ -2,7 +2,7 @@ use crate::{models::Object, InterpreterResult, State};
 use std::cell::RefCell;
 use std::rc::Rc;
 
-pub(crate) fn import<'a>(state: Rc<RefCell<State<'a>>>) -> Rc<RefCell<State<'a>>> {
+pub(crate) fn import<'a>(state: Rc<RefCell<State>>) -> Rc<RefCell<State>> {
     // let mut inner = state.borrow_mut();
     let _ = state.borrow_mut().bind("log", Object::BuiltinFunction(log));
 

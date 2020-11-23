@@ -10,14 +10,15 @@ pub fn run() -> Result<(), String> {
     Ok(())
 }
 
-fn repl(state: Rc<RefCell<State<'_>>>, editor: &mut Editor<()>) {
+fn repl(state: Rc<RefCell<State>>, editor: &mut Editor<()>) {
     let line: String = editor.readline(">> ").unwrap();
 
     let inner = Rc::clone(&state);
-    // let statements = parser::run(&line).unwrap();
-    // let _ = interpreter::run(&statements, inner).unwrap();
-    // println!("{:?}", statements);
-    // repl(inner, editor);
+    let statements = parser::run(&line).unwrap();
+    let _ = interpreter::run(&statements, inner).unwrap();
+
+    println!("{:?}", statements);
+    repl(state, editor);
 }
 
 fn crop_letters(s: &str, pos: usize) -> &str {

@@ -10,7 +10,7 @@ use std::{collections::HashMap, rc::Rc};
 
 pub(crate) fn eval_statement<'a>(
     statement: &Node<Statement<'a>>,
-    state: Rc<RefCell<State<'a>>>,
+    state: Rc<RefCell<State>>,
     program: &mut Vec<ProgramInstruction>, // could this be passed around in a RefCell inside state?
 ) -> InterpreterResult<()> {
     match statement.borrow().clone() {
@@ -100,7 +100,7 @@ pub(crate) fn eval_statement<'a>(
 // }
 
 fn eval_function<'a>(
-    state: Rc<RefCell<State<'a>>>,
+    state: Rc<RefCell<State>>,
     func: &FunctionCall<'a>,
 ) -> InterpreterResult<Object> {
     let ident_ref = *(func.clone()).ident;
@@ -144,7 +144,7 @@ fn apply_function<'a>(func: &Object, arguments: &Vec<Object>) -> InterpreterResu
     unimplemented!()
 }
 
-fn eval_reference<'a>(name: &Span<'a>, state: Rc<RefCell<State<'a>>>) -> InterpreterResult<Object> {
+fn eval_reference<'a>(name: &Span<'a>, state: Rc<RefCell<State>>) -> InterpreterResult<Object> {
     state
         .borrow()
         .get(&name.fragment().to_string())

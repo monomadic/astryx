@@ -19,13 +19,13 @@ impl Default for Writer {
 }
 
 #[derive(Clone, Default)]
-pub struct State<'a> {
+pub struct State {
     local: LocalData,
-    outer: Option<Rc<RefCell<State<'a>>>>,
+    outer: Option<Rc<RefCell<State>>>,
     pub writer: Writer,
 }
 
-impl<'a> State<'a> {
+impl<'a> State {
     // replace with default()
     pub fn new() -> Self {
         State {
