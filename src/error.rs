@@ -59,7 +59,7 @@ pub(crate) fn display_error(err: &AstryxError, path: &str) -> String {
             format!(
                 "logical error: {}",
                 error_with_line(
-                    "codeee",
+                    &get_line_from_file(path, location.line as usize),
                     location.line,
                     location.column,
                     location.length,
@@ -71,6 +71,12 @@ pub(crate) fn display_error(err: &AstryxError, path: &str) -> String {
         // AstryxError::HTMLError => format!("HTMLError"),
         AstryxError::IO(_) => format!("IO"),
     }
+}
+
+fn get_line_from_file<'a>(path: &str, line: usize) -> String {
+    std::fs::read_to_string(&path)
+        .map(|file| file.lines().map(String::from).collect::<Vec<String>>()[line].clone())
+        .unwrap_or(String::new())
 }
 
 fn parser_reason(kind: &ParserErrorKind<Span>) -> String {
