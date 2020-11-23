@@ -94,7 +94,7 @@ impl FunctionCall<'_> {
 #[derive(Debug, Clone)]
 pub enum Literal<'a> {
     String(Span<'a>),
-    Float(Span<'a>, f64),
+    Number(Span<'a>, f64),
 }
 
 // impl Literal {

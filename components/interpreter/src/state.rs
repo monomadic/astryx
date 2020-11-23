@@ -105,7 +105,7 @@ impl<'a> State {
             Expression::Reference(r) => self.require(r),
             Expression::Literal(l) => match l {
                 parser::Literal::String(s) => Ok(Object::String(s.to_string())),
-                parser::Literal::Float(s, f) => unimplemented!(),
+                parser::Literal::Number(s, f) => unimplemented!(),
             },
             Expression::RelativePath(_) => unimplemented!(),
             Expression::Array(_) => unimplemented!(),

@@ -1,5 +1,5 @@
 use interpreter::State;
-use rustyline::Editor;
+use rustyline::{error::ReadlineError, Editor};
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -11,14 +11,50 @@ pub fn run() -> Result<(), String> {
 }
 
 fn repl(state: Rc<RefCell<State>>, editor: &mut Editor<()>) {
-    let line: String = editor.readline(">> ").unwrap();
+    print_logo();
+    loop {
+        match editor.readline(">> ") {
+            Ok(line) => {
+                let inner = Rc::clone(&state);
+                let statements = parser::run(&line);
+                println!("parser: {:?}", statements);
+                let _ = interpreter::run(&statements.unwrap(), inner).unwrap();
 
-    let inner = Rc::clone(&state);
-    let statements = parser::run(&line).unwrap();
-    let _ = interpreter::run(&statements, inner).unwrap();
+                // println!("state: {:?}", statements);
+            }
+            Err(ReadlineError::Interrupted) => {
+                println!("CTRL-C");
+                break;
+            }
+            Err(ReadlineError::Eof) => {
+                println!("CTRL-D");
+                break;
+            }
+            Err(err) => {
+                println!("error: {:?}", err);
+                break;
+            }
+        }
+    }
 
-    println!("{:?}", statements);
-    repl(state, editor);
+    // repl(state, editor);
+}
+
+fn print_logo() {
+    println!(
+        "{}",
+        r#"
+        _____/\\\\\\\\\_________/\\\\\\\\\\\_____/\\\\\\\\\\\\\\\_____/\\\\\\\\\_______/\\\________/\\\___/\\\_______/\\\_        
+        ___/\\\\\\\\\\\\\_____/\\\/////////\\\__\///////\\\/////____/\\\///////\\\____\///\\\____/\\\/___\///\\\___/\\\/__       
+         __/\\\/////////\\\___\//\\\______\///_________\/\\\________\/\\\_____\/\\\______\///\\\/\\\/_______\///\\\\\\/____      
+          _\/\\\_______\/\\\____\////\\\________________\/\\\________\/\\\\\\\\\\\/_________\///\\\/___________\//\\\\______     
+           _\/\\\\\\\\\\\\\\\_______\////\\\_____________\/\\\________\/\\\//////\\\___________\/\\\_____________\/\\\\______    
+            _\/\\\/////////\\\__________\////\\\__________\/\\\________\/\\\____\//\\\__________\/\\\_____________/\\\\\\_____   
+             _\/\\\_______\/\\\___/\\\______\//\\\_________\/\\\________\/\\\_____\//\\\_________\/\\\___________/\\\////\\\___  
+              _\/\\\_______\/\\\__\///\\\\\\\\\\\/__________\/\\\________\/\\\______\//\\\________\/\\\_________/\\\/___\///\\\_ 
+               _\///________\///_____\///////////____________\///_________\///________\///_________\///_________\///_______\///__
+"#
+    );
 }
 
 fn crop_letters(s: &str, pos: usize) -> &str {

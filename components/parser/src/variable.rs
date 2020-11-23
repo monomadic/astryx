@@ -42,7 +42,7 @@ pub(crate) fn literal<'a>(i: Span<'a>) -> IResult<Span<'a>, Literal<'a>, ParserE
         // map(relative_path, |s: Span| Variable::RelativePath(s)),
         // map(alphanumeric1, |s: Span| Variable::Reference(s)),
         // map(argument_idx,   |i| Property::ArgumentIndex(i.parse::<usize>().unwrap())),
-        map(double, |f| Literal::Float(i, f)),
+        map(double, |f| Literal::Number(i, f)),
         // map(digit1,         |i:&str| Property::Number(i.parse::<i64>().unwrap_or(0))),
         // map(boolean,        |b| Property::Boolean(b)),
         // map(dotted_symbol,  |s| Property::DottedSymbol(String::from(s))),
@@ -106,7 +106,7 @@ impl Literal<'_> {
     pub fn inspect(&self) -> String {
         match self {
             Literal::String(s) => format!("\"{}\"", s.fragment().to_string()),
-            Literal::Float(_, f) => f.to_string(),
+            Literal::Number(_, f) => f.to_string(),
         }
     }
 }
