@@ -11,7 +11,7 @@ pub enum AstryxNode {
 
 pub type BuiltinFunction = fn(Vec<Object>) -> InterpreterResult<Object>;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Object {
     String(String),
     // FunctionLiteral {

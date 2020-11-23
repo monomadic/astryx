@@ -3,8 +3,7 @@
 for post in ./examples/*.md
   let meta = post.frontmatter()
 
-  page(path: meta.route)
-    %div
-      %h1
-        | ${ meta.title }
-      post.markdown()
+  %div
+    %h1
+      | ${ meta.title }
+    -- post.markdown()

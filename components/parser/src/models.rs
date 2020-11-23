@@ -27,7 +27,7 @@ pub enum Statement<'a> {
 impl Statement<'_> {
     pub fn inspect(&self) -> String {
         match self {
-            Statement::Expression(_) => unimplemented!(),
+            Statement::Expression(e) => e.inspect(),
             Statement::Binding(_, _) => unimplemented!(),
             Statement::Element(_) => unimplemented!(),
             Statement::Text(_) => unimplemented!(),
@@ -57,7 +57,7 @@ impl Expression<'_> {
             Expression::Reference(span) => span.fragment().to_string(),
             Expression::Literal(l) => l.inspect(),
             Expression::Array(_) => unimplemented!(),
-            Expression::Index(_, _) => unimplemented!(),
+            Expression::Index(i, e) => format!("{}.{}", i.inspect(), e.inspect()),
         }
     }
 }

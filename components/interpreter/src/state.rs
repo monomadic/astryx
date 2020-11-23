@@ -67,6 +67,11 @@ impl<'a> State<'a> {
         }
     }
 
+    /// returns a flattened hashmap of all objects in state
+    pub fn to_map(&self) -> HashMap<String, Object> {
+        self.local.clone() // todo: inherit
+    }
+
     // pub fn root(&self) -> Rc<RefCell<State<'a>>> {
     //     match self.outer {
     //         Some(o) => o.borrow().root(),
@@ -146,13 +151,13 @@ impl<'a> State<'a> {
 
         // let state = State::extend(Rc::new(RefCell::new(*self)));
 
-        let _ = match func {
-            Object::BuiltinFunction(builtin) => builtin(args),
+        let obj = match func {
+            Object::BuiltinFunction(builtin) => builtin(args)?,
             _ => unimplemented!(),
         };
 
         // eval(, state);
-        Ok(Object::String(format!("f--{:?}", f)))
+        Ok(obj)
     }
 
     /// Convert string tokens to a fully interpolated string

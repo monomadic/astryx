@@ -41,7 +41,10 @@ pub(crate) fn eval_statement<'a>(
             program.push(ProgramInstruction::Text(element.clone().close_tag()));
         }
         Statement::Expression(expr) => {
-            state.borrow().eval_expression(&expr)?;
+            let obj = state.borrow().eval_expression(&expr)?;
+            println!("state: {:?}", state.borrow().to_map());
+            println!("obj: {:?}", obj.to_string());
+            program.push(ProgramInstruction::Text(obj.to_string()));
         }
         Statement::Text(t) => {
             program.push(ProgramInstruction::Text(state.borrow().interpolate(t)?));

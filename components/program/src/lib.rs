@@ -73,7 +73,7 @@ impl Inspect for Node<ProgramInstruction> {
 }
 
 impl ProgramInstruction {
-    fn inspect(&self) -> String {
+    pub fn inspect(&self) -> String {
         match self {
             ProgramInstruction::Root => format!("root"),
             ProgramInstruction::HTMLElement(e) => match e {

@@ -7,4 +7,5 @@ log(text: "blub blub")
 %h1
   | a
 
-| "hello"
+let a = "hello"
+a.a
