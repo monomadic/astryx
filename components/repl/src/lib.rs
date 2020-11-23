@@ -18,7 +18,11 @@ fn repl(state: Rc<RefCell<State>>, editor: &mut Editor<()>) {
                 let inner = Rc::clone(&state);
                 let statements = parser::run(&line);
                 println!("parser: {:?}", statements);
-                let _ = interpreter::run(&statements.unwrap(), inner).unwrap();
+
+                match interpreter::run(&statements.unwrap(), inner) {
+                    Ok(_) => {}
+                    Err(e) => println!("error: {:?}", e),
+                };
 
                 // println!("state: {:?}", statements);
             }

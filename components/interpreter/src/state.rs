@@ -124,7 +124,37 @@ impl<'a> State {
                             }),
                         _ => unimplemented!(),
                     },
-                    Object::String(s) => Ok(Object::String(s)),
+                    Object::String(s) => match &**r {
+                        Expression::FunctionCall(f) => {
+                            // get the function closure from local state as Object::BuiltInFunction(f)
+                            let func: Object =
+                                self.eval_expression(&f.ident)
+                                    .map_err(|e| InterpreterError {
+                                        kind: InterpreterErrorKind::FunctionNotFound(
+                                            f.ident.inspect(),
+                                        ),
+                                        location: e.location,
+                                    })?;
+
+                            // DOUBLE, REMOVE: this needs to be rewritten, to put the arguments into a
+                            // new scope and send that to the function closure.
+                            let mut args = f
+                                .arguments
+                                .iter()
+                                .map(|(_ident, expr)| self.eval_expression(expr))
+                                .collect::<Result<Vec<Object>, _>>()?;
+
+                            args.push(Object::String(s));
+
+                            let obj = match func {
+                                Object::BuiltinFunction(builtin) => builtin(args)?,
+                                _ => unimplemented!(),
+                            };
+
+                            Ok(obj)
+                        }
+                        _ => unimplemented!(),
+                    },
                     _ => panic!("{}", lexpr.inspect()),
                 }
             }
