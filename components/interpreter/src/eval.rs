@@ -2,7 +2,7 @@ use crate::{
     models::Object, state::State, InterpreterError, InterpreterErrorKind, InterpreterResult,
 };
 use html::HTMLElement;
-use parser::{FunctionCall, Span, Statement};
+use parser::{Expression, FunctionCall, Span, Statement, StringToken};
 use program::ProgramInstruction;
 use rctree::Node;
 use std::cell::RefCell;
@@ -20,7 +20,7 @@ pub(crate) fn eval_statement<'a>(
             for (ident, expr) in e.attributes {
                 attributes.insert(
                     ident.fragment().to_string(),
-                    state.borrow().eval_expression(&expr)?.into(),
+                    eval_expression(Rc::clone(&state), &expr)?.into(),
                 );
             }
 
@@ -49,26 +49,31 @@ pub(crate) fn eval_statement<'a>(
             program.push(ProgramInstruction::Text(element.clone().close_tag()));
         }
         Statement::Expression(expr) => {
-            let obj = state.borrow().eval_expression(&expr)?;
-            println!("state: {:?}", state.borrow().to_map());
-            println!("obj: {:?}", obj.to_string());
-            program.push(ProgramInstruction::Text(obj.to_string()));
+            let inner = State::extend(Rc::clone(&state));
+
+            state.borrow().push_instruction(ProgramInstruction::Text(
+                eval_expression(Rc::new(RefCell::new(inner)), &expr)?.to_string(),
+            ));
         }
         Statement::Text(t) => {
-            program.push(ProgramInstruction::Text(
-                state.borrow().interpolate(t.clone())?,
-            ));
+            program.push(ProgramInstruction::Text(eval_interpolation(
+                Rc::clone(&state),
+                t.clone(),
+            )?));
             state
                 .borrow()
-                .push_instruction(ProgramInstruction::Text(state.borrow().interpolate(t)?));
+                .push_instruction(ProgramInstruction::Text(eval_interpolation(
+                    Rc::clone(&state),
+                    t,
+                )?));
         }
         Statement::Binding(ident, expr) => {
-            let obj = state.borrow().eval_expression(&expr)?;
+            let obj = eval_expression(Rc::clone(&state), &expr)?;
             state.borrow_mut().bind(ident.fragment(), obj.clone())?;
         }
         Statement::Comment(_) => {}
         Statement::ForLoop { ident, expr } => {
-            let iter: Object = state.borrow().eval_expression(&expr)?;
+            let iter: Object = eval_expression(Rc::clone(&state), &expr)?;
 
             if let Object::Array(array) = iter {
                 for index in array {
@@ -93,58 +98,102 @@ pub(crate) fn eval_statement<'a>(
     Ok(())
 }
 
-// pub(crate) fn eval_expression<'a>(
-//     state: Rc<RefCell<State<'a>>>,
-//     expr: &Expression<'a>,
-// ) -> InterpreterResult<Object<'a>> {
-//     match expr {
-//         // Expression::FunctionCall(f) => state.eval_function(&f)?,
-//         Expression::FunctionCall(f) => eval_function(Rc::clone(&state), &f),
-//         Expression::Reference(r) => eval_reference(&r, Rc::clone(&state)),
-//         Expression::Literal(l) => match l {
-//             Literal::String(s) => Ok(Object::String(s.fragment().to_string())),
-//             Literal::Float(_, _) => unimplemented!(),
-//         },
-//         Expression::RelativePath(s) => import_file(s),
-//         Expression::Array(_) => unimplemented!(),
-//         Expression::GlobPattern(s) => import_files(s),
-//         Expression::Index(i, e) => unimplemented!(),
-//     }
-// }
-
-fn eval_function<'a>(
+pub fn eval_expression<'a>(
     state: Rc<RefCell<State>>,
-    func: &FunctionCall<'a>,
+    expr: &Expression<'a>,
 ) -> InterpreterResult<Object> {
-    let ident_ref = *(func.clone()).ident;
-    let function = state.borrow().eval_expression(&ident_ref)?;
+    match expr {
+        Expression::FunctionCall(f) => eval_function(state, &f),
+        Expression::Reference(r) => state.borrow().require(r),
+        Expression::Literal(l) => match l {
+            parser::Literal::String(s) => Ok(Object::String(s.to_string())),
+            parser::Literal::Number(s, f) => unimplemented!(),
+        },
+        Expression::RelativePath(_) => unimplemented!(),
+        Expression::Array(_) => unimplemented!(),
+        Expression::GlobPattern(s) => crate::util::import_files(s),
+        Expression::Index(l, r) => {
+            let lexpr = eval_expression(Rc::clone(&state), l)?;
 
-    match function {
-        // Object::FunctionLiteral {
-        //     params: _,
-        //     statements: _,
-        // } => {
-        //     // extend state scope into function
-        //     let _new_env = Rc::new(RefCell::new(State::extend(state)));
+            match lexpr {
+                Object::Map(ref m) => match **r {
+                    Expression::Reference(r) => m
+                        .get(r.to_string().as_str())
+                        .map(|o| o.clone())
+                        .ok_or(InterpreterError {
+                            kind: InterpreterErrorKind::UnknownMemberFunction(r.to_string()),
+                            location: Some(r.into()),
+                        }),
+                    _ => unimplemented!(),
+                },
+                Object::String(s) => {
+                    match &**r {
+                        Expression::FunctionCall(f) => {
+                            // get the function closure from local state as Object::BuiltInFunction(f)
+                            let func: Object = eval_expression(Rc::clone(&state), &f.ident)
+                                .map_err(|e| InterpreterError {
+                                    kind: InterpreterErrorKind::FunctionNotFound(f.ident.inspect()),
+                                    location: e.location,
+                                })?;
 
-        //     // insert args into new scope
-        //     // let arguments = eval_expressions(args, env)?;
+                            // DOUBLE, REMOVE: this needs to be rewritten, to put the arguments into a
+                            // new scope and send that to the function closure.
+                            let mut args = f
+                                .arguments
+                                .iter()
+                                .map(|(_ident, expr)| eval_expression(Rc::clone(&state), expr))
+                                .collect::<Result<Vec<Object>, _>>()?;
 
-        //     // apply_function(&function, &vec![])
-        //     unimplemented!()
-        // }
-        Object::BuiltinFunction(builtin) => {
-            // println!("ARGS {:?}", func.arguments);
-            builtin(state.borrow().eval_function_arguments(&func.arguments)?)
+                            args.push(Object::String(s));
+
+                            // let inner = Rc::new(RefCell::new(*self));
+
+                            let inner = State::extend(state);
+
+                            let obj = match func {
+                                Object::BuiltinFunction(builtin) => {
+                                    builtin(Rc::new(RefCell::new(inner)))?
+                                }
+                                _ => unimplemented!(),
+                            };
+
+                            Ok(obj)
+                        }
+                        _ => unimplemented!(),
+                    }
+                }
+                _ => panic!("{}", lexpr.inspect()),
+            }
         }
-        // _ => Err(InterpreterError::ReferenceIsNotAFunction),
-        Object::String(s) => {
-            println!("sss{:?}", s);
-            unimplemented!()
-        }
-        Object::Array(_) => unimplemented!(),
-        Object::Map(_) => unimplemented!(),
     }
+}
+
+fn eval_function<'a>(state: Rc<RefCell<State>>, f: &FunctionCall<'a>) -> InterpreterResult<Object> {
+    // get the function closure from local state as Object::BuiltInFunction(f)
+    let func: Object =
+        eval_expression(Rc::clone(&state), &f.ident).map_err(|e| InterpreterError {
+            kind: InterpreterErrorKind::FunctionNotFound(f.ident.inspect()),
+            location: e.location,
+        })?;
+
+    // this needs to be rewritten, to put the arguments into a
+    // new scope and send that to the function closure.
+    let args = f
+        .arguments
+        .iter()
+        .map(|(_ident, expr)| eval_expression(Rc::clone(&state), expr))
+        .collect::<Result<Vec<Object>, _>>()?;
+
+    // fix this... jeez
+    // let inner = Rc::new(RefCell::new(State::extend(Rc::new(RefCell::new(*self)))));
+
+    let obj = match func {
+        Object::BuiltinFunction(builtin) => builtin(Rc::clone(&state))?,
+        _ => unimplemented!(),
+    };
+
+    // eval(, state);
+    Ok(obj)
 }
 
 fn apply_function<'a>(func: &Object, arguments: &Vec<Object>) -> InterpreterResult<Object> {
@@ -165,4 +214,23 @@ fn eval_reference<'a>(name: &Span<'a>, state: Rc<RefCell<State>>) -> Interpreter
             kind: InterpreterErrorKind::InvalidReference(name.to_string()),
             location: Some((*name).into()),
         })
+}
+
+/// Convert string tokens to a fully interpolated string
+fn eval_interpolation<'a>(
+    state: Rc<RefCell<State>>,
+    components: Vec<StringToken<'a>>,
+) -> InterpreterResult<String> {
+    Ok(components
+        .into_iter()
+        .map(|st| match st {
+            StringToken::Text(span) => Ok(span.to_string()),
+            // StringToken::Expression(expr) => self.eval(&expr).map(|e| e.into()),
+            StringToken::Expression(expr) => {
+                Ok(eval_expression(Rc::clone(&state), &expr)?.to_string())
+            }
+        })
+        .collect::<Result<Vec<String>, InterpreterError>>()?
+        .into_iter()
+        .collect())
 }

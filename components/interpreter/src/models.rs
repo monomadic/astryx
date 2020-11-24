@@ -1,7 +1,8 @@
-use crate::InterpreterResult;
+use crate::{InterpreterResult, State};
 use html::HTMLElement;
-use parser::Statement;
+use std::cell::RefCell;
 use std::collections::HashMap;
+use std::rc::Rc;
 
 #[derive(Debug)]
 pub enum AstryxNode {
@@ -9,7 +10,7 @@ pub enum AstryxNode {
     Root,
 }
 
-pub type BuiltinFunction = fn(Vec<Object>) -> InterpreterResult<Object>;
+pub type BuiltinFunction = fn(Rc<RefCell<State>>) -> InterpreterResult<Object>;
 
 #[derive(Clone, Debug)]
 pub enum Object {

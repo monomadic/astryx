@@ -9,7 +9,7 @@
 
 pub use error::{InterpreterError, InterpreterErrorKind};
 pub use models::AstryxNode;
-pub use state::{State, Writer};
+pub use state::State;
 
 use parser::Statement;
 use rctree::Node;
