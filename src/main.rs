@@ -57,12 +57,15 @@ fn run() -> Result<String, String> {
             build::build(&file).map_err(|e| display_error(&e, path))
         }
         Command::New => new_project().map_err(|e| format!("error creating new project: {:?}", e)),
-        Command::Repl => repl::run(),
+        Command::Repl => {
+            repl::run();
+            Ok(())
+        }
     }
     .map(|_| "\ndone.".to_string())
 }
 
 /// set up a new project in the current directory
 fn new_project<'a>() -> AstryxResult<'a, ()> {
-    Ok(())
+    unimplemented!()
 }

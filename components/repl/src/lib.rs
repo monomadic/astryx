@@ -3,11 +3,11 @@ use rustyline::{error::ReadlineError, Editor};
 use std::cell::RefCell;
 use std::rc::Rc;
 
-pub fn run() -> Result<(), String> {
-    let mut editor = Editor::<()>::new();
-
-    repl(Rc::new(RefCell::new(State::default())), &mut editor);
-    Ok(())
+pub fn run() {
+    repl(
+        Rc::new(RefCell::new(State::default())),
+        &mut Editor::<()>::new(),
+    );
 }
 
 fn repl(state: Rc<RefCell<State>>, editor: &mut Editor<()>) {
@@ -15,16 +15,18 @@ fn repl(state: Rc<RefCell<State>>, editor: &mut Editor<()>) {
     loop {
         match editor.readline(">> ") {
             Ok(line) => {
+                if line.chars().collect::<Vec<char>>()[0] == ':' {
+                    println!("{:?}", parser::run(&pop_chars(&line, 1)));
+                    continue;
+                }
+
                 let inner = Rc::clone(&state);
                 let statements = parser::run(&line);
-                println!("parser: {:?}", statements);
 
                 match interpreter::run(&statements.unwrap(), inner) {
                     Ok(_) => {}
                     Err(e) => println!("error: {:?}", e),
                 };
-
-                // println!("state: {:?}", statements);
             }
             Err(ReadlineError::Interrupted) => {
                 println!("CTRL-C");
@@ -40,8 +42,6 @@ fn repl(state: Rc<RefCell<State>>, editor: &mut Editor<()>) {
             }
         }
     }
-
-    // repl(state, editor);
 }
 
 fn print_logo() {
@@ -61,7 +61,8 @@ fn print_logo() {
     );
 }
 
-fn crop_letters(s: &str, pos: usize) -> &str {
+/// pops `pos` characters from the front of a string, returning remainder
+fn pop_chars(s: &str, pos: usize) -> &str {
     match s.char_indices().skip(pos).next() {
         Some((pos, _)) => &s[pos..],
         None => "",
