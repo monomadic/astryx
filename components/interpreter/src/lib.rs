@@ -38,5 +38,7 @@ pub fn run<'a>(
         eval::eval_statement(&node, Rc::clone(inner), &mut program)?;
     }
 
+    let program = inner.borrow().get_program();
+
     Ok(program)
 }

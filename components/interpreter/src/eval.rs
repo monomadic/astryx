@@ -34,9 +34,17 @@ pub(crate) fn eval_statement<'a>(
             // - injection? (might need tree for this though...?)
             program.push(ProgramInstruction::Text(element.clone().open_tag()));
 
+            state
+                .borrow()
+                .push_instruction(ProgramInstruction::Text(element.clone().open_tag()));
+
             for child in statement.children() {
                 eval_statement(&child, state.clone(), program)?;
             }
+
+            state
+                .borrow()
+                .push_instruction(ProgramInstruction::Text(element.clone().close_tag()));
 
             program.push(ProgramInstruction::Text(element.clone().close_tag()));
         }
@@ -47,7 +55,12 @@ pub(crate) fn eval_statement<'a>(
             program.push(ProgramInstruction::Text(obj.to_string()));
         }
         Statement::Text(t) => {
-            program.push(ProgramInstruction::Text(state.borrow().interpolate(t)?));
+            program.push(ProgramInstruction::Text(
+                state.borrow().interpolate(t.clone())?,
+            ));
+            state
+                .borrow()
+                .push_instruction(ProgramInstruction::Text(state.borrow().interpolate(t)?));
         }
         Statement::Binding(ident, expr) => {
             let obj = state.borrow().eval_expression(&expr)?;

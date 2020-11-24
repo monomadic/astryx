@@ -1,5 +1,6 @@
 use crate::{models::Object, InterpreterError, InterpreterErrorKind, InterpreterResult};
 use parser::{Expression, FunctionCall, Span, StringToken};
+use program::ProgramInstruction;
 use std::{cell::RefCell, collections::HashMap, fs::OpenOptions, io::Write, rc::Rc};
 
 type LocalData = HashMap<String, Object>;
@@ -22,6 +23,7 @@ impl Default for Writer {
 pub struct State {
     local: LocalData,
     outer: Option<Rc<RefCell<State>>>,
+    program: Rc<RefCell<Vec<ProgramInstruction>>>,
     pub writer: Writer,
 }
 
@@ -30,9 +32,9 @@ impl<'a> State {
     pub fn new() -> Self {
         State {
             local: LocalData::new(),
-            // document: Node::new(AstryxNode::Root),
             writer: Writer::None,
             outer: None,
+            program: Rc::new(RefCell::new(Vec::new())),
         }
     }
 
@@ -58,6 +60,14 @@ impl<'a> State {
     pub fn bind(&mut self, ident: &str, obj: Object) -> InterpreterResult<()> {
         let _ = self.local.insert(ident.into(), obj.clone()); // return doesn't matter as all state is mutable
         Ok(()) // force return ok (this could change if mutability rules change, or overwriting builtins)
+    }
+
+    pub fn push_instruction(&self, instruction: ProgramInstruction) {
+        self.program.borrow_mut().push(instruction)
+    }
+
+    pub fn get_program(&self) -> Vec<ProgramInstruction> {
+        self.program.borrow().clone()
     }
 
     pub fn extend(outer: Rc<RefCell<Self>>) -> Self {
