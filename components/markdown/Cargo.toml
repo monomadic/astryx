@@ -1,0 +1,10 @@
+[package]
+name = "markdown"
+version = "0.1.0"
+authors = ["monomadic <deathdisco@protonmail.com>"]
+edition = "2018"
+
+[dependencies]
+pulldown-cmark = "0.8.0"
+syntect = "4.4.0"
+error = { path = "../error" }

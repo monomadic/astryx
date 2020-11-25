@@ -26,4 +26,6 @@ members = [
   "components/repl",
   "components/search",
   "components/program",
+  "components/markdown",
+  "components/error",
 ]

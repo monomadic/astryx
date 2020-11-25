@@ -48,7 +48,9 @@ pub(crate) fn inspect(state: Rc<RefCell<State>>) -> InterpreterResult<Object> {
 }
 
 pub(crate) fn markdown<'a>(state: Rc<RefCell<State>>) -> InterpreterResult<Object> {
-    Ok(state.borrow().require(&Span::new("$self"))?)
+    let doc = state.borrow().require(&Span::new("$self"))?;
+    let result = markdown::parse(&doc.to_string()).unwrap();
+    Ok(Object::String(result))
 }
 
 pub(crate) fn frontmatter<'a>(state: Rc<RefCell<State>>) -> InterpreterResult<Object> {
