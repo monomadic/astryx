@@ -103,15 +103,15 @@ impl<'a> State {
     //     }
     // }
 
-    pub fn eval_function_arguments(
-        &self,
-        args: &Vec<(Span<'a>, Expression<'a>)>,
-    ) -> InterpreterResult<Vec<Object>> {
-        unimplemented!();
-        // args.into_iter()
-        //     .map(|(_ident, expr)| self.eval_expression(expr))
-        //     .collect::<Result<Vec<Object>, InterpreterError>>()
-    }
+    // pub fn eval_function_arguments(
+    //     &self,
+    //     args: &Vec<(Span<'a>, Expression<'a>)>,
+    // ) -> InterpreterResult<Vec<Object>> {
+    //     unimplemented!();
+    //     // args.into_iter()
+    //     //     .map(|(_ident, expr)| self.eval_expression(expr))
+    //     //     .collect::<Result<Vec<Object>, InterpreterError>>()
+    // }
 
     // pub fn eval_expression(&self, expr: &Expression<'a>) -> InterpreterResult<Object> {
     //     unimplemented!();

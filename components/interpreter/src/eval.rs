@@ -194,15 +194,15 @@ pub fn eval_expression<'a>(
 //     Ok(obj)
 // }
 
-fn apply_function<'a>(func: &Object, arguments: &Vec<Object>) -> InterpreterResult<Object> {
-    // assert_argument_count(params.len(), &arguments)?;
-    // let new_env = extend_function_env(params, arguments, env);
+// fn apply_function<'a>(func: &Object, arguments: &Vec<Object>) -> InterpreterResult<Object> {
+//     // assert_argument_count(params.len(), &arguments)?;
+//     // let new_env = extend_function_env(params, arguments, env);
 
-    // for statement in func
-    // let evaluated = eval_block_statement(&body, new_env)?;
-    // unwrap_return_value(evaluated)
-    unimplemented!()
-}
+//     // for statement in func
+//     // let evaluated = eval_block_statement(&body, new_env)?;
+//     // unwrap_return_value(evaluated)
+//     unimplemented!()
+// }
 
 fn eval_reference<'a>(name: &Span<'a>, state: Rc<RefCell<State>>) -> InterpreterResult<Object> {
     state
