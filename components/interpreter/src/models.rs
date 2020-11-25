@@ -44,29 +44,6 @@ impl Object {
     }
 }
 
-// impl std::fmt::Debug for Object<'_> {
-//     fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-//         match self {
-//             Object::BuiltinFunction(_) => write!(fmt, "__builtin"),
-//             _ => write!(fmt, "{:?}", self), // FIX
-//         }
-
-//         // write!(fmt, "debug")
-//     }
-// }
-
-// impl std::fmt::Display for Object<'_> {
-//     fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-//         match self {
-//             Object::BuiltinFunction(_) => write!(fmt, "__builtin"),
-//             // _ => write!(fmt, "{}", self.to_string()), // FIX
-//             _ => write!(fmt, "__unknown"),
-//         }
-//         // write!(fmt, "display")
-//         // write!(fmt, "{:?}", self.to_string())
-//     }
-// }
-
 impl ToString for Object {
     fn to_string(&self) -> String {
         match self {
