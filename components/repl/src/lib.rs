@@ -15,14 +15,18 @@ fn repl(state: Rc<RefCell<State>>, editor: &mut Editor<()>) {
     loop {
         match editor.readline(">> ") {
             Ok(line) => {
+                if line == ".state" {
+                    println!("{:?}", state.borrow().local);
+                    continue;
+                }
+
                 if line.chars().collect::<Vec<char>>()[0] == ':' {
                     println!("{:?}", parser::run(&pop_chars(&line, 1)));
                     continue;
                 }
 
-                let inner = Rc::clone(&state);
                 match parser::run(&line) {
-                    Ok(statements) => match interpreter::run(&statements, inner) {
+                    Ok(statements) => match interpreter::run(&statements, Rc::clone(&state)) {
                         Ok(_) => {}
                         Err(e) => println!("interpreter error: {:?}", e),
                     },
