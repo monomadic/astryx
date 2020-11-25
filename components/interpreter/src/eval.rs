@@ -2,7 +2,7 @@ use crate::{
     models::Object, state::State, InterpreterError, InterpreterErrorKind, InterpreterResult,
 };
 use html::HTMLElement;
-use parser::{Expression, FunctionCall, Span, Statement, StringToken};
+use parser::{Expression, Span, Statement, StringToken};
 use program::ProgramInstruction;
 use rctree::Node;
 use std::cell::RefCell;
@@ -103,7 +103,18 @@ pub fn eval_expression<'a>(
     expr: &Expression<'a>,
 ) -> InterpreterResult<Object> {
     match expr {
-        Expression::FunctionCall(f) => eval_function(state, &f),
+        Expression::FunctionCall(ref f) => {
+            let mut inner = State::new();
+
+            for (k, expr) in &f.arguments {
+                inner.bind(&k.to_string(), eval_expression(Rc::clone(&state), expr)?)?;
+            }
+
+            match eval_expression(state, &*f.ident)? {
+                Object::BuiltinFunction(builtin) => builtin(Rc::new(RefCell::new(inner))),
+                _ => unimplemented!(),
+            }
+        }
         Expression::Reference(r) => state.borrow().require(r),
         Expression::Literal(l) => match l {
             parser::Literal::String(s) => Ok(Object::String(s.to_string())),
@@ -115,7 +126,7 @@ pub fn eval_expression<'a>(
         Expression::Index(l, r) => {
             let lexpr = eval_expression(Rc::clone(&state), l)?;
 
-            match lexpr {
+            match &lexpr {
                 Object::Map(ref m) => match **r {
                     Expression::Reference(r) => m
                         .get(r.to_string().as_str())
@@ -126,75 +137,62 @@ pub fn eval_expression<'a>(
                         }),
                     _ => unimplemented!(),
                 },
-                Object::String(s) => {
-                    match &**r {
-                        Expression::FunctionCall(f) => {
-                            // get the function closure from local state as Object::BuiltInFunction(f)
-                            let func: Object = eval_expression(Rc::clone(&state), &f.ident)
-                                .map_err(|e| InterpreterError {
-                                    kind: InterpreterErrorKind::FunctionNotFound(f.ident.inspect()),
-                                    location: e.location,
-                                })?;
+                Object::String(s) => match &**r {
+                    Expression::FunctionCall(f) => {
+                        let mut inner = State::new();
+                        inner.bind("self", lexpr)?;
 
-                            // DOUBLE, REMOVE: this needs to be rewritten, to put the arguments into a
-                            // new scope and send that to the function closure.
-                            let mut args = f
-                                .arguments
-                                .iter()
-                                .map(|(_ident, expr)| eval_expression(Rc::clone(&state), expr))
-                                .collect::<Result<Vec<Object>, _>>()?;
-
-                            args.push(Object::String(s));
-
-                            // let inner = Rc::new(RefCell::new(*self));
-
-                            let inner = State::extend(state);
-
-                            let obj = match func {
-                                Object::BuiltinFunction(builtin) => {
-                                    builtin(Rc::new(RefCell::new(inner)))?
-                                }
-                                _ => unimplemented!(),
-                            };
-
-                            Ok(obj)
+                        for (k, expr) in &f.arguments {
+                            inner
+                                .bind(&k.to_string(), eval_expression(Rc::clone(&state), expr)?)?;
                         }
-                        _ => unimplemented!(),
+
+                        match eval_expression(state, &*f.ident)? {
+                            Object::BuiltinFunction(builtin) => {
+                                builtin(Rc::new(RefCell::new(inner)))
+                            }
+                            _ => unimplemented!(),
+                        }
                     }
-                }
+                    _ => unimplemented!(),
+                },
                 _ => panic!("{}", lexpr.inspect()),
             }
         }
     }
 }
 
-fn eval_function<'a>(state: Rc<RefCell<State>>, f: &FunctionCall<'a>) -> InterpreterResult<Object> {
-    // get the function closure from local state as Object::BuiltInFunction(f)
-    let func: Object =
-        eval_expression(Rc::clone(&state), &f.ident).map_err(|e| InterpreterError {
-            kind: InterpreterErrorKind::FunctionNotFound(f.ident.inspect()),
-            location: e.location,
-        })?;
+// don't pass Functioncall, break it down into the reference and arguments.
+// fn eval_function<'a>(
+//     state: Rc<RefCell<State>>,
+//     ident: Expression<'a>,
+//     args: Vec<(Span<'a>, Expression<'a>)>,
+// ) -> InterpreterResult<Object> {
+//     // get the function closure from local state as Object::BuiltInFunction(f)
+//     let func: Object =
+//         eval_expression(Rc::clone(&state), &ident).map_err(|e| InterpreterError {
+//             kind: InterpreterErrorKind::FunctionNotFound(ident.inspect()),
+//             location: e.location,
+//         })?;
 
-    // this needs to be rewritten, to put the arguments into a
-    // new scope and send that to the function closure.
-    let args = f
-        .arguments
-        .iter()
-        .map(|(_ident, expr)| eval_expression(Rc::clone(&state), expr))
-        .collect::<Result<Vec<Object>, _>>()?;
+//     // this needs to be rewritten, to put the arguments into a
+//     // new scope and send that to the function closure.
+//     let args = args
+//         .iter()
+//         .map(|(_ident, expr)| eval_expression(Rc::clone(&state), expr))
+//         .collect::<Result<Vec<Object>, _>>()?;
 
-    // fix this... jeez
-    // let inner = Rc::new(RefCell::new(State::extend(Rc::new(RefCell::new(*self)))));
+//     // fix this... jeez
+//     // let inner = Rc::new(RefCell::new(State::extend(Rc::new(RefCell::new(*self)))));
 
-    let obj = match func {
-        Object::BuiltinFunction(builtin) => builtin(Rc::clone(&state))?,
-        _ => unimplemented!(),
-    };
+//     let obj = match func {
+//         Object::BuiltinFunction(builtin) => builtin(Rc::clone(&state))?,
+//         _ => unimplemented!(),
+//     };
 
-    // eval(, state);
-    Ok(obj)
-}
+//     // eval(, state);
+//     Ok(obj)
+// }
 
 fn apply_function<'a>(func: &Object, arguments: &Vec<Object>) -> InterpreterResult<Object> {
     // assert_argument_count(params.len(), &arguments)?;
