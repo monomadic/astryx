@@ -3,7 +3,9 @@
 for post in ./examples/*.md
   let meta = post.frontmatter()
 
+  meta.log()
+
   %div
     %h1
-      | ${ meta.title }
+      --| ${ meta.title }
     -- post.markdown()

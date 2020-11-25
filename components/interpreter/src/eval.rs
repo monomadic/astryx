@@ -118,7 +118,7 @@ pub fn eval_expression<'a>(
         Expression::Reference(r) => state.borrow().require(r),
         Expression::Literal(l) => match l {
             parser::Literal::String(s) => Ok(Object::String(s.to_string())),
-            parser::Literal::Number(s, f) => unimplemented!(),
+            parser::Literal::Number(_s, _f) => unimplemented!(),
         },
         Expression::RelativePath(_) => unimplemented!(),
         Expression::Array(_) => unimplemented!(),
@@ -140,7 +140,7 @@ pub fn eval_expression<'a>(
                 Object::String(s) => match &**r {
                     Expression::FunctionCall(f) => {
                         let mut inner = State::new();
-                        inner.bind("self", lexpr)?;
+                        inner.bind("$self", lexpr)?;
 
                         for (k, expr) in &f.arguments {
                             inner
