@@ -24,7 +24,7 @@ type LocalData = HashMap<String, Object>;
 
 #[derive(Clone, Default)]
 pub struct State {
-    local: LocalData,
+    pub local: LocalData,
     outer: Option<Rc<RefCell<State>>>,
     program: Rc<RefCell<Vec<ProgramInstruction>>>,
     // pub writer: Writer,

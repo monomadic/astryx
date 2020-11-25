@@ -18,14 +18,16 @@ pub(crate) fn import(state: Rc<RefCell<State>>) -> Rc<RefCell<State>> {
 }
 
 pub(crate) fn log(state: Rc<RefCell<State>>) -> InterpreterResult<Object> {
-    // let display = args
-    //     .iter()
-    //     .map(|o| format!("{}", o.to_string()))
-    //     .collect::<Vec<String>>()
-    //     .join(", ");
+    let args = state
+        .borrow()
+        .local
+        .iter()
+        .map(|(_k, v)| format!("{}", v.to_string()))
+        .collect::<Vec<String>>()
+        .join(", ");
 
-    println!("{}", "display");
-    Ok(Object::String("display".into())) // todo: return ()
+    println!("{}", args);
+    Ok(Object::String(String::new())) // todo: return ()
 }
 
 // pub(crate) fn log(args: Vec<Object>) -> InterpreterResult<Object> {

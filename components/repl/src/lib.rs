@@ -21,11 +21,12 @@ fn repl(state: Rc<RefCell<State>>, editor: &mut Editor<()>) {
                 }
 
                 let inner = Rc::clone(&state);
-                let statements = parser::run(&line);
-
-                match interpreter::run(&statements.unwrap(), inner) {
-                    Ok(_) => {}
-                    Err(e) => println!("error: {:?}", e),
+                match parser::run(&line) {
+                    Ok(statements) => match interpreter::run(&statements, inner) {
+                        Ok(_) => {}
+                        Err(e) => println!("interpreter error: {:?}", e),
+                    },
+                    Err(e) => println!("parser error: {:?}", e),
                 };
             }
             Err(ReadlineError::Interrupted) => {
