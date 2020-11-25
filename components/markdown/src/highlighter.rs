@@ -3,7 +3,8 @@
 use syntect::easy::HighlightLines;
 use syntect::highlighting::ThemeSet;
 use syntect::html::{
-    start_highlighted_html_snippet, styled_line_to_highlighted_html, IncludeBackground,
+    start_highlighted_html_snippet, styled_line_to_highlighted_html,
+    IncludeBackground,
 };
 use syntect::parsing::SyntaxSet;
 
@@ -30,7 +31,9 @@ impl SyntaxHighlighter {
 
     pub fn start_highlight(&mut self) -> String {
         self.is_highlighting = true;
-        let (html, _) = start_highlighted_html_snippet(&self.themes.themes["base16-ocean.dark"]);
+        let (html, _) = start_highlighted_html_snippet(
+            &self.themes.themes["base16-ocean.dark"],
+        );
         html
     }
 
@@ -44,7 +47,8 @@ impl SyntaxHighlighter {
             .syntaxes
             .find_syntax_by_extension(&self.syntax)
             .unwrap();
-        let mut h = HighlightLines::new(s, &self.themes.themes["base16-ocean.dark"]);
+        let mut h =
+            HighlightLines::new(s, &self.themes.themes["base16-ocean.dark"]);
         let regions = h.highlight(i, &self.syntaxes);
         styled_line_to_highlighted_html(&regions[..], IncludeBackground::No)
     }
