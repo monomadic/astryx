@@ -2,10 +2,9 @@
 
 for post in ./examples/*.md
   let meta = post.frontmatter()
-  let a = "hello"
 
-  %div
-    %h1
-      | ${post.markdown()}
-      --| ${ meta.title }
-    -- post.markdown()
+
+  %h1
+    meta.title
+  
+  post.markdown()

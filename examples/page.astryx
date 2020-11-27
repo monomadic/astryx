@@ -1,3 +1,6 @@
-page(path: ./index.html, stylesheet: ./style.css)
-    %h1
-        | My Page
+%h1
+    | Index
+
+page(path: "/hello", stylesheet: ./style.css)
+    %h2
+        | Hello Page

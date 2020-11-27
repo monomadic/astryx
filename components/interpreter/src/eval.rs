@@ -1,6 +1,5 @@
 use crate::{
-    models::Object, state::State, InterpreterError, InterpreterErrorKind,
-    InterpreterResult,
+    models::Object, state::State, InterpreterError, InterpreterErrorKind, InterpreterResult,
 };
 use html::HTMLElement;
 use parser::{Expression, Span, Statement, StringToken};
@@ -12,7 +11,6 @@ use std::{collections::HashMap, rc::Rc};
 pub(crate) fn eval_statement<'a>(
     statement: &Node<Statement<'a>>,
     state: Rc<RefCell<State>>,
-    program: &mut Vec<ProgramInstruction>, // could this be passed around in a RefCell inside state?
 ) -> InterpreterResult<()> {
     match statement.borrow().clone() {
         Statement::Element(e) => {
@@ -25,8 +23,7 @@ pub(crate) fn eval_statement<'a>(
                 );
             }
 
-            let element = HTMLElement::new(e.ident.fragment(), attributes)
-                .expect("valid html");
+            let element = HTMLElement::new(e.ident.fragment(), attributes).expect("valid html");
 
             // todo, these really should be html nodes, so that we can optimise them all later...
             // examples:
@@ -34,38 +31,32 @@ pub(crate) fn eval_statement<'a>(
             // - link rewriters
             // - searching for specific elements
             // - injection? (might need tree for this though...?)
-            program.push(ProgramInstruction::Text(element.clone().open_tag()));
+            // program.push(ProgramInstruction::Text(element.clone().open_tag()));
 
-            state.borrow().push_instruction(ProgramInstruction::Text(
-                element.clone().open_tag(),
-            ));
+            state
+                .borrow()
+                .push_instruction(ProgramInstruction::Text(element.clone().open_tag()));
 
             for child in statement.children() {
-                eval_statement(&child, state.clone(), program)?;
+                eval_statement(&child, Rc::clone(&state))?;
             }
 
-            state.borrow().push_instruction(ProgramInstruction::Text(
-                element.clone().close_tag(),
-            ));
-
-            program.push(ProgramInstruction::Text(element.clone().close_tag()));
+            state
+                .borrow()
+                .push_instruction(ProgramInstruction::Text(element.clone().close_tag()));
         }
         Statement::Expression(expr) => {
-            let inner = State::extend(Rc::clone(&state));
-
             state.borrow().push_instruction(ProgramInstruction::Text(
-                eval_expression(Rc::new(RefCell::new(inner)), &expr)?
-                    .to_string(),
+                eval_expression(Rc::clone(&state), &expr)?.to_string(),
             ));
         }
         Statement::Text(t) => {
-            program.push(ProgramInstruction::Text(eval_interpolation(
-                Rc::clone(&state),
-                t.clone(),
-            )?));
-            state.borrow().push_instruction(ProgramInstruction::Text(
-                eval_interpolation(Rc::clone(&state), t)?,
-            ));
+            state
+                .borrow()
+                .push_instruction(ProgramInstruction::Text(eval_interpolation(
+                    Rc::clone(&state),
+                    t,
+                )?));
         }
         Statement::Binding(ident, expr) => {
             let obj = eval_expression(Rc::clone(&state), &expr)?;
@@ -80,11 +71,7 @@ pub(crate) fn eval_statement<'a>(
                     let childstate = state.clone();
                     childstate.borrow_mut().bind(&ident.to_string(), index)?;
                     for child in statement.children() {
-                        let _ = eval_statement(
-                            &child,
-                            Rc::clone(&childstate),
-                            program,
-                        )?;
+                        let _ = eval_statement(&child, Rc::clone(&childstate))?;
                     }
                 }
             } else {
@@ -109,18 +96,14 @@ pub fn eval_expression<'a>(
     match expr {
         Expression::FunctionCall(ref f) => {
             let mut inner = State::new();
+            inner.program = Rc::clone(&state.borrow().program);
 
             for (k, expr) in &f.arguments {
-                inner.bind(
-                    &k.to_string(),
-                    eval_expression(Rc::clone(&state), expr)?,
-                )?;
+                inner.bind(&k.to_string(), eval_expression(Rc::clone(&state), expr)?)?;
             }
 
             match eval_expression(state, &*f.ident)? {
-                Object::BuiltinFunction(builtin) => {
-                    builtin(Rc::new(RefCell::new(inner)))
-                }
+                Object::BuiltinFunction(builtin) => builtin(Rc::new(RefCell::new(inner))),
                 _ => unimplemented!(),
             }
         }
@@ -141,9 +124,7 @@ pub fn eval_expression<'a>(
                         .get(r.to_string().as_str())
                         .map(|o| o.clone())
                         .ok_or(InterpreterError {
-                            kind: InterpreterErrorKind::UnknownMemberFunction(
-                                r.to_string(),
-                            ),
+                            kind: InterpreterErrorKind::UnknownMemberFunction(r.to_string()),
                             location: Some(r.into()),
                         }),
                     _ => unimplemented!(),
@@ -154,10 +135,8 @@ pub fn eval_expression<'a>(
                         inner.bind("$self", lexpr)?;
 
                         for (k, expr) in &f.arguments {
-                            inner.bind(
-                                &k.to_string(),
-                                eval_expression(Rc::clone(&state), expr)?,
-                            )?;
+                            inner
+                                .bind(&k.to_string(), eval_expression(Rc::clone(&state), expr)?)?;
                         }
 
                         match eval_expression(state, &*f.ident)? {
@@ -175,10 +154,7 @@ pub fn eval_expression<'a>(
     }
 }
 
-fn eval_reference<'a>(
-    name: &Span<'a>,
-    state: Rc<RefCell<State>>,
-) -> InterpreterResult<Object> {
+fn eval_reference<'a>(name: &Span<'a>, state: Rc<RefCell<State>>) -> InterpreterResult<Object> {
     state
         .borrow()
         .get(&name.fragment().to_string())

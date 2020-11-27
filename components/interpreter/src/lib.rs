@@ -32,10 +32,9 @@ pub fn run<'a>(
     state: Rc<RefCell<State>>,
 ) -> InterpreterResult<Vec<ProgramInstruction>> {
     let inner = &builtins::import(state);
-    let mut program = Vec::new();
 
     for node in nodes {
-        eval::eval_statement(&node, Rc::clone(inner), &mut program)?;
+        eval::eval_statement(&node, Rc::clone(inner))?;
     }
 
     let program = inner.borrow().get_program();

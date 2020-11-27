@@ -1,6 +1,8 @@
 use crate::{models::Object, InterpreterResult, State};
 use parser::Span;
+use program::ProgramInstruction;
 use std::cell::RefCell;
+use std::collections::HashMap;
 use std::rc::Rc;
 
 pub(crate) fn import(state: Rc<RefCell<State>>) -> Rc<RefCell<State>> {
@@ -17,6 +19,10 @@ pub(crate) fn import(state: Rc<RefCell<State>>) -> Rc<RefCell<State>> {
     let _ = state
         .borrow_mut()
         .bind("markdown", Object::BuiltinFunction(markdown));
+
+    let _ = state
+        .borrow_mut()
+        .bind("page", Object::BuiltinFunction(page));
 
     state
 }
@@ -47,16 +53,25 @@ pub(crate) fn inspect(state: Rc<RefCell<State>>) -> InterpreterResult<Object> {
     Ok(Object::String(args)) // todo: return ()
 }
 
-pub(crate) fn markdown<'a>(
-    state: Rc<RefCell<State>>,
-) -> InterpreterResult<Object> {
+pub(crate) fn markdown<'a>(state: Rc<RefCell<State>>) -> InterpreterResult<Object> {
     let doc = state.borrow().require(&Span::new("$self"))?;
     let result = markdown::parse(&doc.to_string()).unwrap();
     Ok(Object::String(result))
 }
 
-pub(crate) fn frontmatter<'a>(
-    state: Rc<RefCell<State>>,
-) -> InterpreterResult<Object> {
-    Ok(state.borrow().require(&Span::new("$self"))?)
+pub(crate) fn frontmatter<'a>(state: Rc<RefCell<State>>) -> InterpreterResult<Object> {
+    let doc = state.borrow().require(&Span::new("$self"))?;
+    let mut meta = HashMap::new();
+    meta.insert("title".into(), Object::String("title".into()));
+    Ok(Object::Map(meta))
+}
+
+pub(crate) fn page<'a>(state: Rc<RefCell<State>>) -> InterpreterResult<Object> {
+    let path = state.borrow().require(&Span::new("path"))?;
+
+    state
+        .borrow()
+        .push_instruction(ProgramInstruction::SetPath(path.to_string()));
+
+    Ok(Object::String("".into()))
 }

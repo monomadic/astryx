@@ -11,7 +11,7 @@ type LocalData = HashMap<String, Object>;
 pub struct State {
     pub local: LocalData,
     outer: Option<Rc<RefCell<State>>>,
-    program: Rc<RefCell<Vec<ProgramInstruction>>>,
+    pub program: Rc<RefCell<Vec<ProgramInstruction>>>,
     // pub writer: Writer,
 }
 

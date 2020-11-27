@@ -8,19 +8,13 @@ pub use project::Project;
 pub enum ProgramInstruction {
     Root,
     SetPwd(String),        // change working directory
-    SetPath(Output),       // change output path
+    SetPath(String),       // change output path
     HTMLElement(HTMLNode), // print a html element to the output device
     Text(String),          // print text to current output
     CSSRule,               // add a css style rule to the style block
                            // ImageInclude,
                            // JavaScript,
                            // Command, // arbitrary loaders and converters, image optimisers? shell command?
-}
-
-#[derive(Clone, Debug)]
-pub enum Output {
-    StdOut,
-    File(String),
 }
 
 // /// render a program to disk or buffer map
@@ -98,7 +92,7 @@ fn render_pages(
         match node {
             ProgramInstruction::Root => unimplemented!(),
             ProgramInstruction::SetPwd(pwd) => render_pages(nodes, pwd.into(), path, project),
-            ProgramInstruction::SetPath(_) => unimplemented!(),
+            ProgramInstruction::SetPath(path) => render_pages(nodes, pwd, path.into(), project),
             ProgramInstruction::HTMLElement(_) => unimplemented!(),
             ProgramInstruction::CSSRule => unimplemented!(),
             ProgramInstruction::Text(text) => {
