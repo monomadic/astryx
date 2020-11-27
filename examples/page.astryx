@@ -4,3 +4,6 @@
 page(path: "/hello", stylesheet: ./style.css)
     %h2
         | Hello Page
+
+%h2
+    | Index 2

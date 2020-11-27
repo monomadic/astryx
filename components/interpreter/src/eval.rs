@@ -2,7 +2,7 @@ use crate::{
     models::Object, state::State, InterpreterError, InterpreterErrorKind, InterpreterResult,
 };
 use html::HTMLElement;
-use parser::{Expression, Span, Statement, StringToken};
+use parser::{Expression, Statement, StringToken};
 use program::ProgramInstruction;
 use rctree::Node;
 use std::cell::RefCell;
@@ -49,6 +49,9 @@ pub(crate) fn eval_statement<'a>(
             state.borrow().push_instruction(ProgramInstruction::Text(
                 eval_expression(Rc::clone(&state), &expr)?.to_string(),
             ));
+            for child in statement.children() {
+                eval_statement(&child, Rc::clone(&state))?;
+            }
         }
         Statement::Text(t) => {
             state
@@ -154,15 +157,15 @@ pub fn eval_expression<'a>(
     }
 }
 
-fn eval_reference<'a>(name: &Span<'a>, state: Rc<RefCell<State>>) -> InterpreterResult<Object> {
-    state
-        .borrow()
-        .get(&name.fragment().to_string())
-        .ok_or(InterpreterError {
-            kind: InterpreterErrorKind::InvalidReference(name.to_string()),
-            location: Some((*name).into()),
-        })
-}
+// fn eval_reference<'a>(name: &Span<'a>, state: Rc<RefCell<State>>) -> InterpreterResult<Object> {
+//     state
+//         .borrow()
+//         .get(&name.fragment().to_string())
+//         .ok_or(InterpreterError {
+//             kind: InterpreterErrorKind::InvalidReference(name.to_string()),
+//             location: Some((*name).into()),
+//         })
+// }
 
 /// Convert string tokens to a fully interpolated string
 fn eval_interpolation<'a>(
