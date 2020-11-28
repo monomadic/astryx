@@ -149,7 +149,12 @@ pub fn eval_expression<'a>(
                             _ => unimplemented!(),
                         }
                     }
-                    _ => unimplemented!(),
+                    Expression::GlobPattern(_) => unimplemented!(),
+                    Expression::RelativePath(_) => unimplemented!(),
+                    Expression::Reference(_) => unimplemented!(),
+                    Expression::Literal(_) => unimplemented!(),
+                    Expression::Array(_) => unimplemented!(),
+                    Expression::Index(_, _) => unimplemented!(),
                 },
                 _ => panic!("{}", lexpr.inspect()),
             }

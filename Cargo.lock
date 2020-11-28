@@ -308,6 +308,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1"
 
 [[package]]
+name = "frontmatter"
+version = "0.1.0"
+dependencies = [
+ "yaml-rust",
+]
+
+[[package]]
 name = "getopts"
 version = "0.2.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -405,6 +412,7 @@ dependencies = [
 name = "interpreter"
 version = "0.1.0"
 dependencies = [
+ "frontmatter",
  "glob",
  "html",
  "markdown",

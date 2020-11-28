@@ -1,4 +1,5 @@
-use yaml_rust::{scanner::ScanError, Yaml, YamlLoader};
+pub use yaml_rust::Yaml;
+use yaml_rust::{scanner::ScanError, YamlLoader};
 
 // TODO consolidate these two functions
 /// parses a file and returns it as a string with optional separated yaml frontmatter
