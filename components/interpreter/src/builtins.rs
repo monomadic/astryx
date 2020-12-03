@@ -15,7 +15,7 @@ pub(crate) fn import(state: Rc<RefCell<State>>) -> Rc<RefCell<State>> {
 
     let _ = state
         .borrow_mut()
-        .bind("inspect", Object::BuiltinFunction(inspect));
+        .bind("locals", Object::BuiltinFunction(inspect_all));
 
     let _ = state
         .borrow_mut()
@@ -42,7 +42,7 @@ pub(crate) fn log(state: Rc<RefCell<State>>) -> InterpreterResult<Object> {
 }
 
 /// returns a debug representation of an object as a string
-pub(crate) fn inspect(state: Rc<RefCell<State>>) -> InterpreterResult<Object> {
+pub(crate) fn inspect_all(state: Rc<RefCell<State>>) -> InterpreterResult<Object> {
     let args = state
         .borrow()
         .local

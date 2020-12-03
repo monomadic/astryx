@@ -107,7 +107,7 @@ fn render_pages(
 }
 
 pub fn render_project(mut program: Vec<ProgramInstruction>) -> Project {
-    println!("program: {:?}", program);
+    // println!("program: {:?}", program);
 
     let mut project = Project::new();
 

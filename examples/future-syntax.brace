@@ -1,0 +1,8 @@
+
+Page { route: / }
+  TopBar
+    %div .inner
+
+= Page { route: route }
+  %html
+    yield

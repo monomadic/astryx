@@ -130,10 +130,17 @@ pub fn eval_expression<'a>(
                             kind: InterpreterErrorKind::UnknownMemberFunction(r.to_string()),
                             location: Some(r.into()),
                         }),
-                    _ => unimplemented!(),
+
+                    Expression::FunctionCall(_) => unimplemented!(),
+                    Expression::GlobPattern(_) => unimplemented!(),
+                    Expression::RelativePath(_) => unimplemented!(),
+                    Expression::Literal(_) => unimplemented!(),
+                    Expression::Array(_) => unimplemented!(),
+                    Expression::Index(_, _) => unimplemented!(),
                 },
                 Object::String(s) => match &**r {
                     Expression::FunctionCall(f) => {
+                        // println!("string.fn: {:?}", lexpr);
                         let mut inner = State::new();
                         inner.bind("$self", lexpr)?;
 
