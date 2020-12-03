@@ -2,6 +2,7 @@ page(path: "/", stylesheet: ./style.css)
 
   %h1
     | My Page
+    
   -- image(src: ./images/mine.png)
 
   for post in ./examples/*.md
