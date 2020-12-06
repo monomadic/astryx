@@ -11,7 +11,7 @@ use std::{collections::HashMap, rc::Rc};
 pub(crate) fn eval_statement<'a>(
     statement: &Node<Statement<'a>>,
     state: Rc<RefCell<State>>,
-) -> InterpreterResult<()> {
+) -> InterpreterResult<Object> {
     match statement.borrow().clone() {
         Statement::Element(e) => {
             let mut attributes: HashMap<String, String> = HashMap::new();
@@ -46,12 +46,15 @@ pub(crate) fn eval_statement<'a>(
                 .push_instruction(ProgramInstruction::Text(element.clone().close_tag()));
         }
         Statement::Expression(expr) => {
-            state.borrow().push_instruction(ProgramInstruction::Text(
-                eval_expression(Rc::clone(&state), &expr)?.to_string(),
-            ));
+            let return_value = eval_expression(Rc::clone(&state), &expr)?;
+            state
+                .borrow()
+                .push_instruction(ProgramInstruction::Text(return_value.to_string()));
             for child in statement.children() {
                 eval_statement(&child, Rc::clone(&state))?;
             }
+
+            return Ok(return_value);
         }
         Statement::Text(t) => {
             state
@@ -64,6 +67,7 @@ pub(crate) fn eval_statement<'a>(
         Statement::Binding(ident, expr) => {
             let obj = eval_expression(Rc::clone(&state), &expr)?;
             state.borrow_mut().bind(ident.fragment(), obj.clone())?;
+            return Ok(Object::None);
         }
         Statement::Comment(_) => {}
         Statement::ForLoop { ident, expr } => {
@@ -91,7 +95,7 @@ pub(crate) fn eval_statement<'a>(
         }
     }
 
-    Ok(())
+    Ok(Object::None)
 }
 
 pub fn eval_expression<'a>(
@@ -115,7 +119,7 @@ pub fn eval_expression<'a>(
         Expression::Reference(r) => state.borrow().require(r),
         Expression::Literal(l) => match l {
             parser::Literal::String(s) => Ok(Object::String(s.to_string())),
-            parser::Literal::Number(_s, _f) => unimplemented!(),
+            parser::Literal::Number(_s, f) => Ok(Object::Number(f.clone())),
         },
         Expression::RelativePath(_) => unimplemented!(),
         Expression::Array(_) => unimplemented!(),

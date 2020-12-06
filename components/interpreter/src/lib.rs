@@ -18,6 +18,7 @@ mod error;
 mod eval;
 mod models;
 mod state;
+use models::Object;
 use program::ProgramInstruction;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -40,4 +41,9 @@ pub fn run<'a>(
     let program = inner.borrow().get_program();
 
     Ok(program)
+}
+
+/// evaluate a single expression with a given state
+pub fn eval<'a>(statement: Statement<'a>, state: Rc<RefCell<State>>) -> InterpreterResult<Object> {
+    eval::eval_statement(&Node::new(statement), Rc::clone(&state))
 }

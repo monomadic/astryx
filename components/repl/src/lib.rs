@@ -26,10 +26,14 @@ fn repl(state: Rc<RefCell<State>>, editor: &mut Editor<()>) {
                 }
 
                 match parser::run(&line) {
-                    Ok(statements) => match interpreter::run(&statements, Rc::clone(&state)) {
-                        Ok(_) => {}
-                        Err(e) => println!("interpreter error: {:?}", e),
-                    },
+                    Ok(statements) => {
+                        for statement in statements {
+                            match interpreter::eval(statement.borrow().clone(), Rc::clone(&state)) {
+                                Ok(object) => println!("=> {}", object.inspect()),
+                                Err(e) => println!("interpreter error: {:?}", e),
+                            }
+                        }
+                    }
                     Err(e) => println!("parser error: {:?}", e),
                 };
             }

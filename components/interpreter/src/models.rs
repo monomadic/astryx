@@ -14,9 +14,11 @@ pub type BuiltinFunction = fn(Rc<RefCell<State>>) -> InterpreterResult<Object>;
 
 #[derive(Clone, Debug)]
 pub enum Object {
+    None,
     String(String),
+    Number(f64),
     // FunctionLiteral {
-    //     params: Vec<String>,
+    //     params: Vec<String>,4
     //     statements: Vec<Statement<'a>>,
     // },
     BuiltinFunction(BuiltinFunction),
@@ -40,6 +42,8 @@ impl Object {
                     .join(", ")
             ),
             Object::Map(_) => unimplemented!(),
+            Object::None => format!("(None)"),
+            Object::Number(f) => f.to_string(),
         }
     }
 }
@@ -52,6 +56,8 @@ impl ToString for Object {
             // Object::FunctionLiteral { params, statements } => format!("__FunctionLiteral"),
             Object::Array(_) => unimplemented!(),
             Object::Map(_) => unimplemented!(),
+            Object::None => unimplemented!(),
+            Object::Number(n) => format!("{}", n),
         }
     }
 }
@@ -64,6 +70,8 @@ impl Into<String> for Object {
             Object::BuiltinFunction(_) => unimplemented!(),
             Object::Array(_) => unimplemented!(),
             Object::Map(_) => unimplemented!(),
+            Object::None => unimplemented!(),
+            Object::Number(_) => unimplemented!(),
         }
     }
 }
