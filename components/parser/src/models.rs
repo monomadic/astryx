@@ -45,7 +45,7 @@ pub enum Expression<'a> {
     Reference(Span<'a>),
     Literal(Literal<'a>),
     Array(Vec<Expression<'a>>),
-    Index(Box<Expression<'a>>, Box<Expression<'a>>),
+    Index(Box<Expression<'a>>, Box<Expression<'a>>), // eg a.b(), "hi".log(), a.b.c
 }
 
 impl Expression<'_> {

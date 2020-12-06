@@ -74,11 +74,13 @@ pub struct ForLoop<'a> {
 
 pub(crate) fn expression<'a>(i: Span<'a>) -> IResult<Span, Expression<'a>, ParserError<Span<'a>>> {
     alt((
-        map(function_call, |f| Expression::FunctionCall(f)),
+        map(index, |(index, expr)| {
+            Expression::Index(Box::new(index), Box::new(expr))
+        }),
         //map(relative_path, |s| Expression::RelativePath(s)),
         map(glob_pattern, |s| Expression::GlobPattern(s)),
+        map(function_call, |f| Expression::FunctionCall(f)),
         map(literal, |v| Expression::Literal(v)),
-        map(index, |(i, e)| Expression::Index(Box::new(i), Box::new(e))),
         map(alphanumeric1, |s| Expression::Reference(s)),
     ))(i)
 }
@@ -86,9 +88,20 @@ pub(crate) fn expression<'a>(i: Span<'a>) -> IResult<Span, Expression<'a>, Parse
 fn index<'a>(
     i: Span<'a>,
 ) -> IResult<Span<'a>, (Expression<'a>, Expression<'a>), ParserError<Span<'a>>> {
-    tuple((alphanumeric1, tag("."), expression))(i)
-        .map(|(r, (ident, _, expr))| (r, (Expression::Reference(ident), expr)))
+    tuple((index_expression, tag("."), expression))(i)
+        .map(|(r, (index, _, expr))| (r, (index, expr)))
+    // separated_list(tag("."), expression)(i)
     // tag("--")(i).map(|(r, _)| (Span::new(""), r))
+}
+
+fn index_expression<'a>(i: Span<'a>) -> IResult<Span, Expression<'a>, ParserError<Span<'a>>> {
+    alt((
+        //map(relative_path, |s| Expression::RelativePath(s)),
+        map(glob_pattern, |s| Expression::GlobPattern(s)),
+        map(function_call, |f| Expression::FunctionCall(f)),
+        map(literal, |v| Expression::Literal(v)),
+        map(alphanumeric1, |s| Expression::Reference(s)),
+    ))(i)
 }
 
 fn comment<'a>(i: Span<'a>) -> IResult<Span<'a>, Span<'a>, ParserError<Span<'a>>> {
@@ -131,8 +144,9 @@ mod test {
 
     #[test]
     fn test_index() {
-        // println!("{:?}", for_loop(Span::new("for x in ./posts/*.md")));
+        assert!(index(Span::new("test")).is_err());
         assert!(index(Span::new("test.blah")).is_ok());
+        assert!(index(Span::new("test.log()")).is_ok());
     }
 
     #[test]

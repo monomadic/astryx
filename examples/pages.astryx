@@ -2,7 +2,7 @@
 -- maybe expressions evaluate to objects
 -- and you can simply pass these objects to a function.
 
-def pages
+page(path: ./index.html).write()
 
   %h1
     | Index Page
@@ -21,6 +21,3 @@ def pages
         %h1
           | ${ meta.title }
         -- post.markdown()
-
--- something like:
-pages.write(path: ./index.html, stylesheet: "style.css")

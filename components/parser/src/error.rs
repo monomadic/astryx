@@ -12,7 +12,7 @@ impl<'a> ParseError<Span<'a>> for ParserError<Span<'a>> {
     fn from_error_kind(input: Span<'a>, _kind: ErrorKind) -> Self {
         // panic!("incoming: {:?}", input);
         ParserError {
-            kind: ParserErrorKind::Unhandled,
+            kind: ParserErrorKind::Unexpected,
             pos: input,
             context: input,
         }
@@ -27,7 +27,7 @@ impl<'a> ParseError<Span<'a>> for ParserError<Span<'a>> {
 pub enum ParserErrorKind<I> {
     SyntaxError,
     FunctionArgumentError,
-    Unhandled,
+    Unexpected,
     UnexpectedToken(String),
     ExpectedValue,
     Nom(I),

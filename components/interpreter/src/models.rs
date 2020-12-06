@@ -56,7 +56,7 @@ impl ToString for Object {
             // Object::FunctionLiteral { params, statements } => format!("__FunctionLiteral"),
             Object::Array(arr) => format!("{:?}", arr),
             Object::Map(_) => unimplemented!(),
-            Object::None => unimplemented!(),
+            Object::None => format!("(None)"),
             Object::Number(n) => format!("{}", n),
         }
     }

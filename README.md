@@ -5,17 +5,20 @@
 
 Astryx is a declarative, pure, expressive static web content tool. It walks the line
 between being a simple language and a compiler environment, taking static generators
-to a whole new level.
+to a different place.
+
+I personally developed the language over the 2020 lockdown period, over a year of many
+rewrites and refactors.
+
+__NOTE: pre-production state, not even alpha yet. pushing updates regularly, check the kanban board for progress__
 
 ## Features
 * declarative, type-checked, intuitive ui language
-* clean separation of style, layout, and content
+* web based primitive objects (html elements, styles, etc)
 * single binary (makes CI/CD into github/gitlab pages very simple)
 * zero boilerplate
-* zero orphans
-* smaller static sites than any other library, period.
-
-__NOTE: pre-production state, not even alpha yet. pushing updates regularly, check the kanban board for progress__
+* zero orphan files
+* smaller static sites than any other library.
 
 ## Compiling / Running
 
