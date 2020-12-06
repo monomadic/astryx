@@ -19,7 +19,7 @@ pub(crate) fn eval_statement<'a>(
             for (ident, expr) in e.attributes {
                 attributes.insert(
                     ident.fragment().to_string(),
-                    eval_expression(Rc::clone(&state), &expr)?.into(),
+                    eval_expression(Rc::clone(&state), &expr, None)?.into(),
                 );
             }
 
@@ -48,13 +48,24 @@ pub(crate) fn eval_statement<'a>(
             return Ok(Object::HTMLElement(element));
         }
         Statement::Expression(expr) => {
-            let return_value = eval_expression(Rc::clone(&state), &expr)?;
+            let return_objects: Vec<Object> = statement
+                .children()
+                .map(|child| eval_statement(&child, Rc::clone(&state)))
+                .collect::<InterpreterResult<Vec<Object>>>()?;
+
+            let return_value = eval_expression(
+                Rc::clone(&state),
+                &expr,
+                Some(Object::Array(return_objects)),
+            )?;
+
             state
                 .borrow()
                 .push_instruction(ProgramInstruction::Text(return_value.to_string()));
-            for child in statement.children() {
-                eval_statement(&child, Rc::clone(&state))?;
-            }
+
+            // for child in statement.children() {
+            //     eval_statement(&child, Rc::clone(&state))?;
+            // }
 
             return Ok(return_value);
         }
@@ -67,13 +78,13 @@ pub(crate) fn eval_statement<'a>(
                 )?));
         }
         Statement::Binding(ident, expr) => {
-            let obj = eval_expression(Rc::clone(&state), &expr)?;
+            let obj = eval_expression(Rc::clone(&state), &expr, None)?;
             state.borrow_mut().bind(ident.fragment(), obj.clone())?;
             return Ok(Object::None);
         }
         Statement::Comment(_) => {}
         Statement::ForLoop { ident, expr } => {
-            let iter: Object = eval_expression(Rc::clone(&state), &expr)?;
+            let iter: Object = eval_expression(Rc::clone(&state), &expr, None)?;
 
             if let Object::Array(array) = iter {
                 for index in array {
@@ -103,6 +114,7 @@ pub(crate) fn eval_statement<'a>(
 pub fn eval_expression<'a>(
     state: Rc<RefCell<State>>,
     expr: &Expression<'a>,
+    input: Option<Object>,
 ) -> InterpreterResult<Object> {
     match expr {
         Expression::FunctionCall(ref f) => {
@@ -110,11 +122,14 @@ pub fn eval_expression<'a>(
             inner.program = Rc::clone(&state.borrow().program);
 
             for (k, expr) in &f.arguments {
-                inner.bind(&k.to_string(), eval_expression(Rc::clone(&state), expr)?)?;
+                inner.bind(
+                    &k.to_string(),
+                    eval_expression(Rc::clone(&state), expr, None)?,
+                )?;
             }
 
-            match eval_expression(state, &*f.ident)? {
-                Object::BuiltinFunction(builtin) => builtin(Rc::new(RefCell::new(inner))),
+            match eval_expression(state, &*f.ident, None)? {
+                Object::BuiltinFunction(builtin) => builtin(Rc::new(RefCell::new(inner)), None),
                 _ => unimplemented!(),
             }
         }
@@ -127,7 +142,9 @@ pub fn eval_expression<'a>(
         Expression::Array(_) => unimplemented!(),
         Expression::GlobPattern(s) => crate::util::import_files(s),
         Expression::Index(l, r) => {
-            let lexpr = eval_expression(Rc::clone(&state), l)?;
+            let lexpr = eval_expression(Rc::clone(&state), l, None)?;
+
+            // todo: FIX THIS, create micro-scope and use as input
 
             match &lexpr {
                 Object::Map(ref m) => match **r {
@@ -150,16 +167,18 @@ pub fn eval_expression<'a>(
                     Expression::FunctionCall(f) => {
                         // println!("string.fn: {:?}", lexpr);
                         let mut inner = State::new();
-                        inner.bind("$self", lexpr)?;
+                        inner.bind("$self", lexpr.clone())?;
 
                         for (k, expr) in &f.arguments {
-                            inner
-                                .bind(&k.to_string(), eval_expression(Rc::clone(&state), expr)?)?;
+                            inner.bind(
+                                &k.to_string(),
+                                eval_expression(Rc::clone(&state), expr, None)?,
+                            )?;
                         }
 
-                        match eval_expression(state, &*f.ident)? {
+                        match eval_expression(state, &*f.ident, None)? {
                             Object::BuiltinFunction(builtin) => {
-                                builtin(Rc::new(RefCell::new(inner)))
+                                builtin(Rc::new(RefCell::new(inner)), Some(lexpr))
                             }
                             _ => unimplemented!(),
                         }
@@ -198,7 +217,7 @@ fn eval_interpolation<'a>(
             StringToken::Text(span) => Ok(span.to_string()),
             // StringToken::Expression(expr) => self.eval(&expr).map(|e| e.into()),
             StringToken::Expression(expr) => {
-                Ok(eval_expression(Rc::clone(&state), &expr)?.to_string())
+                Ok(eval_expression(Rc::clone(&state), &expr, None)?.to_string())
             }
         })
         .collect::<Result<Vec<String>, InterpreterError>>()?

@@ -9,17 +9,17 @@ use std::rc::Rc;
 pub fn import(state: Rc<RefCell<State>>) -> Rc<RefCell<State>> {
     let _ = state.borrow_mut().bind("log", Object::BuiltinFunction(log));
 
-    let _ = state
-        .borrow_mut()
-        .bind("frontmatter", Object::BuiltinFunction(parse_frontmatter));
+    // let _ = state
+    //     .borrow_mut()
+    //     .bind("frontmatter", Object::BuiltinFunction(parse_frontmatter));
 
-    let _ = state
-        .borrow_mut()
-        .bind("locals", Object::BuiltinFunction(inspect_all));
+    // let _ = state
+    //     .borrow_mut()
+    //     .bind("locals", Object::BuiltinFunction(inspect_all));
 
-    let _ = state
-        .borrow_mut()
-        .bind("markdown", Object::BuiltinFunction(markdown));
+    // let _ = state
+    //     .borrow_mut()
+    //     .bind("markdown", Object::BuiltinFunction(markdown));
 
     let _ = state
         .borrow_mut()
@@ -32,16 +32,21 @@ pub fn import(state: Rc<RefCell<State>>) -> Rc<RefCell<State>> {
     state
 }
 
-pub(crate) fn log(state: Rc<RefCell<State>>) -> InterpreterResult<Object> {
-    let args = state
-        .borrow()
-        .local
-        .iter()
-        .map(|(_k, v)| format!("{}", v.to_string()))
-        .collect::<Vec<String>>()
-        .join(", ");
+pub(crate) fn log(state: Rc<RefCell<State>>, input: Option<Object>) -> InterpreterResult<Object> {
+    println!(
+        "{}",
+        match input {
+            Some(input) => input.to_string(),
+            None => state
+                .borrow()
+                .local
+                .iter()
+                .map(|(_k, v)| format!("{}", v.to_string()))
+                .collect::<Vec<String>>()
+                .join(", "),
+        }
+    );
 
-    println!("{}", args);
     Ok(Object::None) // todo: return ()
 }
 
@@ -105,7 +110,10 @@ impl From<Yaml> for Object {
     }
 }
 
-pub(crate) fn page<'a>(state: Rc<RefCell<State>>) -> InterpreterResult<Object> {
+pub(crate) fn page<'a>(
+    state: Rc<RefCell<State>>,
+    input: Option<Object>,
+) -> InterpreterResult<Object> {
     // let path = state.borrow().require(&Span::new("path"))?;
 
     // state
@@ -116,7 +124,10 @@ pub(crate) fn page<'a>(state: Rc<RefCell<State>>) -> InterpreterResult<Object> {
 }
 
 /// takes an object and writes to a file
-pub(crate) fn write<'a>(state: Rc<RefCell<State>>) -> InterpreterResult<Object> {
+pub(crate) fn write<'a>(
+    state: Rc<RefCell<State>>,
+    _input: Option<Object>,
+) -> InterpreterResult<Object> {
     let path = state.borrow().require(&Span::new("path"))?;
 
     state

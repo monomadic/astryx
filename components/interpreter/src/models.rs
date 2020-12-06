@@ -10,7 +10,7 @@ use std::rc::Rc;
 //     Root,
 // }
 
-pub type BuiltinFunction = fn(Rc<RefCell<State>>) -> InterpreterResult<Object>;
+pub type BuiltinFunction = fn(Rc<RefCell<State>>, Option<Object>) -> InterpreterResult<Object>;
 
 #[derive(Clone, Debug)]
 pub enum Object {
