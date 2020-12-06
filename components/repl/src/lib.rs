@@ -1,13 +1,12 @@
-use interpreter::State;
+use interpreter::{builtins, State};
 use rustyline::{error::ReadlineError, Editor};
 use std::cell::RefCell;
 use std::rc::Rc;
 
 pub fn run() {
-    repl(
-        Rc::new(RefCell::new(State::default())),
-        &mut Editor::<()>::new(),
-    );
+    let state = Rc::new(RefCell::new(State::default()));
+    let inner = &builtins::import(state);
+    repl(Rc::clone(inner), &mut Editor::<()>::new());
 }
 
 fn repl(state: Rc<RefCell<State>>, editor: &mut Editor<()>) {

@@ -54,7 +54,7 @@ impl ToString for Object {
             Object::BuiltinFunction(_) => format!("__BuiltinFunction"),
             Object::String(s) => s.clone(),
             // Object::FunctionLiteral { params, statements } => format!("__FunctionLiteral"),
-            Object::Array(_) => unimplemented!(),
+            Object::Array(arr) => format!("{:?}", arr),
             Object::Map(_) => unimplemented!(),
             Object::None => unimplemented!(),
             Object::Number(n) => format!("{}", n),

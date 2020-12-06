@@ -22,7 +22,7 @@ use models::Object;
 use program::ProgramInstruction;
 use std::cell::RefCell;
 use std::rc::Rc;
-mod builtins;
+pub mod builtins;
 mod util;
 
 pub type InterpreterResult<T> = Result<T, InterpreterError>;

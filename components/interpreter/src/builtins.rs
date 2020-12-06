@@ -6,7 +6,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-pub(crate) fn import(state: Rc<RefCell<State>>) -> Rc<RefCell<State>> {
+pub fn import(state: Rc<RefCell<State>>) -> Rc<RefCell<State>> {
     let _ = state.borrow_mut().bind("log", Object::BuiltinFunction(log));
 
     let _ = state
@@ -38,7 +38,7 @@ pub(crate) fn log(state: Rc<RefCell<State>>) -> InterpreterResult<Object> {
         .join(", ");
 
     println!("{}", args);
-    Ok(Object::String(String::new())) // todo: return ()
+    Ok(Object::None) // todo: return ()
 }
 
 /// returns a debug representation of an object as a string
