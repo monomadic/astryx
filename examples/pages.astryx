@@ -2,7 +2,7 @@
 -- maybe expressions evaluate to objects
 -- and you can simply pass these objects to a function.
 
-page(path: ./index.html).write()
+page().write(path: ./index.html)
 
   %h1
     | Index Page
@@ -12,11 +12,12 @@ page(path: ./index.html).write()
   for post in ./examples/*.md
     let meta = post.frontmatter()
 
+    -- %a { href = meta.route } meta.title
     %a href=meta.route
       | /
       meta.title
 
-    page(path: meta.route)
+    page(path: ./index.html).write(path: meta.route)
       %div
         %h1
           | ${ meta.title }

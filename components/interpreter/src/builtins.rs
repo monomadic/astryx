@@ -25,6 +25,10 @@ pub fn import(state: Rc<RefCell<State>>) -> Rc<RefCell<State>> {
         .borrow_mut()
         .bind("page", Object::BuiltinFunction(page));
 
+    let _ = state
+        .borrow_mut()
+        .bind("write", Object::BuiltinFunction(write));
+
     state
 }
 
@@ -102,11 +106,22 @@ impl From<Yaml> for Object {
 }
 
 pub(crate) fn page<'a>(state: Rc<RefCell<State>>) -> InterpreterResult<Object> {
+    // let path = state.borrow().require(&Span::new("path"))?;
+
+    // state
+    //     .borrow()
+    //     .push_instruction(ProgramInstruction::SetPath(path.to_string()));
+
+    Ok(Object::String("".into()))
+}
+
+/// takes an object and writes to a file
+pub(crate) fn write<'a>(state: Rc<RefCell<State>>) -> InterpreterResult<Object> {
     let path = state.borrow().require(&Span::new("path"))?;
 
     state
         .borrow()
         .push_instruction(ProgramInstruction::SetPath(path.to_string()));
 
-    Ok(Object::String("".into()))
+    Ok(Object::None)
 }

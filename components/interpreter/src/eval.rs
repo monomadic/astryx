@@ -44,6 +44,8 @@ pub(crate) fn eval_statement<'a>(
             state
                 .borrow()
                 .push_instruction(ProgramInstruction::Text(element.clone().close_tag()));
+
+            return Ok(Object::HTMLElement(element));
         }
         Statement::Expression(expr) => {
             let return_value = eval_expression(Rc::clone(&state), &expr)?;

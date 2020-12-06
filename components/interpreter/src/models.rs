@@ -4,11 +4,11 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-#[derive(Debug)]
-pub enum AstryxNode {
-    HTMLElement(HTMLElement),
-    Root,
-}
+// #[derive(Debug)]
+// pub enum AstryxNode {
+//     HTMLElement(HTMLElement),
+//     Root,
+// }
 
 pub type BuiltinFunction = fn(Rc<RefCell<State>>) -> InterpreterResult<Object>;
 
@@ -17,6 +17,7 @@ pub enum Object {
     None,
     String(String),
     Number(f64),
+    HTMLElement(HTMLElement),
     // FunctionLiteral {
     //     params: Vec<String>,4
     //     statements: Vec<Statement<'a>>,
@@ -44,6 +45,7 @@ impl Object {
             Object::Map(_) => unimplemented!(),
             Object::None => format!("(None)"),
             Object::Number(f) => f.to_string(),
+            Object::HTMLElement(e) => format!("{}{}", e.open_tag(), e.close_tag()),
         }
     }
 }
@@ -58,6 +60,7 @@ impl ToString for Object {
             Object::Map(_) => unimplemented!(),
             Object::None => format!("(None)"),
             Object::Number(n) => format!("{}", n),
+            Object::HTMLElement(_) => unimplemented!(),
         }
     }
 }
@@ -72,6 +75,7 @@ impl Into<String> for Object {
             Object::Map(_) => unimplemented!(),
             Object::None => unimplemented!(),
             Object::Number(_) => unimplemented!(),
+            Object::HTMLElement(_) => unimplemented!(),
         }
     }
 }

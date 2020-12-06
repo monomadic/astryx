@@ -8,7 +8,6 @@
 //!
 
 pub use error::{InterpreterError, InterpreterErrorKind};
-pub use models::AstryxNode;
 pub use state::State;
 
 use parser::Statement;
@@ -18,7 +17,7 @@ mod error;
 mod eval;
 mod models;
 mod state;
-use models::Object;
+pub use models::Object;
 use program::ProgramInstruction;
 use std::cell::RefCell;
 use std::rc::Rc;
