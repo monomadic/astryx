@@ -1,6 +1,7 @@
 use crate::{models::Object, InterpreterError, InterpreterErrorKind, InterpreterResult};
 use glob::Paths;
 use parser::Span;
+use rctree::Node;
 
 pub(crate) fn import_files<'a>(s: &Span<'a>) -> InterpreterResult<Object> {
     let options = glob::MatchOptions {
@@ -21,7 +22,7 @@ pub(crate) fn import_files<'a>(s: &Span<'a>) -> InterpreterResult<Object> {
         let filepath: String = path.as_os_str().to_str().unwrap().into();
         let file_content = std::fs::read_to_string(filepath).unwrap();
 
-        files.push(Object::String(file_content));
+        files.push(Node::new(Object::String(file_content)));
     }
 
     Ok(Object::Array(files))

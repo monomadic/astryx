@@ -1,5 +1,6 @@
 use crate::{InterpreterResult, State};
 use html::HTMLElement;
+use rctree::Node;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -10,7 +11,8 @@ use std::rc::Rc;
 //     Root,
 // }
 
-pub type BuiltinFunction = fn(Rc<RefCell<State>>, Option<Object>) -> InterpreterResult<Object>;
+pub type BuiltinFunction =
+    fn(Rc<RefCell<State>>, Option<Node<Object>>) -> InterpreterResult<Object>;
 
 #[derive(Clone, Debug)]
 pub enum Object {
@@ -23,8 +25,8 @@ pub enum Object {
     //     statements: Vec<Statement<'a>>,
     // },
     BuiltinFunction(BuiltinFunction),
-    Array(Vec<Object>),
-    Map(HashMap<String, Object>),
+    Array(Vec<Node<Object>>),
+    Map(HashMap<String, Node<Object>>),
 }
 
 impl Object {
@@ -38,7 +40,7 @@ impl Object {
             Object::Array(v) => format!(
                 "[{}]",
                 v.iter()
-                    .map(Object::inspect)
+                    .map(|node| Object::inspect(&node.borrow().clone()))
                     .collect::<Vec<String>>()
                     .join(", ")
             ),

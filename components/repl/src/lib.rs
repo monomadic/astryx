@@ -28,7 +28,7 @@ fn repl(state: Rc<RefCell<State>>, editor: &mut Editor<()>) {
                     Ok(statements) => {
                         for statement in statements {
                             match interpreter::eval(statement.borrow().clone(), Rc::clone(&state)) {
-                                Ok(object) => println!("=> {}", object.inspect()),
+                                Ok(object) => println!("=> {}", object.borrow().inspect()),
                                 Err(e) => println!("interpreter error: {:?}", e),
                             }
                         }

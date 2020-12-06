@@ -3,7 +3,6 @@ use crate::{
 };
 use html::HTMLElement;
 use parser::{Expression, Statement, StringToken};
-use program::ProgramInstruction;
 use rctree::Node;
 use std::cell::RefCell;
 use std::{collections::HashMap, rc::Rc};
@@ -11,7 +10,7 @@ use std::{collections::HashMap, rc::Rc};
 pub(crate) fn eval_statement<'a>(
     statement: &Node<Statement<'a>>,
     state: Rc<RefCell<State>>,
-) -> InterpreterResult<Object> {
+) -> InterpreterResult<Node<Object>> {
     // this needs to be Node<Object>
     match statement.borrow().clone() {
         Statement::Element(e) => {
@@ -34,67 +33,71 @@ pub(crate) fn eval_statement<'a>(
             // - injection? (might need tree for this though...?)
             // program.push(ProgramInstruction::Text(element.clone().open_tag()));
 
-            state
-                .borrow()
-                .push_instruction(ProgramInstruction::Text(element.clone().open_tag()));
+            // state
+            //     .borrow()
+            //     .push_instruction(ProgramInstruction::Text(element.clone().open_tag()));
+
+            let node = Node::new(Object::HTMLElement(element));
 
             for child in statement.children() {
                 eval_statement(&child, Rc::clone(&state))?;
+                // node.append child
             }
 
-            state
-                .borrow()
-                .push_instruction(ProgramInstruction::Text(element.clone().close_tag()));
+            // state
+            //     .borrow()
+            //     .push_instruction(ProgramInstruction::Text(element.clone().close_tag()));
 
-            Ok(Object::HTMLElement(element))
+            Ok(node)
         }
         Statement::Expression(expr) => {
-            let return_objects: Vec<Object> = statement
+            let return_objects: Vec<Node<Object>> = statement
                 .children()
                 .map(|child| eval_statement(&child, Rc::clone(&state)))
-                .collect::<InterpreterResult<Vec<Object>>>()?;
+                .collect::<InterpreterResult<Vec<Node<Object>>>>()?;
+
+            // for statement in statement.children() {
+
+            // }
 
             let return_value = eval_expression(
                 Rc::clone(&state),
                 &expr,
-                Some(Object::Array(return_objects)),
+                Some(Node::new(Object::Array(return_objects))),
             )?;
 
-            state
-                .borrow()
-                .push_instruction(ProgramInstruction::Text(return_value.to_string()));
+            // state
+            //     .borrow()
+            //     .push_instruction(ProgramInstruction::Text(return_value.to_string()));
 
             // for child in statement.children() {
             //     eval_statement(&child, Rc::clone(&state))?;
             // }
 
-            Ok(return_value)
+            Ok(Node::new(return_value))
         }
-        Statement::Text(t) => {
-            // state
-            //     .borrow()
-            //     .push_instruction(ProgramInstruction::Text(eval_interpolation(
-            //         Rc::clone(&state),
-            //         t,
-            //     )?));
-            Ok(Object::String(eval_interpolation(Rc::clone(&state), t)?))
-        }
+        Statement::Text(t) => Ok(Node::new(Object::String(eval_interpolation(
+            Rc::clone(&state),
+            t,
+        )?))),
         Statement::Binding(ident, expr) => {
             let obj = eval_expression(Rc::clone(&state), &expr, None)?;
             state.borrow_mut().bind(ident.fragment(), obj.clone())?;
-            return Ok(Object::None);
+            return Ok(Node::new(Object::None));
         }
-        Statement::Comment(_) => {}
+        Statement::Comment(_) => Ok(Node::new(Object::None)),
         Statement::ForLoop { ident, expr } => {
             let iter: Object = eval_expression(Rc::clone(&state), &expr, None)?;
 
             if let Object::Array(array) = iter {
                 for index in array {
                     let childstate = state.clone();
-                    childstate.borrow_mut().bind(&ident.to_string(), index)?;
+                    childstate
+                        .borrow_mut()
+                        .bind(&ident.to_string(), index.borrow().clone())?;
                     for child in statement.children() {
                         // BUG HERE - CHILDSTATE IS THE SAME
-                        println!("---{:?}", &childstate.borrow().local);
+                        // println!("---{:?}", &childstate.borrow().local);
                         let _ = eval_statement(&child, Rc::clone(&childstate))?;
                     }
                 }
@@ -108,7 +111,7 @@ pub(crate) fn eval_statement<'a>(
                 });
             }
 
-            Ok(Object::None) // FIXME
+            Ok(Node::new(Object::None)) // FIXME
         }
     }
 }
@@ -116,7 +119,7 @@ pub(crate) fn eval_statement<'a>(
 pub fn eval_expression<'a>(
     state: Rc<RefCell<State>>,
     expr: &Expression<'a>,
-    input: Option<Object>,
+    input: Option<Node<Object>>,
 ) -> InterpreterResult<Object> {
     match expr {
         Expression::FunctionCall(ref f) => {
@@ -152,7 +155,7 @@ pub fn eval_expression<'a>(
                 Object::Map(ref m) => match **r {
                     Expression::Reference(r) => m
                         .get(r.to_string().as_str())
-                        .map(|o| o.clone())
+                        .map(|o| o.borrow().clone())
                         .ok_or(InterpreterError {
                             kind: InterpreterErrorKind::UnknownMemberFunction(r.to_string()),
                             location: Some(r.into()),
@@ -180,7 +183,7 @@ pub fn eval_expression<'a>(
 
                         match eval_expression(state, &*f.ident, None)? {
                             Object::BuiltinFunction(builtin) => {
-                                builtin(Rc::new(RefCell::new(inner)), Some(lexpr))
+                                builtin(Rc::new(RefCell::new(inner)), Some(Node::new(lexpr)))
                             }
                             _ => unimplemented!(),
                         }

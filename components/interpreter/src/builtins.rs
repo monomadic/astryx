@@ -2,6 +2,7 @@ use crate::{models::Object, InterpreterResult, State};
 use frontmatter::Yaml;
 use parser::Span;
 use program::ProgramInstruction;
+use rctree::Node;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -9,9 +10,9 @@ use std::rc::Rc;
 pub fn import(state: Rc<RefCell<State>>) -> Rc<RefCell<State>> {
     let _ = state.borrow_mut().bind("log", Object::BuiltinFunction(log));
 
-    // let _ = state
-    //     .borrow_mut()
-    //     .bind("frontmatter", Object::BuiltinFunction(parse_frontmatter));
+    let _ = state
+        .borrow_mut()
+        .bind("frontmatter", Object::BuiltinFunction(parse_frontmatter));
 
     // let _ = state
     //     .borrow_mut()
@@ -32,22 +33,29 @@ pub fn import(state: Rc<RefCell<State>>) -> Rc<RefCell<State>> {
     state
 }
 
-pub(crate) fn log(state: Rc<RefCell<State>>, input: Option<Object>) -> InterpreterResult<Object> {
-    println!(
-        "{}",
-        match input {
-            Some(input) => input.to_string(),
-            None => state
-                .borrow()
-                .local
-                .iter()
-                .map(|(_k, v)| format!("{}", v.to_string()))
-                .collect::<Vec<String>>()
-                .join(", "),
+pub(crate) fn log(
+    state: Rc<RefCell<State>>,
+    input: Option<Node<Object>>,
+) -> InterpreterResult<Object> {
+    match input {
+        Some(input) => {
+            println!("{:?}", input.borrow().to_string());
+            Ok(input.borrow().clone())
         }
-    );
-
-    Ok(Object::None) // todo: return ()
+        None => {
+            println!(
+                "{:?}",
+                state
+                    .borrow()
+                    .local
+                    .iter()
+                    .map(|(_k, v)| format!("{}", v.to_string()))
+                    .collect::<Vec<String>>()
+                    .join(", ")
+            );
+            Ok(Object::None)
+        }
+    }
 }
 
 /// returns a debug representation of an object as a string
@@ -69,7 +77,10 @@ pub(crate) fn markdown<'a>(state: Rc<RefCell<State>>) -> InterpreterResult<Objec
     Ok(Object::String(result))
 }
 
-pub(crate) fn parse_frontmatter<'a>(state: Rc<RefCell<State>>) -> InterpreterResult<Object> {
+pub(crate) fn parse_frontmatter<'a>(
+    state: Rc<RefCell<State>>,
+    input: Option<Node<Object>>,
+) -> InterpreterResult<Object> {
     let doc = state.borrow().require(&Span::new("$self"))?;
 
     let (yaml, _document) = match doc {
@@ -98,7 +109,7 @@ impl From<Yaml> for Object {
                 let mut h = HashMap::new();
 
                 for (k, v) in lhm {
-                    h.insert(k.into_string().unwrap(), v.into());
+                    h.insert(k.into_string().unwrap(), Node::new(v.into()));
                 }
 
                 Object::Map(h)
@@ -112,7 +123,7 @@ impl From<Yaml> for Object {
 
 pub(crate) fn page<'a>(
     state: Rc<RefCell<State>>,
-    input: Option<Object>,
+    input: Option<Node<Object>>,
 ) -> InterpreterResult<Object> {
     // let path = state.borrow().require(&Span::new("path"))?;
 
@@ -126,7 +137,7 @@ pub(crate) fn page<'a>(
 /// takes an object and writes to a file
 pub(crate) fn write<'a>(
     state: Rc<RefCell<State>>,
-    _input: Option<Object>,
+    _input: Option<Node<Object>>,
 ) -> InterpreterResult<Object> {
     let path = state.borrow().require(&Span::new("path"))?;
 

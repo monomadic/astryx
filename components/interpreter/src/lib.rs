@@ -43,6 +43,9 @@ pub fn run<'a>(
 }
 
 /// evaluate a single expression with a given state
-pub fn eval<'a>(statement: Statement<'a>, state: Rc<RefCell<State>>) -> InterpreterResult<Object> {
+pub fn eval<'a>(
+    statement: Statement<'a>,
+    state: Rc<RefCell<State>>,
+) -> InterpreterResult<Node<Object>> {
     eval::eval_statement(&Node::new(statement), Rc::clone(&state))
 }
