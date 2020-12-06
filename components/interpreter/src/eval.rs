@@ -12,6 +12,7 @@ pub(crate) fn eval_statement<'a>(
     statement: &Node<Statement<'a>>,
     state: Rc<RefCell<State>>,
 ) -> InterpreterResult<Object> {
+    // this needs to be Node<Object>
     match statement.borrow().clone() {
         Statement::Element(e) => {
             let mut attributes: HashMap<String, String> = HashMap::new();
@@ -45,7 +46,7 @@ pub(crate) fn eval_statement<'a>(
                 .borrow()
                 .push_instruction(ProgramInstruction::Text(element.clone().close_tag()));
 
-            return Ok(Object::HTMLElement(element));
+            Ok(Object::HTMLElement(element))
         }
         Statement::Expression(expr) => {
             let return_objects: Vec<Object> = statement
@@ -67,15 +68,16 @@ pub(crate) fn eval_statement<'a>(
             //     eval_statement(&child, Rc::clone(&state))?;
             // }
 
-            return Ok(return_value);
+            Ok(return_value)
         }
         Statement::Text(t) => {
-            state
-                .borrow()
-                .push_instruction(ProgramInstruction::Text(eval_interpolation(
-                    Rc::clone(&state),
-                    t,
-                )?));
+            // state
+            //     .borrow()
+            //     .push_instruction(ProgramInstruction::Text(eval_interpolation(
+            //         Rc::clone(&state),
+            //         t,
+            //     )?));
+            Ok(Object::String(eval_interpolation(Rc::clone(&state), t)?))
         }
         Statement::Binding(ident, expr) => {
             let obj = eval_expression(Rc::clone(&state), &expr, None)?;
@@ -105,10 +107,10 @@ pub(crate) fn eval_statement<'a>(
                     location: Some(ident.into()),
                 });
             }
+
+            Ok(Object::None) // FIXME
         }
     }
-
-    Ok(Object::None)
 }
 
 pub fn eval_expression<'a>(
