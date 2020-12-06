@@ -74,6 +74,8 @@ pub(crate) fn eval_statement<'a>(
                     let childstate = state.clone();
                     childstate.borrow_mut().bind(&ident.to_string(), index)?;
                     for child in statement.children() {
+                        // BUG HERE - CHILDSTATE IS THE SAME
+                        println!("---{:?}", &childstate.borrow().local);
                         let _ = eval_statement(&child, Rc::clone(&childstate))?;
                     }
                 }

@@ -1,7 +1,11 @@
-page(path: "/", stylesheet: ./style.css)
+-- maybe we don't need a 'program'
+-- maybe expressions evaluate to objects
+-- and you can simply pass these objects to a function.
+
+def pages
 
   %h1
-    | index
+    | Index Page
     
   -- image(src: ./images/mine.png)
 
@@ -17,3 +21,6 @@ page(path: "/", stylesheet: ./style.css)
         %h1
           | ${ meta.title }
         -- post.markdown()
+
+-- something like:
+pages.write(path: ./index.html, stylesheet: "style.css")
