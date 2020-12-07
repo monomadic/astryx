@@ -11,7 +11,6 @@ pub(crate) fn eval_statement<'a>(
     statement: &Node<Statement<'a>>,
     state: Rc<RefCell<State>>,
 ) -> InterpreterResult<Node<Object>> {
-    // this needs to be Node<Object>
     match statement.borrow().clone() {
         Statement::Element(e) => {
             let mut attributes: HashMap<String, String> = HashMap::new();
@@ -25,6 +24,7 @@ pub(crate) fn eval_statement<'a>(
 
             let element = HTMLElement::new(e.ident.fragment(), attributes).expect("valid html");
 
+            println!("element: {:?}", element);
             // todo, these really should be html nodes, so that we can optimise them all later...
             // examples:
             // - removing empty or unneeded classes/styles/ids/empty elements (optional)
@@ -121,6 +121,7 @@ pub fn eval_expression<'a>(
     expr: &Expression<'a>,
     input: Option<Node<Object>>,
 ) -> InterpreterResult<Object> {
+    println!("Expr with input {:?}", input);
     match expr {
         Expression::FunctionCall(ref f) => {
             let mut inner = State::new();
@@ -134,7 +135,7 @@ pub fn eval_expression<'a>(
             }
 
             match eval_expression(state, &*f.ident, None)? {
-                Object::BuiltinFunction(builtin) => builtin(Rc::new(RefCell::new(inner)), None),
+                Object::BuiltinFunction(builtin) => builtin(Rc::new(RefCell::new(inner)), input),
                 _ => unimplemented!(),
             }
         }
@@ -144,7 +145,14 @@ pub fn eval_expression<'a>(
             parser::Literal::Number(_s, f) => Ok(Object::Number(f.clone())),
         },
         Expression::RelativePath(_) => unimplemented!(),
-        Expression::Array(_) => unimplemented!(),
+        Expression::Array(arr) => Ok(Object::Array(
+            arr.iter()
+                .map(|el| eval_expression(Rc::clone(&state), el, None))
+                .collect::<InterpreterResult<Vec<Object>>>()?
+                .into_iter()
+                .map(Node::new)
+                .collect(),
+        )),
         Expression::GlobPattern(s) => crate::util::import_files(s),
         Expression::Index(l, r) => {
             let lexpr = eval_expression(Rc::clone(&state), l, None)?;

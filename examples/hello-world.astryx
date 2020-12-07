@@ -1,12 +1,12 @@
 
 
--- no page is specified, so / is assumed
-%h1 style="color: red;"
-  | first header
-  %a href="#"
-    | blah
-  %a href="#"
-    | blah2
-  %div
-    %h2
-      | another header
+page()
+  %h1 style="color: red;"
+    | first header
+    %a href="#"
+      | blah
+    %a href="#"
+      | blah2
+    %div
+      %h2
+        | another header

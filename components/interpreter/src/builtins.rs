@@ -125,6 +125,7 @@ pub(crate) fn page<'a>(
     state: Rc<RefCell<State>>,
     input: Option<Node<Object>>,
 ) -> InterpreterResult<Object> {
+    println!("page: {:?}", input);
     // let path = state.borrow().require(&Span::new("path"))?;
 
     // state
