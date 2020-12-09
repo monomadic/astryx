@@ -21,6 +21,7 @@ pub fn render<'a>(file: &'a str) -> AstryxResult<()> {
         .and_then(|nodes| interpreter::run(&nodes, Rc::new(RefCell::new(State::new()))))
         // .map(|p| program::render_project(p))
         .map_err(AstryxError::from)
+        .map(|_| ())
     // .and_then(|html_nodes| {
     //     html::render_as_string(&html_nodes)
     //         .map_err(AstryxError::from)

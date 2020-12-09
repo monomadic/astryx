@@ -10,6 +10,7 @@ pub(crate) fn build<'a>(file: &'a str) -> AstryxResult<()> {
     parser::run(file)
         .map_err(AstryxError::from)
         .and_then(|nodes| interpreter::run(&nodes, state).map_err(AstryxError::from))
+        .map(|_| ())
     // .map(program::render_project)
     // .and_then(write)
 }
