@@ -1,7 +1,6 @@
-use crate::{
-    models::Object, state::State, InterpreterError, InterpreterErrorKind, InterpreterResult,
-};
+use error::{AstryxError, AstryxErrorKind, AstryxResult};
 use html::HTMLElement;
+use models::{object::Object, state::State};
 use parser::{Expression, Statement, StringToken};
 use rctree::Node;
 use std::cell::RefCell;
@@ -10,7 +9,7 @@ use std::{collections::HashMap, rc::Rc};
 pub(crate) fn eval_statement<'a>(
     statement: &Node<Statement<'a>>,
     state: Rc<RefCell<State>>,
-) -> InterpreterResult<Node<Object>> {
+) -> AstryxResult<Node<Object>> {
     match statement.borrow().clone() {
         Statement::Element(e) => {
             let mut attributes: HashMap<String, String> = HashMap::new();
@@ -54,7 +53,7 @@ pub(crate) fn eval_statement<'a>(
             let return_objects: Vec<Node<Object>> = statement
                 .children()
                 .map(|child| eval_statement(&child, Rc::clone(&state)))
-                .collect::<InterpreterResult<Vec<Node<Object>>>>()?;
+                .collect::<AstryxResult<Vec<Node<Object>>>>()?;
 
             // for statement in statement.children() {
 
@@ -102,13 +101,10 @@ pub(crate) fn eval_statement<'a>(
                     }
                 }
             } else {
-                return Err(InterpreterError {
-                    kind: InterpreterErrorKind::UnexpectedToken {
-                        expected: String::from("Array"),
-                        got: iter.inspect(),
-                    },
-                    location: Some(ident.into()),
-                });
+                return Err(AstryxError::LocatedError(
+                    ident.into(),
+                    AstryxErrorKind::Unexpected,
+                ));
             }
 
             Ok(Node::new(Object::None)) // FIXME
@@ -120,12 +116,12 @@ pub fn eval_expression<'a>(
     state: Rc<RefCell<State>>,
     expr: &Expression<'a>,
     input: Option<Node<Object>>,
-) -> InterpreterResult<Object> {
+) -> AstryxResult<Object> {
     println!("Expr with input {:?}", input);
     match expr {
         Expression::FunctionCall(ref f) => {
             let mut inner = State::new();
-            inner.program = Rc::clone(&state.borrow().program);
+            // inner.program = Rc::clone(&state.borrow().program);
 
             for (k, expr) in &f.arguments {
                 inner.bind(
@@ -139,7 +135,7 @@ pub fn eval_expression<'a>(
                 _ => unimplemented!(),
             }
         }
-        Expression::Reference(r) => state.borrow().require(r),
+        Expression::Reference(r) => state.borrow().require(*r),
         Expression::Literal(l) => match l {
             parser::Literal::String(s) => Ok(Object::String(s.to_string())),
             parser::Literal::Number(_s, f) => Ok(Object::Number(f.clone())),
@@ -148,7 +144,7 @@ pub fn eval_expression<'a>(
         Expression::Array(arr) => Ok(Object::Array(
             arr.iter()
                 .map(|el| eval_expression(Rc::clone(&state), el, None))
-                .collect::<InterpreterResult<Vec<Object>>>()?
+                .collect::<AstryxResult<Vec<Object>>>()?
                 .into_iter()
                 .map(Node::new)
                 .collect(),
@@ -164,10 +160,10 @@ pub fn eval_expression<'a>(
                     Expression::Reference(r) => m
                         .get(r.to_string().as_str())
                         .map(|o| o.borrow().clone())
-                        .ok_or(InterpreterError {
-                            kind: InterpreterErrorKind::UnknownMemberFunction(r.to_string()),
-                            location: Some(r.into()),
-                        }),
+                        .ok_or(AstryxError::LocatedError(
+                            r.into(),
+                            AstryxErrorKind::Unexpected,
+                        )),
 
                     Expression::FunctionCall(_) => unimplemented!(),
                     Expression::GlobPattern(_) => unimplemented!(),
@@ -223,7 +219,7 @@ pub fn eval_expression<'a>(
 fn eval_interpolation<'a>(
     state: Rc<RefCell<State>>,
     components: Vec<StringToken<'a>>,
-) -> InterpreterResult<String> {
+) -> AstryxResult<String> {
     Ok(components
         .into_iter()
         .map(|st| match st {
@@ -233,7 +229,7 @@ fn eval_interpolation<'a>(
                 Ok(eval_expression(Rc::clone(&state), &expr, None)?.to_string())
             }
         })
-        .collect::<Result<Vec<String>, InterpreterError>>()?
+        .collect::<Result<Vec<String>, AstryxError>>()?
         .into_iter()
         .collect())
 }

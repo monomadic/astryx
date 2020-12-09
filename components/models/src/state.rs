@@ -1,5 +1,5 @@
 use crate::object::Object;
-use error::AstryxResult;
+use error::{AstryxError, AstryxErrorKind, AstryxResult, Location};
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 type LocalData = HashMap<String, Object>;
@@ -29,13 +29,14 @@ impl<'a> State {
         }
     }
 
-    // /// fetch a variable from state and throw an error upon failure
-    // pub fn require(&self, name: &str) -> AstryxResult<Object> {
-    //     self.get(&name.to_string()).ok_or(AstryxError {
-    //         kind: AstryxErrorKind::UnexpectedToken(name.to_string()),
-    //         location: Some((*name).into()),
-    //     })
-    // }
+    /// fetch a variable from state and throw an error upon failure
+    pub fn require<S: Into<Location> + ToString>(&self, ident: S) -> AstryxResult<Object> {
+        self.get(&ident.to_string())
+            .ok_or(AstryxError::LocatedError(
+                ident.into(),
+                AstryxErrorKind::Unexpected,
+            ))
+    }
 
     /// bind a variable to local state
     pub fn bind(&mut self, ident: &str, obj: Object) -> AstryxResult<()> {

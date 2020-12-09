@@ -1,10 +1,11 @@
+use crate::state::State;
 use error::AstryxResult;
 use html::HTMLElement;
-use interpreter::State;
 use rctree::Node;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
+use yaml_rust::Yaml;
 
 pub type BuiltinFunction = fn(Rc<RefCell<State>>, Option<Node<Object>>) -> AstryxResult<Object>;
 
@@ -72,6 +73,30 @@ impl Into<String> for Object {
             Object::None => unimplemented!(),
             Object::Number(_) => unimplemented!(),
             Object::HTMLElement(_) => unimplemented!(),
+        }
+    }
+}
+
+impl From<Yaml> for Object {
+    fn from(yaml: Yaml) -> Object {
+        match yaml {
+            Yaml::Real(_) => unimplemented!(),
+            Yaml::Integer(_) => unimplemented!(),
+            Yaml::String(s) => Object::String(s),
+            Yaml::Boolean(_) => unimplemented!(),
+            Yaml::Array(_) => unimplemented!(),
+            Yaml::Hash(lhm) => {
+                let mut h = HashMap::new();
+
+                for (k, v) in lhm {
+                    h.insert(k.into_string().unwrap(), Node::new(v.into()));
+                }
+
+                Object::Map(h)
+            }
+            Yaml::Alias(_) => unimplemented!(),
+            Yaml::Null => unimplemented!(),
+            Yaml::BadValue => unimplemented!(),
         }
     }
 }

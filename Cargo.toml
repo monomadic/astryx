@@ -11,6 +11,8 @@ interpreter = { path = "components/interpreter" }
 nom = { version = "5.1.1", features = ["std"] }
 parser = { path = "components/parser" }
 program = { path = "components/program" }
+models = { path = "components/models" }
+error = { path = "components/error" }
 rctree = "0.3.3"
 repl = { path = "components/repl" }
 simple-server = "0.4.0"

@@ -23,6 +23,16 @@ impl<'a> From<Span<'a>> for Location {
     }
 }
 
+impl<'a> From<&Span<'a>> for Location {
+    fn from(span: &Span) -> Self {
+        Self {
+            line: span.location_line(),
+            column: span.get_column(),
+            length: span.location_offset(),
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Clone)]
 pub enum InterpreterErrorKind {
     Unhandled,

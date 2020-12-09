@@ -16,3 +16,4 @@ program = { path = "../program" }
 markdown = { path = "../markdown" }
 frontmatter = { path = "../frontmatter" }
 error = { path = "../error" }
+models = { path = "../models" }

@@ -1,9 +1,8 @@
-use error::{display_error, AstryxResult};
+use error::{display::display_error, AstryxResult};
 use repl;
 use structopt::StructOpt;
 
 mod build;
-mod error;
 mod render;
 mod server;
 
@@ -66,6 +65,6 @@ fn run() -> Result<String, String> {
 }
 
 /// set up a new project in the current directory
-fn new_project<'a>() -> AstryxResult<'a, ()> {
+fn new_project<'a>() -> AstryxResult<()> {
     unimplemented!()
 }

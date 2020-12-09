@@ -8,3 +8,4 @@ edition = "2018"
 
 [dependencies]
 yaml-rust = "0.4"
+models = { path = "../models" }

@@ -10,4 +10,4 @@ edition = "2018"
 rctree = "0.3.3"
 html = { path = "../html" }
 error = { path = "../error" }
-interpreter = { path = "../interpreter" }
+yaml-rust = "0.4"

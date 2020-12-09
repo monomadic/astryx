@@ -1,4 +1,5 @@
-use interpreter::{builtins, State};
+use interpreter::builtins;
+use models::State;
 use rustyline::{error::ReadlineError, Editor};
 use std::cell::RefCell;
 use std::rc::Rc;

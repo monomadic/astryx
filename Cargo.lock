@@ -40,9 +40,11 @@ checksum = "cff77d8686867eceff3105329d4698d96c2391c176d5d03adc90c7389162b5b8"
 name = "astryx"
 version = "0.1.0"
 dependencies = [
+ "error",
  "glob",
  "html",
  "interpreter",
+ "models",
  "nom",
  "parser",
  "program",
@@ -314,6 +316,7 @@ checksum = "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1"
 name = "frontmatter"
 version = "0.1.0"
 dependencies = [
+ "models",
  "yaml-rust",
 ]
 
@@ -420,6 +423,7 @@ dependencies = [
  "glob",
  "html",
  "markdown",
+ "models",
  "parser",
  "program",
  "rctree",
@@ -619,8 +623,8 @@ version = "0.1.0"
 dependencies = [
  "error",
  "html",
- "interpreter",
  "rctree",
+ "yaml-rust",
 ]
 
 [[package]]
@@ -980,6 +984,7 @@ name = "repl"
 version = "0.1.0"
 dependencies = [
  "interpreter",
+ "models",
  "parser",
  "rustyline",
 ]

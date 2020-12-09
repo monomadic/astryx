@@ -1,9 +1,10 @@
-use crate::{models::Object, InterpreterError, InterpreterErrorKind, InterpreterResult};
+use error::{AstryxError, AstryxErrorKind, AstryxResult};
 use glob::Paths;
+use models::object::Object;
 use parser::Span;
 use rctree::Node;
 
-pub(crate) fn import_files<'a>(s: &Span<'a>) -> InterpreterResult<Object> {
+pub(crate) fn import_files<'a>(s: &Span<'a>) -> AstryxResult<Object> {
     let options = glob::MatchOptions {
         case_sensitive: false,
         require_literal_separator: false,
@@ -11,10 +12,8 @@ pub(crate) fn import_files<'a>(s: &Span<'a>) -> InterpreterResult<Object> {
     };
 
     let mut files = Vec::new();
-    let globs: Paths = glob::glob_with(&s.to_string(), options).map_err(|_| InterpreterError {
-        kind: InterpreterErrorKind::IOError,
-        location: Some((*s).into()),
-    })?;
+    let globs: Paths = glob::glob_with(&s.to_string(), options)
+        .map_err(|e| AstryxError::with_loc(*s, AstryxErrorKind::Unexpected))?;
 
     for file in globs {
         // TODO wrap unwrap in error
@@ -28,11 +27,8 @@ pub(crate) fn import_files<'a>(s: &Span<'a>) -> InterpreterResult<Object> {
     Ok(Object::Array(files))
 }
 
-pub(crate) fn import_file<'a>(s: &Span<'a>) -> InterpreterResult<Object> {
+pub(crate) fn import_file<'a>(s: &Span<'a>) -> AstryxResult<Object> {
     std::fs::read_to_string(s.fragment().to_string())
         .map(Object::String)
-        .map_err(|_| InterpreterError {
-            kind: InterpreterErrorKind::IOError,
-            location: Some((*s).into()),
-        })
+        .map_err(|e| AstryxError::with_loc(*s, AstryxErrorKind::Unexpected))
 }
