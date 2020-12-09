@@ -15,3 +15,4 @@ html = { path = "../html" }
 program = { path = "../program" }
 markdown = { path = "../markdown" }
 frontmatter = { path = "../frontmatter" }
+error = { path = "../error" }

@@ -1,5 +1,5 @@
 [package]
-name = "error"
+name = "models"
 version = "0.1.0"
 authors = ["monomadic <deathdisco@protonmail.com>"]
 edition = "2018"
@@ -7,4 +7,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-parser = { path = "../parser" }
+rctree = "0.3.3"
+html = { path = "../html" }
+error = { path = "../error" }
+interpreter = { path = "../interpreter" }

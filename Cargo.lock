@@ -288,6 +288,9 @@ checksum = "a246d82be1c9d791c5dfde9a2bd045fc3cbba3fa2b11ad558f27d01712f00569"
 [[package]]
 name = "error"
 version = "0.1.0"
+dependencies = [
+ "parser",
+]
 
 [[package]]
 name = "flate2"
@@ -412,6 +415,7 @@ dependencies = [
 name = "interpreter"
 version = "0.1.0"
 dependencies = [
+ "error",
  "frontmatter",
  "glob",
  "html",
@@ -607,6 +611,16 @@ checksum = "0f2d26ec3309788e423cfbf68ad1800f061638098d76a83681af979dc4eda19d"
 dependencies = [
  "adler",
  "autocfg",
+]
+
+[[package]]
+name = "models"
+version = "0.1.0"
+dependencies = [
+ "error",
+ "html",
+ "interpreter",
+ "rctree",
 ]
 
 [[package]]
