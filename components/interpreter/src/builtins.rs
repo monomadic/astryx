@@ -1,5 +1,6 @@
 use error::{AstryxError, AstryxResult};
 use models::{object::Object, state::State};
+use parser::Span;
 use rctree::Node;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -103,13 +104,11 @@ pub(crate) fn page<'a>(
     input: Option<Node<Object>>,
 ) -> AstryxResult<Object> {
     println!("page: {:?}", input);
-    // let path = state.borrow().require(&Span::new("path"))?;
+    let path = state.borrow().require(Span::new("path"))?;
 
-    // state
-    //     .borrow()
-    //     .push_instruction(ProgramInstruction::SetPath(path.to_string()));
+    // Ok(input.unwrap().borrow().clone())
 
-    Ok(Object::String("".into()))
+    Ok(Object::HTMLPage(path.to_string()))
 }
 
 /// takes an object and writes to a file

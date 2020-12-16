@@ -1,5 +1,5 @@
 use error::{AstryxError, AstryxResult};
-use models::State;
+use models::{Object, State};
 use program::Project;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -9,9 +9,10 @@ pub(crate) fn build<'a>(file: &'a str) -> AstryxResult<()> {
 
     parser::run(file)
         .map_err(AstryxError::from)
-        .and_then(|nodes| interpreter::run(&nodes, state).map_err(AstryxError::from))
-        .map(|_| ())
-    // .map(program::render_project)
+        .and_then(|nodes| interpreter::run(&nodes, state))
+        // .map(|o| println!("objects: {:?}", o))
+        .map(Object::render)
+        .map(|p| println!("result: {:?}", p))
     // .and_then(write)
 }
 

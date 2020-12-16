@@ -14,6 +14,7 @@ pub enum Object {
     None,
     String(String),
     Number(f64),
+    HTMLPage(String),
     HTMLElement(HTMLElement),
     // FunctionLiteral {
     //     params: Vec<String>,4
@@ -43,6 +44,7 @@ impl Object {
             Object::None => format!("(None)"),
             Object::Number(f) => f.to_string(),
             Object::HTMLElement(e) => format!("{}{}", e.open_tag(), e.close_tag()),
+            Object::HTMLPage(_) => unimplemented!(),
         }
     }
 }
@@ -58,6 +60,7 @@ impl ToString for Object {
             Object::None => format!("(None)"),
             Object::Number(n) => format!("{}", n),
             Object::HTMLElement(_) => unimplemented!(),
+            Object::HTMLPage(_) => unimplemented!(),
         }
     }
 }
@@ -73,6 +76,7 @@ impl Into<String> for Object {
             Object::None => unimplemented!(),
             Object::Number(_) => unimplemented!(),
             Object::HTMLElement(_) => unimplemented!(),
+            Object::HTMLPage(_) => unimplemented!(),
         }
     }
 }

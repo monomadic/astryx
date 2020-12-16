@@ -1,6 +1,8 @@
 use error::HTMLError;
 use std::collections::HashMap;
 pub mod error;
+pub mod render;
+// pub use render::*;
 
 #[derive(Debug, Clone)]
 pub enum HTMLNode {

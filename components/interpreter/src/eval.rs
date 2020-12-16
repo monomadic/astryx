@@ -14,6 +14,7 @@ pub(crate) fn eval_statement<'a>(
         Statement::Element(e) => {
             let mut attributes: HashMap<String, String> = HashMap::new();
 
+            // collect the attributes
             for (ident, expr) in e.attributes {
                 attributes.insert(
                     ident.fragment().to_string(),
@@ -36,11 +37,13 @@ pub(crate) fn eval_statement<'a>(
             //     .borrow()
             //     .push_instruction(ProgramInstruction::Text(element.clone().open_tag()));
 
-            let node = Node::new(Object::HTMLElement(element));
+            let mut node = Node::new(Object::HTMLElement(element));
 
             for child in statement.children() {
-                eval_statement(&child, Rc::clone(&state))?;
+                println!("child");
+                let obj = eval_statement(&child, Rc::clone(&state))?;
                 // node.append child
+                node.append(obj);
             }
 
             // state
@@ -75,10 +78,16 @@ pub(crate) fn eval_statement<'a>(
 
             Ok(Node::new(return_value))
         }
-        Statement::Text(t) => Ok(Node::new(Object::String(eval_interpolation(
-            Rc::clone(&state),
-            t,
-        )?))),
+        Statement::Text(t) => {
+            println!(
+                "text: {:?}",
+                eval_interpolation(Rc::clone(&state), t.clone())
+            );
+            return Ok(Node::new(Object::String(eval_interpolation(
+                Rc::clone(&state),
+                t,
+            )?)));
+        }
         Statement::Binding(ident, expr) => {
             let obj = eval_expression(Rc::clone(&state), &expr, None)?;
             state.borrow_mut().bind(ident.fragment(), obj.clone())?;

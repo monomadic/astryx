@@ -1,6 +1,5 @@
 use error::{AstryxError, AstryxResult};
 use models::State;
-use program::Project;
 use std::cell::RefCell;
 use std::rc::Rc;
 
