@@ -5,7 +5,7 @@ use nom::{
     character::complete::{alpha1, multispace0},
     character::complete::{char, space0},
     combinator::cut,
-    multi::separated_list,
+    multi::separated_list0,
     sequence::{terminated, tuple},
     IResult,
 };
@@ -34,7 +34,7 @@ fn function_call_arguments<'a>(
 ) -> IResult<Span<'a>, Vec<(Span<'a>, Expression<'a>)>, ParserError<Span<'a>>> {
     // many0(function_call_argument)(i)
 
-    separated_list(tuple((space0, char(','), space0)), function_call_argument)(i)
+    separated_list0(tuple((space0, char(','), space0)), function_call_argument)(i)
     // .map_err(|e:nom::Err<ParserError<_>>| {
     //     e.map(|s| ParserError {
     //         context: i,

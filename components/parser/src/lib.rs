@@ -36,6 +36,7 @@ mod variable;
 pub use crate::error::ParserError;
 pub use crate::models::*;
 
+// this entry absolutely need a cleanup
 pub fn run<'a>(i: &'a str) -> Result<Vec<Node<Statement<'a>>>, ParserError<Span<'a>>> {
     let (_, lines): (_, Vec<Line>) = linesplit::take_lines(&i).expect("linesplit fail (fix)"); // break document up by whitespace indentation
 

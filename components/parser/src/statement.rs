@@ -1,5 +1,6 @@
 use crate::{
-    element::element,
+    element::{element, route},
+    error::ParserErrorKind,
     function::function_call,
     models::Statement,
     text::piped_string,
@@ -11,6 +12,7 @@ use nom::{
     bytes::complete::tag,
     character::complete::{alphanumeric1, space0, space1},
     combinator::{all_consuming, map},
+    error::ParseError,
     sequence::{terminated, tuple},
     IResult,
 };
@@ -40,6 +42,7 @@ pub(crate) fn statement<'a>(i: Span<'a>) -> IResult<Span, Statement<'a>, ParserE
         map(for_loop, |(ident, expr)| Statement::ForLoop { ident, expr }),
         map(binding, |(ident, expr)| Statement::Binding(ident, expr)),
         map(expression, |e| Statement::Expression(e)),
+        map(route, |r| Statement::Route(r)),
         map(element, |e| Statement::Element(e)),
         map(piped_string, |e| Statement::Text(e)),
         // map(alpha1, |e| Statement::Element(e)),
@@ -81,7 +84,7 @@ pub(crate) fn expression<'a>(i: Span<'a>) -> IResult<Span, Expression<'a>, Parse
         map(glob_pattern, |s| Expression::GlobPattern(s)),
         map(function_call, |f| Expression::FunctionCall(f)),
         map(literal, |v| Expression::Literal(v)),
-        map(alphanumeric1, |s| Expression::Reference(s)),
+        // map(alphanumeric1, |s| Expression::Reference(s)),
     ))(i)
 }
 
@@ -99,9 +102,16 @@ fn index_expression<'a>(i: Span<'a>) -> IResult<Span, Expression<'a>, ParserErro
         //map(relative_path, |s| Expression::RelativePath(s)),
         map(glob_pattern, |s| Expression::GlobPattern(s)),
         map(function_call, |f| Expression::FunctionCall(f)),
-        map(literal, |v| Expression::Literal(v)),
-        map(alphanumeric1, |s| Expression::Reference(s)),
+        // map(literal, |v| Expression::Literal(v)),
+        // map(alphanumeric1, |s| Expression::Reference(s)),
     ))(i)
+    .map_err(|e| {
+        nom::Err::Error(ParserError {
+            kind: ParserErrorKind::Unexpected,
+            pos: i,
+            context: i,
+        })
+    })
 }
 
 fn comment<'a>(i: Span<'a>) -> IResult<Span<'a>, Span<'a>, ParserError<Span<'a>>> {
@@ -157,6 +167,18 @@ mod test {
         assert!(binding(Span::new("let print = print()")).is_ok());
         assert!(binding(Span::new("let print = fn print()")).is_ok());
         assert!(binding(Span::new("g()")).is_err());
+    }
+
+    #[test]
+    fn test_route() {
+        assert!(route(Span::new("")).is_err());
+        assert!(route(Span::new("@")).is_err());
+        assert!(route(Span::new("@route")).is_ok());
+        assert_eq!(
+            route(Span::new("@route")).unwrap().1.ident.inspect(),
+            "route"
+        );
+        assert!(route(Span::new("@route a=5")).is_ok());
     }
 
     #[test]

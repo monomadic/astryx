@@ -18,48 +18,53 @@ pub(crate) fn take_lines<'a>(i: &'a str) -> IResult<Span<'a>, Vec<Line<'a>>> {
     cut(many0(take_children))(Span::new(&i))
 }
 
-#[test]
-fn test_take_lines() {
-    assert!(take_lines("").is_ok());
-    assert!(take_lines("\n").is_ok());
+#[cfg(test)]
+mod test {
+    use super::*;
 
-    assert_eq!(take_lines("\na\n").unwrap().1.len(), 1);
-    assert_eq!(take_lines("a\n").unwrap().1.len(), 1);
-    assert_eq!(take_lines("a\nb").unwrap().0.to_string(), "");
-    assert_eq!(take_lines("a\nb").unwrap().1[0].content.to_string(), "a");
-    assert_eq!(take_lines("a\nb").unwrap().1[1].content.to_string(), "b");
-    assert_eq!(take_lines("a\nb").unwrap().1.len(), 2);
-    assert_eq!(
-        take_lines("page()\nb").unwrap().1[0].content.to_string(),
-        "page()"
-    );
-    assert_eq!(
-        take_lines("page()\nb").unwrap().1[1].content.to_string(),
-        "b"
-    );
-    assert!(take_lines("page\n").is_ok());
+    #[test]
+    fn test_take_lines() {
+        assert!(take_lines("").is_ok());
+        assert!(take_lines("\n").is_ok());
 
-    // test throw away blank lines
-    assert_eq!(take_lines("a\nb\n\n").unwrap().1.len(), 2);
-    assert_eq!(take_lines("a\n\nb\n\nc\n").unwrap().1.len(), 3);
+        assert_eq!(take_lines("\na\n").unwrap().1.len(), 1);
+        assert_eq!(take_lines("a\n").unwrap().1.len(), 1);
+        assert_eq!(take_lines("a\nb").unwrap().0.to_string(), "");
+        assert_eq!(take_lines("a\nb").unwrap().1[0].content.to_string(), "a");
+        assert_eq!(take_lines("a\nb").unwrap().1[1].content.to_string(), "b");
+        assert_eq!(take_lines("a\nb").unwrap().1.len(), 2);
+        assert_eq!(
+            take_lines("page()\nb").unwrap().1[0].content.to_string(),
+            "page()"
+        );
+        assert_eq!(
+            take_lines("page()\nb").unwrap().1[1].content.to_string(),
+            "b"
+        );
+        assert!(take_lines("page\n").is_ok());
 
-    // test children
-    assert_eq!(
-        take_lines("a\n\tb\n").unwrap().1[0].content.to_string(),
-        "a"
-    );
-    assert_eq!(
-        take_lines("a\n\tb\n").unwrap().1[0].children[0]
-            .content
-            .to_string(),
-        "b"
-    );
-    assert_eq!(
-        take_lines("a\n\tb\n\tc\n").unwrap().1[0].children[1]
-            .content
-            .to_string(),
-        "c"
-    );
+        // test throw away blank lines
+        assert_eq!(take_lines("a\nb\n\n").unwrap().1.len(), 2);
+        assert_eq!(take_lines("a\n\nb\n\nc\n").unwrap().1.len(), 3);
+
+        // test children
+        assert_eq!(
+            take_lines("a\n\tb\n").unwrap().1[0].content.to_string(),
+            "a"
+        );
+        assert_eq!(
+            take_lines("a\n\tb\n").unwrap().1[0].children[0]
+                .content
+                .to_string(),
+            "b"
+        );
+        assert_eq!(
+            take_lines("a\n\tb\n\tc\n").unwrap().1[0].children[1]
+                .content
+                .to_string(),
+            "c"
+        );
+    }
 }
 
 fn take_children(i: Span) -> IResult<Span, Line> {

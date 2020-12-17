@@ -6,12 +6,10 @@ use nom::{
     combinator::map,
     number::complete::double,
     sequence::{delimited, tuple},
-    IResult,
+    IResult, Parser,
 };
 
-pub(crate) fn literal<'a>(
-    i: Span<'a>,
-) -> IResult<Span<'a>, Literal<'a>, ParserError<Span<'a>>> {
+pub(crate) fn literal<'a>(i: Span<'a>) -> IResult<Span<'a>, Literal<'a>, ParserError<Span<'a>>> {
     alt((
         // map(hash, JsonValue::Object),
         // map(array, JsonValue::Array),
@@ -25,61 +23,64 @@ pub(crate) fn literal<'a>(
         // map(dotted_symbol,  |s| Property::DottedSymbol(String::from(s))),
         // map(symbol,         |s| Property::Symbol(String::from(s))),
     ))(i)
-    .map_err(|e| {
-        e.map(|(s, _k)| ParserError {
-            context: i, // we need to reset the context to the whole line
-            kind: ParserErrorKind::UnexpectedToken("variable".into()),
-            pos: s,
-        })
-    })
+    // .map_err(|e| {
+    //     e.map(|e| ParserError {
+    //         context: i, // we need to reset the context to the whole line
+    //         kind: ParserErrorKind::UnexpectedToken("variable".into()),
+    //         pos: e,
+    //     })
+    // })
 }
 
-fn quoted_string(i: Span) -> IResult<Span, Span> {
+fn number<'a>(i: Span<'a>) -> IResult<Span<'a>, Literal, ParserError<Span<'a>>> {
+    let (r, f) = double(i)?;
+    Ok((r, Literal::Number(i, f)))
+}
+
+fn quoted_string<'a>(i: Span<'a>) -> IResult<Span, Span, ParserError<Span<'a>>> {
     delimited(char('\"'), is_not("\""), char('\"'))(i)
 }
 
 /// match glob patterns eg: ./*.txt and ../../*
-pub fn glob_pattern<'a>(
-    i: Span<'a>,
-) -> IResult<Span<'a>, Span<'a>, ParserError<Span<'a>>> {
+pub fn glob_pattern<'a>(i: Span<'a>) -> IResult<Span<'a>, Span<'a>, ParserError<Span<'a>>> {
     tuple((path_prefix, glob_pattern_characters))(i)
         // .map(|(r, (prefix, pathname))| (r, Span::new(&format!("{}{}", prefix, pathname)))) // check this!
         .map(|(r, (_prefix, path))| (r, path)) // fix this so that prefix is included
+        // .map_err(|e| {
+        //     ParserError {
+        //         context: i, // we need to reset the context to the whole line
+        //         kind: ParserErrorKind::UnexpectedToken("gg".into()),
+        //         pos: s,
+        //     })
         .map_err(|e| {
-            e.map(|(s, _k)| ParserError {
-                context: i, // we need to reset the context to the whole line
-                kind: ParserErrorKind::UnexpectedToken("gg".into()),
-                pos: s,
+            nom::Err::Error(ParserError {
+                kind: ParserErrorKind::Unexpected,
+                pos: i,
+                context: i,
             })
         })
 }
 
 /// match relative paths eg: ./test.txt and ../../test.txt
-pub fn relative_path<'a>(
-    i: Span<'a>,
-) -> IResult<Span<'a>, Span<'a>, ParserError<Span<'a>>> {
+pub fn relative_path<'a>(i: Span<'a>) -> IResult<Span<'a>, Span<'a>, ParserError<Span<'a>>> {
     tuple((path_prefix, path_characters))(i)
         // .map(|(r, (prefix, pathname))| (r, Span::new(&format!("{}{}", prefix, pathname)))) // check this!
         .map(|(r, (_prefix, path))| (r, path)) // fix this so that prefix is included
         .map_err(|e| {
-            e.map(|(s, _k)| ParserError {
+            e.map(|nom_error| ParserError {
                 context: i, // we need to reset the context to the whole line
                 kind: ParserErrorKind::UnexpectedToken("gg".into()),
-                pos: s,
+                pos: i,
             })
         })
 }
 
 fn glob_pattern_characters(i: Span) -> IResult<Span, Span> {
-    nom::bytes::complete::is_a(
-        "./*-_abcdefghijklmnopqrstuvwxyz1234567890ABCDEF",
-    )(i)
+    nom::bytes::complete::is_a("./*-_abcdefghijklmnopqrstuvwxyz1234567890ABCDEF")(i)
 }
 
 fn path_characters(i: Span) -> IResult<Span, Span> {
-    nom::bytes::complete::is_a("./-_abcdefghijklmnopqrstuvwxyz1234567890ABCDEF")(
-        i,
-    )
+    nom::bytes::complete::is_a("./-_abcdefghijklmnopqrstuvwxyz1234567890ABCDEF")(i)
 }
 
 // match path prefixes ./ or ../

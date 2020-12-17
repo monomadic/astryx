@@ -15,6 +15,7 @@ use std::fmt::Display;
 pub enum Statement<'a> {
     Expression(Expression<'a>),
     Binding(Span<'a>, Expression<'a>),
+    Route(Route<'a>),
     Element(Element<'a>),
     Text(Vec<StringToken<'a>>), // todo: replace with interpolatedstring
     Comment(Span<'a>),
@@ -33,6 +34,7 @@ impl Statement<'_> {
             Statement::Text(_) => unimplemented!(),
             Statement::Comment(_) => unimplemented!(),
             Statement::ForLoop { ident: _, expr: _ } => unimplemented!(),
+            Statement::Route(_) => unimplemented!(),
         }
     }
 }
@@ -133,6 +135,12 @@ impl<'a> Display for Literal<'a> {
 #[derive(Debug, Clone)]
 pub struct Element<'a> {
     pub ident: Span<'a>,
+    pub attributes: Vec<(Span<'a>, Expression<'a>)>,
+}
+
+#[derive(Debug, Clone)]
+pub struct Route<'a> {
+    pub ident: Expression<'a>,
     pub attributes: Vec<(Span<'a>, Expression<'a>)>,
 }
 

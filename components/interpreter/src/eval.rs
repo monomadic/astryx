@@ -1,7 +1,7 @@
 use error::{AstryxError, AstryxErrorKind, AstryxResult};
 use html::HTMLElement;
 use models::{object::Object, state::State};
-use parser::{Expression, Statement, StringToken};
+use parser::{Expression, Span, Statement, StringToken};
 use rctree::Node;
 use std::cell::RefCell;
 use std::{collections::HashMap, rc::Rc};
@@ -24,7 +24,7 @@ pub(crate) fn eval_statement<'a>(
 
             let element = HTMLElement::new(e.ident.fragment(), attributes).expect("valid html");
 
-            println!("element: {:?}", element);
+            // println!("element: {:?}", element);
             // todo, these really should be html nodes, so that we can optimise them all later...
             // examples:
             // - removing empty or unneeded classes/styles/ids/empty elements (optional)
@@ -40,7 +40,7 @@ pub(crate) fn eval_statement<'a>(
             let mut node = Node::new(Object::HTMLElement(element));
 
             for child in statement.children() {
-                println!("child");
+                // println!("child");
                 let obj = eval_statement(&child, Rc::clone(&state))?;
                 // node.append child
                 node.append(obj);
@@ -117,6 +117,18 @@ pub(crate) fn eval_statement<'a>(
             }
 
             Ok(Node::new(Object::None)) // FIXME
+        }
+        Statement::Route(route) => {
+            let ident = eval_expression(Rc::clone(&state), &route.ident, None)?;
+            match &*ident.to_string() {
+                "route" => {
+                    let path = state.borrow().require(Span::new("path"))?;
+                    let node = Node::new(Object::HTMLPage(path.to_string()));
+
+                    Ok(node)
+                }
+                _ => Ok(Node::new(Object::None)),
+            }
         }
     }
 }

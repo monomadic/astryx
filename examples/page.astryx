@@ -1,9 +1,5 @@
-%h1
-    | Index
 
-page(path: "/hello", stylesheet: ./style.css)
+
+@route path: "/hello"
     %h2
         | Hello Page
-
-%h2
-    | Index 2

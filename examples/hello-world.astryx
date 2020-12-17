@@ -1,6 +1,4 @@
-
-
-page()
+@route path="/"
   %h1 style="color: red;"
     | first header
     %a href="#"
