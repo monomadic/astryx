@@ -119,8 +119,8 @@ pub(crate) fn eval_statement<'a>(
             Ok(Node::new(Object::None)) // FIXME
         }
         Statement::Route(route) => {
-            let ident = eval_expression(Rc::clone(&state), &route.ident, None)?;
-            match &*ident.to_string() {
+            // let ident = eval_expression(Rc::clone(&state), &route.ident, None)?;
+            match route.ident.to_string().as_str() {
                 "route" => {
                     let path = state.borrow().require(Span::new("path"))?;
                     let node = Node::new(Object::HTMLPage(path.to_string()));

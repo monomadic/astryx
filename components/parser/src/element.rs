@@ -24,18 +24,6 @@ fn attribute_assignment<'a>(
     .map(|(r, (_, ident, _, _, value))| (r, (ident, value)))
 }
 
-pub(crate) fn route<'a>(i: Span<'a>) -> IResult<Span<'a>, Route<'a>, ParserError<Span<'a>>> {
-    tuple((tag("@"), expression, space0, many0(attribute_assignment)))(i)
-        .map(|(r, (_, ident, _, attributes))| (r, Route { ident, attributes }))
-        .map_err(|e: nom::Err<_>| {
-            e.map(|e: ParserError<Span<'a>>| ParserError {
-                context: e.context,
-                kind: ParserErrorKind::SyntaxError,
-                pos: i.into(),
-            })
-        })
-}
-
 pub(crate) fn element<'a>(i: Span<'a>) -> IResult<Span<'a>, Element<'a>, ParserError<Span<'a>>> {
     tuple((tag("%"), alphanumeric1, space0, many0(attribute_assignment)))(i)
         .map(|(r, (_, ident, _, attributes))| (r, Element { ident, attributes }))

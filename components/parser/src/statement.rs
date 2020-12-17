@@ -1,18 +1,18 @@
 use crate::{
-    element::{element, route},
+    element::element,
     error::ParserErrorKind,
     function::function_call,
     models::Statement,
     text::piped_string,
     variable::{glob_pattern, literal},
-    Expression, ParserError, Span,
+    Expression, ParserError, Route, Span,
 };
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::{alphanumeric1, space0, space1},
-    combinator::{all_consuming, map},
-    error::ParseError,
+    character::complete::{alpha1, alphanumeric1, char, multispace0, space0, space1},
+    combinator::{all_consuming, cut, map},
+    multi::many0,
     sequence::{terminated, tuple},
     IResult,
 };
@@ -73,6 +73,32 @@ fn for_loop<'a>(i: Span<'a>) -> IResult<Span, (Span<'a>, Expression<'a>), Parser
 pub struct ForLoop<'a> {
     pub index: Span<'a>,
     pub iterable: Expression<'a>,
+}
+
+fn route<'a>(i: Span<'a>) -> IResult<Span<'a>, Route<'a>, ParserError<Span<'a>>> {
+    tuple((tag("@"), alphanumeric1, space0, many0(attribute_assignment)))(i)
+        .map(|(r, (_, ident, _, attributes))| (r, Route { ident, attributes }))
+        .map_err(|e: nom::Err<_>| {
+            e.map(|e: ParserError<Span<'a>>| ParserError {
+                context: e.context,
+                kind: ParserErrorKind::SyntaxError,
+                pos: i.into(),
+            })
+        })
+}
+
+// todo: replace
+fn attribute_assignment<'a>(
+    i: Span<'a>,
+) -> IResult<Span<'a>, (Span<'a>, Expression), ParserError<Span<'a>>> {
+    nom::sequence::tuple((
+        multispace0,
+        alpha1,
+        terminated(multispace0, char('=')),
+        space0,
+        cut(expression),
+    ))(i)
+    .map(|(r, (_, ident, _, _, value))| (r, (ident, value)))
 }
 
 pub(crate) fn expression<'a>(i: Span<'a>) -> IResult<Span, Expression<'a>, ParserError<Span<'a>>> {
@@ -175,7 +201,7 @@ mod test {
         assert!(route(Span::new("@")).is_err());
         assert!(route(Span::new("@route")).is_ok());
         assert_eq!(
-            route(Span::new("@route")).unwrap().1.ident.inspect(),
+            route(Span::new("@route")).unwrap().1.ident.to_string(),
             "route"
         );
         assert!(route(Span::new("@route a=5")).is_ok());

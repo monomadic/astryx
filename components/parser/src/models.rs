@@ -140,7 +140,7 @@ pub struct Element<'a> {
 
 #[derive(Debug, Clone)]
 pub struct Route<'a> {
-    pub ident: Expression<'a>,
+    pub ident: Span<'a>,
     pub attributes: Vec<(Span<'a>, Expression<'a>)>,
 }
 
