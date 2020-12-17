@@ -1,4 +1,4 @@
-use nom_locate::{position, LocatedSpan};
+use nom_locate::position;
 use parser::*;
 
 fn assert_run(test: &str, result: &str) {
@@ -16,6 +16,8 @@ fn assert_run(test: &str, result: &str) {
 fn test_parser() {
     assert!(run("").is_ok());
     assert!(run("\n").is_ok());
+    assert!(run("print()").is_ok());
+    assert!(run("print()\n").is_ok());
 
     assert_run("post.title", "post.title");
     assert_run("post.markdown()", "post.markdown()");

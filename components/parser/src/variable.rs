@@ -32,10 +32,10 @@ pub(crate) fn literal<'a>(i: Span<'a>) -> IResult<Span<'a>, Literal<'a>, ParserE
     // })
 }
 
-fn number<'a>(i: Span<'a>) -> IResult<Span<'a>, Literal, ParserError<Span<'a>>> {
-    let (r, f) = double(i)?;
-    Ok((r, Literal::Number(i, f)))
-}
+// fn number<'a>(i: Span<'a>) -> IResult<Span<'a>, Literal, ParserError<Span<'a>>> {
+//     let (r, f) = double(i)?;
+//     Ok((r, Literal::Number(i, f)))
+// }
 
 fn quoted_string<'a>(i: Span<'a>) -> IResult<Span, Span, ParserError<Span<'a>>> {
     delimited(char('\"'), is_not("\""), char('\"'))(i)
