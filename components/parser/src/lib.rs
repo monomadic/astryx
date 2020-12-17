@@ -66,6 +66,10 @@ fn parse_line<'a>(line: Line<'a>) -> IResult<Span<'a>, Node<Statement<'a>>, Pars
     Ok((r, node))
 }
 
+pub fn parse<'a>(i: Span<'a>) -> IResult<Span<'a>, Statement<'a>, ParserError<Span<'a>>> {
+    statement::statement(i)
+}
+
 // #[test]
 // fn test_run() {
 //     assert!(run("".into()).is_ok());
