@@ -44,7 +44,7 @@ impl Object {
             Object::None => format!("(None)"),
             Object::Number(f) => f.to_string(),
             Object::HTMLElement(e) => format!("{}{}", e.open_tag(), e.close_tag()),
-            Object::HTMLPage(_) => unimplemented!(),
+            Object::HTMLPage(p) => format!("@route path={}", p),
         }
     }
 }

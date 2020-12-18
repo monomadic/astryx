@@ -159,7 +159,6 @@ pub fn eval_expression<'a>(
     expr: &Expression<'a>,
     input: Option<Node<Object>>,
 ) -> AstryxResult<Object> {
-    println!("Expr with input {:?}", input);
     match expr {
         Expression::FunctionCall(ref f) => {
             let mut inner = State::new();
