@@ -31,11 +31,11 @@ impl<'a> State {
 
     /// fetch a variable from state and throw an error upon failure
     pub fn require<S: Into<Location> + ToString>(&self, ident: S) -> AstryxResult<Object> {
-        self.get(&ident.to_string())
-            .ok_or(AstryxError::LocatedError(
-                ident.into(),
-                AstryxErrorKind::Unexpected,
-            ))
+        let i = ident.to_string();
+        self.get(&i).ok_or(AstryxError::LocatedError(
+            ident.into(),
+            AstryxErrorKind::MissingRequiredArgument(i),
+        ))
     }
 
     /// bind a variable to local state

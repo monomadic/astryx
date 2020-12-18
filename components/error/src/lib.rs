@@ -38,6 +38,7 @@ impl std::fmt::Display for AstryxError {
 pub enum AstryxErrorKind {
     SyntaxError,
     FunctionArgumentError,
+    MissingRequiredArgument(String),
     Unexpected,
     UnexpectedToken(String),
     ExpectedValue,

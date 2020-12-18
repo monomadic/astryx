@@ -119,11 +119,32 @@ pub(crate) fn eval_statement<'a>(
             Ok(Node::new(Object::None)) // FIXME
         }
         Statement::Route(route) => {
-            // let ident = eval_expression(Rc::clone(&state), &route.ident, None)?;
+            // collect attributes
+            let mut attributes: HashMap<String, String> = HashMap::new();
+
+            // collect the attributes
+            for (ident, expr) in route.attributes {
+                attributes.insert(
+                    ident.fragment().to_string(),
+                    eval_expression(Rc::clone(&state), &expr, None)?.into(),
+                );
+            }
+
             match route.ident.to_string().as_str() {
                 "route" => {
-                    let path = state.borrow().require(Span::new("path"))?;
-                    let node = Node::new(Object::HTMLPage(path.to_string()));
+                    let path = attributes.get("path").ok_or(AstryxError::LocatedError(
+                        route.ident.into(),
+                        AstryxErrorKind::MissingRequiredArgument(route.ident.to_string()),
+                    ))?;
+
+                    let mut node = Node::new(Object::HTMLPage(path.clone()));
+
+                    for child in statement.children() {
+                        // println!("child");
+                        let obj = eval_statement(&child, Rc::clone(&state))?;
+                        // node.append child
+                        node.append(obj);
+                    }
 
                     Ok(node)
                 }
