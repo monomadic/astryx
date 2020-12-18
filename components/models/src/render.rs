@@ -23,9 +23,10 @@ fn walk_nodes(node: Node<Object>, buffer: &mut HashMap<String, String>, mut path
     // entry
     match node.borrow().clone() {
         Object::None => {}
-        Object::String(s) => write_to_buffer(buffer, &s),
+        Object::String(s) => write_to_buffer(buffer, &path, &s),
         Object::Number(_) => unimplemented!(),
-        Object::HTMLElement(el) => write_to_buffer(buffer, &el.open_tag()),
+        Object::HTMLPage(p) => path = p,
+        Object::HTMLElement(el) => write_to_buffer(buffer, &path, &el.open_tag()),
         Object::BuiltinFunction(_) => unimplemented!(),
         Object::Array(arr) => {
             for item in arr {
@@ -33,24 +34,24 @@ fn walk_nodes(node: Node<Object>, buffer: &mut HashMap<String, String>, mut path
             }
         }
         Object::Map(_) => unimplemented!(),
-        Object::HTMLPage(p) => path = p,
     };
 
+    // children
     for child in node.children() {
         walk_nodes(child, buffer, path.clone());
     }
 
     // exit
     match node.borrow().clone() {
-        Object::HTMLElement(el) => write_to_buffer(buffer, &el.close_tag()),
+        Object::HTMLElement(el) => write_to_buffer(buffer, &path, &el.close_tag()),
         _ => (),
     }
 }
 
-fn write_to_buffer(buffer: &mut HashMap<String, String>, content: &str) {
-    if let Some(page) = buffer.get_mut("/") {
+fn write_to_buffer(buffer: &mut HashMap<String, String>, path: &str, content: &str) {
+    if let Some(page) = buffer.get_mut(path) {
         page.push_str(content);
     } else {
-        buffer.insert(String::from("/"), content.into());
+        buffer.insert(String::from(path), content.into());
     }
 }

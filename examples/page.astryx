@@ -1,5 +1,10 @@
 
+@route path="/hello"
+    %html
+        %h1
+            | Hello Page
 
-@route path: "/hello"
-    %h2
-        | Hello Page
+@route path="/bye"
+    %html
+        %h1
+            | Bye Page
