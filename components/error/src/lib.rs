@@ -49,6 +49,8 @@ pub struct Location {
     pub line: u32,
     pub column: usize,
     pub length: usize,
+    filename: String,
+    context: String,
 }
 
 impl<'a> From<Span<'a>> for Location {
@@ -57,6 +59,8 @@ impl<'a> From<Span<'a>> for Location {
             line: span.location_line(),
             column: span.get_column(),
             length: span.location_offset(),
+            filename: span.extra.into(),
+            context: String::from_utf8(span.get_line_beginning().into()).unwrap(),
         }
     }
 }
