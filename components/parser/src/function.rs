@@ -74,7 +74,7 @@ mod test {
     #[test]
     fn test_function_call_arguments() {
         assert_eq!(
-            function_call_arguments(Span::new("a:a,b:b"))
+            function_call_arguments(Span::new_extra("a:a,b:b", ""))
                 .unwrap()
                 .1
                 .len(),

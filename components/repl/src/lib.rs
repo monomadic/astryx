@@ -21,11 +21,11 @@ fn repl(state: Rc<RefCell<State>>, editor: &mut Editor<()>) {
                 }
 
                 if line.chars().collect::<Vec<char>>()[0] == ':' {
-                    println!("{:?}", parser::run(&pop_chars(&line, 1)));
+                    println!("{:?}", parser::run(&pop_chars(&line, 1), "<repl>"));
                     continue;
                 }
 
-                match parser::run(&line) {
+                match parser::run(&line, "<repl>") {
                     Ok(statements) => {
                         for statement in statements {
                             match interpreter::eval(statement.borrow().clone(), Rc::clone(&state)) {

@@ -104,7 +104,7 @@ pub(crate) fn page<'a>(
     input: Option<Node<Object>>,
 ) -> AstryxResult<Object> {
     println!("page: {:?}", input);
-    let path = state.borrow().require(Span::new("path"))?;
+    let path = state.borrow().require(Span::new_extra("path", "error"))?;
 
     // Ok(input.unwrap().borrow().clone())
 

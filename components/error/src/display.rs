@@ -43,7 +43,14 @@ pub fn html_error_page(content: &str) -> String {
 
 /// convert an error to a display-friendly string
 pub fn display_error(err: &AstryxError, path: &str) -> String {
-    format!("{:?}", err)
+    match err {
+        AstryxError::LocatedError(l, k) => {
+            error_with_line("code", l.line, l.column, l.length, "reason", "path")
+        }
+        AstryxError::Generic(e) => format!("Generic: {:?}", e),
+        AstryxError::IO(e) => format!("IO {:?}", e),
+    }
+
     // match &err {
     //     AstryxError::ParserError(e) => format!(
     //         "syntax error: {}",

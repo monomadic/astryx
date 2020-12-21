@@ -1,8 +1,6 @@
--- maybe we don't need a 'program'
--- maybe expressions evaluate to objects
--- and you can simply pass these objects to a function.
 
-page(path: ./index.html)
+
+@route path="/"
   %html
     %body
       %h1
@@ -18,7 +16,17 @@ page(path: ./index.html)
           | /
           meta.title
 
-        page(path: meta.route)
+        @route path=meta.route
+          %div
+            %h1
+              | ${ meta.title }
+            -- post.markdown()
+        @route path=meta.route
+          %div
+            %h1
+              | ${ meta.title }
+            -- post.markdown()
+        @route path=meta.route
           %div
             %h1
               | ${ meta.title }

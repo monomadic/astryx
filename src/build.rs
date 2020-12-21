@@ -4,10 +4,10 @@ use program::Project;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-pub(crate) fn build<'a>(file: &'a str) -> AstryxResult<()> {
+pub(crate) fn build<'a>(file: &'a str, path: &str) -> AstryxResult<()> {
     let state = Rc::new(RefCell::new(State::new()));
 
-    parser::run(file)
+    parser::run(file, path)
         .map_err(AstryxError::from)
         .and_then(|nodes| interpreter::run(&nodes, state))
         .map(Object::render)

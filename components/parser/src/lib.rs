@@ -22,7 +22,7 @@ use nom_locate::LocatedSpan;
 use nom::{Err, IResult};
 use rctree::Node;
 
-pub type Span<'a> = LocatedSpan<&'a str>;
+pub type Span<'a> = LocatedSpan<&'a str, &'a str>;
 pub type ParserResult<T, I> = Result<T, ParserError<I>>;
 
 mod element;
@@ -34,11 +34,17 @@ pub mod statement;
 mod text;
 mod variable;
 pub use crate::error::ParserError;
+mod whitespace;
 pub use crate::models::*;
 
-// this entry absolutely need a cleanup
-pub fn run<'a>(i: &'a str) -> Result<Vec<Node<Statement<'a>>>, ParserError<Span<'a>>> {
-    let (_, lines): (_, Vec<Line>) = linesplit::take_lines(&i).expect("linesplit fail (fix)"); // break document up by whitespace indentation
+// this api absolutely needs a cleanup
+pub fn run<'a>(
+    i: &'a str,
+    filename: &'a str,
+) -> Result<Vec<Node<Statement<'a>>>, ParserError<Span<'a>>> {
+    // let span = Span::new(i);
+    let (_, lines): (_, Vec<Line>) =
+        linesplit::take_lines(Span::new_extra(i, filename)).expect("linesplit fail (fix)"); // break document up by whitespace indentation
 
     lines
         .into_iter()
@@ -69,20 +75,3 @@ fn parse_line<'a>(line: Line<'a>) -> IResult<Span<'a>, Node<Statement<'a>>, Pars
 pub fn parse<'a>(i: Span<'a>) -> IResult<Span<'a>, Statement<'a>, ParserError<Span<'a>>> {
     statement::statement(i)
 }
-
-// #[test]
-// fn test_run() {
-//     assert!(run("".into()).is_ok());
-//     // assert!(run("page").is_ok());
-//     assert!(run("page()\n").is_ok());
-//     assert!(run("page()\ndiv()\n").is_ok());
-//     // assert!(run("page()\n\tdiv\n").is_err()); // children
-//     // assert_eq!(run("page\n\n\n").unwrap().0.get_column(), 1);
-
-//     // let result = run("hello\n@@@\n");
-//     // println!("{:?}", result);
-
-//     // println!("--{:?}", run("func()\n"));
-
-//     // assert!(run("44").is_err());
-// }

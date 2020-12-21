@@ -141,14 +141,14 @@ fn index_expression<'a>(i: Span<'a>) -> IResult<Span, Expression<'a>, ParserErro
 }
 
 fn comment<'a>(i: Span<'a>) -> IResult<Span<'a>, Span<'a>, ParserError<Span<'a>>> {
-    tag("--")(i).map(|(r, _)| (Span::new(""), r))
-    // .map_err(|e| {
-    //     e.map(|(span, _kind)| ParserError {
-    //         context: span,
-    //         kind: ParserErrorKind::SyntaxError,
-    //         pos: span.into(),
-    //     })
-    // })
+    tag("--")(i).map(|(r, _)| (Span::new_extra("", ""), r)) // FXIME
+                                                            // .map_err(|e| {
+                                                            //     e.map(|(span, _kind)| ParserError {
+                                                            //         context: span,
+                                                            //         kind: ParserErrorKind::SyntaxError,
+                                                            //         pos: span.into(),
+                                                            //     })
+                                                            // })
 }
 
 fn binding<'a>(i: Span<'a>) -> IResult<Span, (Span<'a>, Expression<'a>), ParserError<Span<'a>>> {

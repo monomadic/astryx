@@ -15,7 +15,7 @@ impl RenderErrorAsHTML for AstryxError {
 
 // pub fn render<'a>(file: &'a str) -> AstryxResult<'a, std::collections::HashMap<String, String>> {
 pub fn render<'a>(file: &'a str) -> AstryxResult<()> {
-    parser::run(&file)
+    parser::run(&file, "<error>")
         .map_err(|_| AstryxError::Generic("fixme".to_string()))
         .and_then(|nodes| interpreter::run(&nodes, Rc::new(RefCell::new(State::new()))))
         // .map(|p| program::render_project(p))

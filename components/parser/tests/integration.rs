@@ -41,4 +41,5 @@ fn test_error_position() {
 
     assert_error_position("!", 1, 1);
     assert_error_position("print()!", 1, 8);
+    assert_error_position("\n!", 2, 1);
 }
