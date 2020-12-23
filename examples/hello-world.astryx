@@ -3,8 +3,7 @@
     | first header
     %a { href: "#"}
       | blah
-    %a { href: "#"}
-      | blah2
+    %a { href: "#"} blah blah blah
     %div
       %h2
         | another header
