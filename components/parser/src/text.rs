@@ -21,7 +21,9 @@ fn test_piped_string() {
     assert!(piped_string(Span::new("| hi")).is_ok());
 }
 
-fn tokenised_string<'a>(i: Span<'a>) -> IResult<Span<'a>, Vec<StringToken>, ParserError<Span<'a>>> {
+pub(crate) fn tokenised_string<'a>(
+    i: Span<'a>,
+) -> IResult<Span<'a>, Vec<StringToken>, ParserError<Span<'a>>> {
     nom::multi::many0(alt((
         map(interpolated_expression, |expr| {
             StringToken::Expression(expr)

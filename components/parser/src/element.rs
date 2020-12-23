@@ -1,5 +1,6 @@
 use crate::{
-    error::ParserErrorKind, statement::expression, Element, Expression, ParserError, Span,
+    error::ParserErrorKind, statement::expression, text::tokenised_string, Element, Expression,
+    ParserError, Span,
 };
 use nom::{
     bytes::complete::tag,
@@ -38,21 +39,29 @@ fn attribute_assignment<'a>(
 }
 
 pub(crate) fn element<'a>(i: Span<'a>) -> IResult<Span<'a>, Element<'a>, ParserError<Span<'a>>> {
-    tuple((tag("%"), alphanumeric1, space0, opt(attributes_braced)))(i)
-        .map(|(r, (_, ident, _, attributes))| {
-            (
-                r,
-                Element {
-                    ident,
-                    attributes: attributes.unwrap_or(vec![]),
-                },
-            )
+    tuple((
+        tag("%"),
+        alphanumeric1,
+        space0,
+        opt(attributes_braced),
+        space0,
+        opt(tokenised_string),
+    ))(i)
+    .map(|(r, (_, ident, _, attributes, _, text))| {
+        (
+            r,
+            Element {
+                ident,
+                attributes: attributes.unwrap_or(vec![]),
+                text,
+            },
+        )
+    })
+    .map_err(|e: nom::Err<_>| {
+        e.map(|e: ParserError<Span<'a>>| ParserError {
+            context: e.context,
+            kind: ParserErrorKind::SyntaxError,
+            pos: i.into(),
         })
-        .map_err(|e: nom::Err<_>| {
-            e.map(|e: ParserError<Span<'a>>| ParserError {
-                context: e.context,
-                kind: ParserErrorKind::SyntaxError,
-                pos: i.into(),
-            })
-        })
+    })
 }

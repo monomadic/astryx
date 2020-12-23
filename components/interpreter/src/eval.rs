@@ -39,6 +39,13 @@ pub(crate) fn eval_statement<'a>(
 
             let mut node = Node::new(Object::HTMLElement(element));
 
+            if let Some(text) = e.text {
+                node.append(Node::new(Object::String(eval_interpolation(
+                    Rc::clone(&state),
+                    text,
+                )?)));
+            }
+
             for child in statement.children() {
                 // println!("child");
                 let obj = eval_statement(&child, Rc::clone(&state))?;

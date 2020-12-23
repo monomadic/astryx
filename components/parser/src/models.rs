@@ -136,6 +136,7 @@ impl<'a> Display for Literal<'a> {
 pub struct Element<'a> {
     pub ident: Span<'a>,
     pub attributes: Vec<(Span<'a>, Expression<'a>)>,
+    pub text: Option<Vec<StringToken<'a>>>,
 }
 
 #[derive(Debug, Clone)]

@@ -1,9 +1,6 @@
 @route path="/"
-  %h1 { style: "color: red;"}
-    | first header
-    %a { href: "#"}
-      | blah
+  %h1 { style: "color: red;"} first header
+    %a { href: "#"} blah
     %a { href: "#"} blah blah blah
     %div
-      %h2
-        | another header
+      %h2 another header
