@@ -9,8 +9,6 @@ impl Object {
     pub fn render(nodes: Vec<Node<Object>>) -> HashMap<String, String> {
         let mut buffer = HashMap::new();
 
-        println!("nodes: {:?}", nodes);
-
         for node in nodes {
             walk_nodes(node, &mut buffer, String::from("/"));
         }

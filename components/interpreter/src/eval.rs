@@ -86,10 +86,6 @@ pub(crate) fn eval_statement<'a>(
             Ok(Node::new(return_value))
         }
         Statement::Text(t) => {
-            println!(
-                "text: {:?}",
-                eval_interpolation(Rc::clone(&state), t.clone())
-            );
             return Ok(Node::new(Object::String(eval_interpolation(
                 Rc::clone(&state),
                 t,
