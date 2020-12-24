@@ -110,7 +110,7 @@ pub(crate) fn expression<'a>(i: Span<'a>) -> IResult<Span, Expression<'a>, Parse
         map(glob_pattern, |s| Expression::GlobPattern(s)),
         map(function_call, |f| Expression::FunctionCall(f)),
         map(literal, |v| Expression::Literal(v)),
-        // map(alphanumeric1, |s| Expression::Reference(s)),
+        map(alphanumeric1, |s| Expression::Reference(s)),
     ))(i)
 }
 

@@ -1,33 +1,14 @@
-
-
 @route path="/"
   %html
     %body
-      %h1
-        | Index Page
-        
-      -- image(src: ./images/mine.png)
+      %h1 Index Page
 
       for post in ./examples/*.md
         let meta = post.frontmatter()
 
-        -- %a { href: meta.route } meta.title
-        %a href=meta.route
-          | /
+        %a { href: meta.route }
           meta.title
-
+        
         @route path=meta.route
-          %div
-            %h1
-              | ${ meta.title }
-            -- post.markdown()
-        @route path=meta.route
-          %div
-            %h1
-              | ${ meta.title }
-            -- post.markdown()
-        @route path=meta.route
-          %div
-            %h1
-              | ${ meta.title }
-            -- post.markdown()
+          %h1
+            meta.title
