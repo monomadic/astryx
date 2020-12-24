@@ -17,9 +17,9 @@ pub fn import(state: Rc<RefCell<State>>) -> Rc<RefCell<State>> {
     //     .borrow_mut()
     //     .bind("locals", Object::BuiltinFunction(inspect_all));
 
-    // let _ = state
-    //     .borrow_mut()
-    //     .bind("markdown", Object::BuiltinFunction(markdown));
+    let _ = state
+        .borrow_mut()
+        .bind("markdown", Object::BuiltinFunction(markdown));
 
     let _ = state
         .borrow_mut()
@@ -67,13 +67,24 @@ pub(crate) fn inspect_all(state: Rc<RefCell<State>>) -> AstryxResult<Object> {
     Ok(Object::String(args)) // todo: return ()
 }
 
-pub(crate) fn markdown<'a>(state: Rc<RefCell<State>>) -> AstryxResult<Object> {
-    let doc = state
-        .borrow()
-        .get("$self")
-        .ok_or(AstryxError::Generic(format!("no $self")))?;
-    let result = markdown::parse(&doc.to_string()).unwrap();
-    Ok(Object::String(result))
+pub(crate) fn markdown<'a>(
+    state: Rc<RefCell<State>>,
+    input: Option<Node<Object>>,
+) -> AstryxResult<Object> {
+    match input {
+        Some(input) => Ok(Object::String(
+            markdown::parse(&input.borrow().to_string()).unwrap(),
+        )),
+        None => {
+            let doc = state
+                .borrow()
+                .get("$self")
+                .ok_or(AstryxError::Generic(format!("no $self")))?;
+
+            let result = markdown::parse(&doc.to_string()).unwrap();
+            Ok(Object::String(result))
+        }
+    }
 }
 
 pub(crate) fn parse_frontmatter<'a>(

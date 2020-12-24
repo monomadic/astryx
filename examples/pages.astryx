@@ -12,3 +12,5 @@
         @route path=meta.route
           %h1
             meta.title
+          
+          post.markdown()
