@@ -1,5 +1,8 @@
-use error::{display::display_error, AstryxResult};
+use error::{display::display_error, AstryxError, AstryxResult};
+use models::{Site, State};
 use repl;
+use std::cell::RefCell;
+use std::rc::Rc;
 use structopt::StructOpt;
 
 mod build;
@@ -25,6 +28,10 @@ enum Command {
     },
     /// build the project
     Build {
+        /// Input file
+        file: Option<String>,
+    },
+    Check {
         /// Input file
         file: Option<String>,
     },
@@ -54,6 +61,20 @@ fn run() -> Result<String, String> {
 
             println!("building: {}\n", &path);
             build::build(&file, &path).map_err(|e| display_error(&e, path))
+        }
+        Command::Check { file } => {
+            let path = &file.unwrap_or(String::from("site.astryx"));
+            let file = std::fs::read_to_string(&path).expect(&format!("could not open {}", path));
+
+            println!("checking: {}\n", &path);
+            let state = Rc::new(RefCell::new(State::new()));
+
+            parser::run(&file, path)
+                .map_err(AstryxError::from)
+                .and_then(|nodes| interpreter::run(&nodes, state))
+                .map(Site::render)
+                .map(|_| println!("no errors."))
+                .map_err(|e| display_error(&e, path))
         }
         Command::New => new_project().map_err(|e| format!("error creating new project: {:?}", e)),
         Command::Repl => {

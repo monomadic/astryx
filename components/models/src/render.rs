@@ -19,6 +19,13 @@ impl Site {
 
         Site { documents }
     }
+
+    /// todo: supply output path
+    pub fn write(&self) {
+        for (hash, document) in &self.documents {
+            println!("writing ./build/{}/index.html", hash);
+        }
+    }
 }
 
 fn walk_nodes(node: Node<Object>, buffer: &mut HashMap<String, String>, mut path: String) {
