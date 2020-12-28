@@ -6,7 +6,7 @@ use rctree::Node;
 use std::collections::HashMap;
 
 impl Object {
-    pub fn render(nodes: Vec<Node<Object>>) -> HashMap<String, String> {
+    pub fn render(nodes: Vec<Node<Object>>) -> HashMap<String, Vec<u8>> {
         let mut buffer = HashMap::new();
 
         for node in nodes {
@@ -17,7 +17,7 @@ impl Object {
     }
 }
 
-fn walk_nodes(node: Node<Object>, buffer: &mut HashMap<String, String>, mut path: String) {
+fn walk_nodes(node: Node<Object>, buffer: &mut HashMap<String, Vec<u8>>, mut path: String) {
     // entry
     match node.borrow().clone() {
         Object::None => {}
@@ -46,9 +46,9 @@ fn walk_nodes(node: Node<Object>, buffer: &mut HashMap<String, String>, mut path
     }
 }
 
-fn write_to_buffer(buffer: &mut HashMap<String, String>, path: &str, content: &str) {
+fn write_to_buffer(buffer: &mut HashMap<String, Vec<u8>>, path: &str, content: &str) {
     if let Some(page) = buffer.get_mut(path) {
-        page.push_str(content);
+        *page = [page, content.as_bytes()].concat();
     } else {
         buffer.insert(String::from(path), content.into());
     }

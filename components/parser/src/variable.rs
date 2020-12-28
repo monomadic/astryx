@@ -6,7 +6,7 @@ use nom::{
     combinator::map,
     number::complete::double,
     sequence::{delimited, tuple},
-    IResult, Parser,
+    IResult,
 };
 
 pub(crate) fn literal<'a>(i: Span<'a>) -> IResult<Span<'a>, Literal<'a>, ParserError<Span<'a>>> {
