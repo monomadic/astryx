@@ -5,19 +5,23 @@ use crate::Object;
 use rctree::Node;
 use std::collections::HashMap;
 
-impl Object {
-    pub fn render(nodes: Vec<Node<Object>>) -> HashMap<String, Vec<u8>> {
-        let mut buffer = HashMap::new();
+pub struct Site {
+    pub documents: HashMap<String, String>,
+}
+
+impl Site {
+    pub fn render(nodes: Vec<Node<Object>>) -> Site {
+        let mut documents = HashMap::new();
 
         for node in nodes {
-            walk_nodes(node, &mut buffer, String::from("/"));
+            walk_nodes(node, &mut documents, String::from("/"));
         }
 
-        buffer
+        Site { documents }
     }
 }
 
-fn walk_nodes(node: Node<Object>, buffer: &mut HashMap<String, Vec<u8>>, mut path: String) {
+fn walk_nodes(node: Node<Object>, buffer: &mut HashMap<String, String>, mut path: String) {
     // entry
     match node.borrow().clone() {
         Object::None => {}
@@ -46,9 +50,9 @@ fn walk_nodes(node: Node<Object>, buffer: &mut HashMap<String, Vec<u8>>, mut pat
     }
 }
 
-fn write_to_buffer(buffer: &mut HashMap<String, Vec<u8>>, path: &str, content: &str) {
+fn write_to_buffer(buffer: &mut HashMap<String, String>, path: &str, content: &str) {
     if let Some(page) = buffer.get_mut(path) {
-        *page = [page, content.as_bytes()].concat();
+        *page = [page, content].concat();
     } else {
         buffer.insert(String::from(path), content.into());
     }

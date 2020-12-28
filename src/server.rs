@@ -1,9 +1,8 @@
-use crate::render::render;
 use error::{
     display::{display_error, html_error_page},
     AstryxError, AstryxResult,
 };
-use models::{Object, State};
+use models::{Site, State};
 use simple_server::{Server, StatusCode};
 use std::cell::RefCell;
 use std::fs::read_to_string;
@@ -49,31 +48,31 @@ pub(crate) fn start<'a>(path: String, port: u32) -> AstryxResult<()> {
             //         Err(e) => Ok(response.body(display_error(&e, &path).as_bytes().to_vec())?),
             //     }
             // }
-            "/__pages" => {
-                let file = read_to_string(&path)?;
-                // let body = match render(&file) {
-                //     Ok(project) => project
-                //         .pages
-                //         .iter()
-                //         .map(|(path, page)| {
-                //             format!(
-                //                 "<p>{}</p><pre style='background-color:#AAA;padding:10px'>{}</pre><hr>",
-                //                 path, page
-                //             )
-                //         })
-                //         .collect(),
-                //     Err(e) => {
-                //         response.status(StatusCode::INTERNAL_SERVER_ERROR);
-                //         let error_text = display_error(&e, &path);
-                //         println!("{}", error_text);
+            // "/__pages" => {
+            //     // let file = read_to_string(&path)?;
+            //     // let body = match render(&file) {
+            //     //     Ok(project) => project
+            //     //         .pages
+            //     //         .iter()
+            //     //         .map(|(path, page)| {
+            //     //             format!(
+            //     //                 "<p>{}</p><pre style='background-color:#AAA;padding:10px'>{}</pre><hr>",
+            //     //                 path, page
+            //     //             )
+            //     //         })
+            //     //         .collect(),
+            //     //     Err(e) => {
+            //     //         response.status(StatusCode::INTERNAL_SERVER_ERROR);
+            //     //         let error_text = display_error(&e, &path);
+            //     //         println!("{}", error_text);
 
-                //         html_error_page(&error_text)
-                //     }
-                // };
-                let body = String::from("fixme");
+            //     //         html_error_page(&error_text)
+            //     //     }
+            //     // };
+            //     let body = String::from("fixme");
 
-                Ok(response.body(body.as_bytes().to_vec())?)
-            }
+            //     Ok(response.body(body.as_bytes().to_vec())?)
+            // }
             _ => {
                 println!("{} {}", request.method(), request_path);
 
@@ -84,7 +83,7 @@ pub(crate) fn start<'a>(path: String, port: u32) -> AstryxResult<()> {
                 let result = parser::run(&read_to_string(&path)?, &path)
                     .map_err(AstryxError::from)
                     .and_then(|nodes| interpreter::run(&nodes, state))
-                    .map(Object::render);
+                    .map(Site::render);
 
                 // if request_path.contains("svg") {
                 //     response.header("content-type", "image/svg+xml");
@@ -92,8 +91,8 @@ pub(crate) fn start<'a>(path: String, port: u32) -> AstryxResult<()> {
                 // }
 
                 let body = match result {
-                    Ok(pages) => match pages.get(request_path) {
-                        Some(page) => page.into(),
+                    Ok(site) => match site.documents.get(request_path) {
+                        Some(page) => page.clone(),
                         None => {
                             response.status(StatusCode::NOT_FOUND);
                             format!("<h1>404</h1><p>Path not found: {}<p>", request_path)
@@ -107,7 +106,6 @@ pub(crate) fn start<'a>(path: String, port: u32) -> AstryxResult<()> {
                         html_error_page(&error_text)
                     }
                 };
-                // let body = String::from("fixxxxme");
 
                 Ok(response.body(body.as_bytes().to_vec())?)
             }

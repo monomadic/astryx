@@ -46,11 +46,11 @@ mod test {
 
     #[test]
     fn test_take_lines() {
-        assert!(split(Span::new("")).is_ok());
-        assert!(split(Span::new("\n")).is_ok());
-        assert_eq!(split(Span::new("a\nb")).unwrap().1.len(), 2);
-        assert_eq!(split(Span::new("a\nb\n")).unwrap().1.len(), 2);
+        assert!(split(Span::new_extra("", "")).is_ok());
+        assert!(split(Span::new_extra("\n", "")).is_ok());
+        assert_eq!(split(Span::new_extra("a\nb", "")).unwrap().1.len(), 2);
+        assert_eq!(split(Span::new_extra("a\nb\n", "")).unwrap().1.len(), 2);
 
-        println!("====={:?}", split(Span::new("a\n\tb")).unwrap().1);
+        println!("====={:?}", split(Span::new_extra("a\n\tb", "")).unwrap().1);
     }
 }

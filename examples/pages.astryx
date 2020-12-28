@@ -1,5 +1,7 @@
 @route path="/"
   %html
+    %head
+      %link { rel: "stylesheet", href: "/style.css" }
     %body
       %h1 Index Page
 
@@ -10,7 +12,11 @@
           meta.title
         
         @route path=meta.route
-          %h1
-            meta.title
-          
-          post.markdown()
+          %html
+            %head
+              %link { rel: "stylesheet", href: "/style.css" }
+            %body
+                  %h1
+                    meta.title
+                  
+                  post.markdown()
