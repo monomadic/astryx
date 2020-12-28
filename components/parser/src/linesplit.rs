@@ -28,11 +28,11 @@ mod test {
 
     #[test]
     fn test_take_lines() {
-        assert!(take_lines(Span::new("")).is_ok());
-        assert!(take_lines(Span::new("\n")).is_ok());
+        assert!(take_lines(Span::new_extra("", "")).is_ok());
+        assert!(take_lines(Span::new_extra("\n", "")).is_ok());
 
-        assert_eq!(take_lines(Span::new("\na\n")).unwrap().1.len(), 1);
-        assert_eq!(take_lines(Span::new("a\n")).unwrap().1.len(), 1);
+        assert_eq!(take_lines(Span::new_extra("\na\n", "")).unwrap().1.len(), 1);
+        assert_eq!(take_lines(Span::new_extra("a\n", "")).unwrap().1.len(), 1);
         // assert_eq!(take_lines("a\nb").unwrap().0.to_string(), "");
         // assert_eq!(take_lines("a\nb").unwrap().1[0].content.to_string(), "a");
         // assert_eq!(take_lines("a\nb").unwrap().1[1].content.to_string(), "b");

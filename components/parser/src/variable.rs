@@ -104,7 +104,7 @@ mod test {
     #[test]
     fn test_literal() {
         assert_eq!(
-            literal(Span::new("4")).unwrap().1.inspect(),
+            literal(Span::new_extra("4", "")).unwrap().1.inspect(),
             String::from("4")
         );
     }

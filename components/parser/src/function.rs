@@ -84,10 +84,10 @@ mod test {
 
     #[test]
     fn test_function_call() {
-        assert!(function_call(Span::new("g()")).is_ok());
+        assert!(function_call(Span::new_extra("g()", "")).is_ok());
 
         assert_eq!(
-            &function_call(Span::new("print(text: \"hello\")"))
+            &function_call(Span::new_extra("print(text: \"hello\")", ""))
                 .unwrap()
                 .1
                 .inspect(),
@@ -95,10 +95,13 @@ mod test {
         );
 
         assert_eq!(
-            &function_call(Span::new("print(text: \"hello\", another: \"hi\")"))
-                .unwrap()
-                .1
-                .inspect(),
+            &function_call(Span::new_extra(
+                "print(text: \"hello\", another: \"hi\")",
+                ""
+            ))
+            .unwrap()
+            .1
+            .inspect(),
             "print(text: \"hello\", another: \"hi\")"
         );
 
@@ -110,14 +113,14 @@ mod test {
         // assert_eq!(f.ident.get_column(), 1);
 
         // check no-match with error
-        let e = function_call(Span::new("g"));
+        let e = function_call(Span::new_extra("g", ""));
         match e {
             Err(nom::Err::Error(_)) => (),
             _ => panic!("expected Error, got {:?}", e),
         };
 
         // check partial match with fail
-        let e = function_call(Span::new("g(1)"));
+        let e = function_call(Span::new_extra("g(1)", ""));
         match e {
             Err(nom::Err::Failure(_)) => (),
             _ => panic!("expected Failure, got {:?}", e),

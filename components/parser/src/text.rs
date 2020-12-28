@@ -16,9 +16,9 @@ pub(crate) fn piped_string<'a>(
 
 #[test]
 fn test_piped_string() {
-    assert!(piped_string(Span::new("")).is_err());
-    assert!(piped_string(Span::new("| ")).is_ok());
-    assert!(piped_string(Span::new("| hi")).is_ok());
+    assert!(piped_string(Span::new_extra("", "")).is_err());
+    assert!(piped_string(Span::new_extra("| ", "")).is_ok());
+    assert!(piped_string(Span::new_extra("| hi", "")).is_ok());
 }
 
 pub(crate) fn tokenised_string<'a>(
@@ -63,6 +63,6 @@ mod test {
 
     #[test]
     fn test_interpolated_expression() {
-        assert!(interpolated_expression(Span::new("")).is_err());
+        assert!(interpolated_expression(Span::new_extra("", "")).is_err());
     }
 }

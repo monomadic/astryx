@@ -3,7 +3,7 @@ use parser::*;
 
 fn assert_run(test: &str, result: &str) {
     assert_eq!(
-        run(test)
+        run(test, "")
             .unwrap()
             .iter()
             .map(|r| r.borrow().inspect())
@@ -14,10 +14,10 @@ fn assert_run(test: &str, result: &str) {
 
 #[test]
 fn test_parser() {
-    assert!(run("").is_ok());
-    assert!(run("\n").is_ok());
-    assert!(run("print()").is_ok());
-    assert!(run("print()\n").is_ok());
+    assert!(run("", "").is_ok());
+    assert!(run("\n", "").is_ok());
+    assert!(run("print()", "").is_ok());
+    assert!(run("print()\n", "").is_ok());
 
     assert_run("post.title", "post.title");
     assert_run("post.markdown()", "post.markdown()");
@@ -26,7 +26,7 @@ fn test_parser() {
 #[test]
 fn test_error_position() {
     fn assert_error_position(i: &str, line: u32, column: usize) {
-        let input = Span::new(i);
+        let input = Span::new_extra(i, "");
         let err = parser::parse(input).unwrap_err();
 
         if let nom::Err::Error(e) = err {
