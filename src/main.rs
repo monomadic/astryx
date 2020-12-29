@@ -6,7 +6,6 @@ use std::rc::Rc;
 use structopt::StructOpt;
 
 mod build;
-mod render;
 mod server;
 
 #[derive(StructOpt, Debug)]

@@ -12,17 +12,3 @@ pub(crate) fn build<'a>(file: &'a str, path: &str) -> AstryxResult<()> {
         .map(Site::render)
         .map(|site| site.write())
 }
-
-// fn write<'a>(project: Project) -> AstryxResult<()> {
-//     // needs: mkdir ./build
-//     Ok(for (path, data) in project.pages {
-//         std::fs::write(format!("build/{}", route_to_path(&path)?), data)?;
-//     })
-// }
-
-// fn route_to_path<'a>(route: &str) -> AstryxResult<&str> {
-//     Ok(match route {
-//         "/" => "index.html",
-//         _ => "blah.html",
-//     })
-// }

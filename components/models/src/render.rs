@@ -23,7 +23,14 @@ impl Site {
     /// todo: supply output path
     pub fn write(&self) {
         for (hash, document) in &self.documents {
-            println!("writing ./build/{}/index.html", hash);
+            let path = format!("./build{}/index.html", hash);
+            let path = std::path::Path::new(&path);
+
+            println!("writing {:?}", path);
+            let prefix = path.parent().unwrap();
+            std::fs::create_dir_all(prefix).unwrap();
+
+            std::fs::write(path, document).unwrap();
         }
     }
 }
