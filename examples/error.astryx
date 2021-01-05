@@ -1,3 +1,0 @@
-page(route: "/")
-  h1
-    | hi

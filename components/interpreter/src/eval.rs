@@ -1,7 +1,7 @@
 use error::{AstryxError, AstryxErrorKind, AstryxResult};
 use html::HTMLElement;
 use models::{object::Object, state::State};
-use parser::{Expression, Span, Statement, StringToken};
+use parser::{Expression, Statement, StringToken};
 use rctree::Node;
 use std::cell::RefCell;
 use std::{collections::HashMap, rc::Rc};
@@ -184,7 +184,7 @@ pub fn eval_expression<'a>(
             parser::Literal::String(s) => Ok(Object::String(s.to_string())),
             parser::Literal::Number(_s, f) => Ok(Object::Number(f.clone())),
         },
-        Expression::RelativePath(_) => unimplemented!(),
+        Expression::RelativePath(s) => Ok(Object::Path(s.to_string())),
         Expression::Array(arr) => Ok(Object::Array(
             arr.iter()
                 .map(|el| eval_expression(Rc::clone(&state), el, None))

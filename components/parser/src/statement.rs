@@ -4,7 +4,7 @@ use crate::{
     function::function_call,
     models::Statement,
     text::piped_string,
-    variable::{glob_pattern, literal},
+    variable::{glob_pattern, literal, relative_path},
     Expression, ParserError, Route, Span,
 };
 use nom::{
@@ -106,7 +106,7 @@ pub(crate) fn expression<'a>(i: Span<'a>) -> IResult<Span, Expression<'a>, Parse
         map(index, |(index, expr)| {
             Expression::Index(Box::new(index), Box::new(expr))
         }),
-        //map(relative_path, |s| Expression::RelativePath(s)),
+        map(relative_path, |s| Expression::RelativePath(s)),
         map(glob_pattern, |s| Expression::GlobPattern(s)),
         map(function_call, |f| Expression::FunctionCall(f)),
         map(literal, |v| Expression::Literal(v)),

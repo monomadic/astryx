@@ -14,6 +14,7 @@ pub enum Object {
     None,
     String(String),
     Number(f64),
+    Path(String),
     HTMLPage(String),
     HTMLElement(HTMLElement),
     // FunctionLiteral {
@@ -45,6 +46,7 @@ impl Object {
             Object::Number(f) => f.to_string(),
             Object::HTMLElement(e) => format!("{}{}", e.open_tag(), e.close_tag()),
             Object::HTMLPage(p) => format!("@route path={}", p),
+            Object::Path(_) => unimplemented!(),
         }
     }
 }
@@ -61,6 +63,7 @@ impl ToString for Object {
             Object::Number(n) => format!("{}", n),
             Object::HTMLElement(_) => unimplemented!(),
             Object::HTMLPage(_) => unimplemented!(),
+            Object::Path(_) => unimplemented!(),
         }
     }
 }
@@ -77,6 +80,7 @@ impl Into<String> for Object {
             Object::Number(_) => unimplemented!(),
             Object::HTMLElement(_) => unimplemented!(),
             Object::HTMLPage(_) => unimplemented!(),
+            Object::Path(p) => p,
         }
     }
 }

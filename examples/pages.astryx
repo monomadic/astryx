@@ -1,9 +1,10 @@
 @route path="/"
   %html
     %head
-      %link { rel: "stylesheet", href: "/style.css" }
+      %link { rel: "stylesheet", href: ./style.css }
+
     %body
-      %h1 Index Page
+      %h1 Pages
 
       for post in ./examples/*.md
         let meta = post.frontmatter()
@@ -15,6 +16,7 @@
           %html
             %head
               %link { rel: "stylesheet", href: "/style.css" }
+
             %body
                   %h1
                     meta.title

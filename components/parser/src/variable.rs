@@ -46,14 +46,8 @@ pub fn glob_pattern<'a>(i: Span<'a>) -> IResult<Span<'a>, Span<'a>, ParserError<
     tuple((path_prefix, glob_pattern_characters))(i)
         // .map(|(r, (prefix, pathname))| (r, Span::new(&format!("{}{}", prefix, pathname)))) // check this!
         .map(|(r, (_prefix, path))| (r, path)) // fix this so that prefix is included
-        // .map_err(|e| {
-        //     ParserError {
-        //         context: i, // we need to reset the context to the whole line
-        //         kind: ParserErrorKind::UnexpectedToken("gg".into()),
-        //         pos: s,
-        //     })
         .map_err(|e| {
-            nom::Err::Error(ParserError {
+            e.map(|_| ParserError {
                 kind: ParserErrorKind::Unexpected,
                 pos: i,
                 context: i,
@@ -63,11 +57,20 @@ pub fn glob_pattern<'a>(i: Span<'a>) -> IResult<Span<'a>, Span<'a>, ParserError<
 
 /// match relative paths eg: ./test.txt and ../../test.txt
 pub fn relative_path<'a>(i: Span<'a>) -> IResult<Span<'a>, Span<'a>, ParserError<Span<'a>>> {
+    // we need to check for globs and return early or we'll trip up the parser with a full error condition.
+    if i.contains("*") {
+        return Err(nom::Err::Error(ParserError {
+            context: i, // we need to reset the context to the whole line
+            kind: ParserErrorKind::UnexpectedToken("gg".into()),
+            pos: i,
+        }));
+    };
+
     tuple((path_prefix, path_characters))(i)
         // .map(|(r, (prefix, pathname))| (r, Span::new(&format!("{}{}", prefix, pathname)))) // check this!
         .map(|(r, (_prefix, path))| (r, path)) // fix this so that prefix is included
         .map_err(|e| {
-            e.map(|nom_error| ParserError {
+            e.map(|_| ParserError {
                 context: i, // we need to reset the context to the whole line
                 kind: ParserErrorKind::UnexpectedToken("gg".into()),
                 pos: i,

@@ -25,11 +25,11 @@ impl Site {
         for (hash, document) in &self.documents {
             let path = format!("./build{}/index.html", hash);
             let path = std::path::Path::new(&path);
+            let prefix = path.parent().unwrap();
 
             println!("writing {:?}", path);
-            let prefix = path.parent().unwrap();
-            std::fs::create_dir_all(prefix).unwrap();
 
+            std::fs::create_dir_all(prefix).unwrap();
             std::fs::write(path, document).unwrap();
         }
     }
@@ -50,6 +50,7 @@ fn walk_nodes(node: Node<Object>, buffer: &mut HashMap<String, String>, mut path
             }
         }
         Object::Map(_) => unimplemented!(),
+        Object::Path(_) => unimplemented!(),
     };
 
     // children

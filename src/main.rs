@@ -28,7 +28,8 @@ enum Command {
     /// build the project
     Build {
         /// Input file
-        file: Option<String>,
+        input: Option<String>,
+        output: Option<String>,
     },
     Check {
         /// Input file
@@ -54,8 +55,8 @@ fn run() -> Result<String, String> {
 
             server::start(path.into(), port.unwrap_or(8888)).map_err(|e| display_error(&e, path))
         }
-        Command::Build { file } => {
-            let path = &file.unwrap_or(String::from("site.astryx"));
+        Command::Build { input, output } => {
+            let path = &input.unwrap_or(String::from("site.astryx"));
             let file = std::fs::read_to_string(&path).expect(&format!("could not open {}", path));
 
             println!("building: {}\n", &path);
