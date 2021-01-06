@@ -27,6 +27,10 @@ pub fn import(state: Rc<RefCell<State>>) -> Rc<RefCell<State>> {
 
     let _ = state
         .borrow_mut()
+        .bind("asset", Object::BuiltinFunction(asset));
+
+    let _ = state
+        .borrow_mut()
         .bind("write", Object::BuiltinFunction(write));
 
     state
@@ -120,6 +124,18 @@ pub(crate) fn page<'a>(
     // Ok(input.unwrap().borrow().clone())
 
     Ok(Object::HTMLPage(path.to_string()))
+}
+
+pub(crate) fn asset<'a>(
+    state: Rc<RefCell<State>>,
+    input: Option<Node<Object>>,
+) -> AstryxResult<Object> {
+    println!("page: {:?}", input);
+    let path = state.borrow().require(Span::new_extra("path", "error"))?;
+
+    // Ok(input.unwrap().borrow().clone())
+
+    Ok(Object::String(path.to_string()))
 }
 
 /// takes an object and writes to a file

@@ -63,7 +63,7 @@ impl ToString for Object {
             Object::Number(n) => format!("{}", n),
             Object::HTMLElement(_) => unimplemented!(),
             Object::HTMLPage(_) => unimplemented!(),
-            Object::Path(_) => unimplemented!(),
+            Object::Path(p) => p.into(),
         }
     }
 }

@@ -53,10 +53,6 @@ pub(crate) fn eval_statement<'a>(
                 node.append(obj);
             }
 
-            // state
-            //     .borrow()
-            //     .push_instruction(ProgramInstruction::Text(element.clone().close_tag()));
-
             Ok(node)
         }
         Statement::Expression(expr) => {
@@ -167,10 +163,14 @@ pub fn eval_expression<'a>(
             let mut inner = State::new();
             // inner.program = Rc::clone(&state.borrow().program);
 
+            // add function arguments into scope
             for (k, expr) in &f.arguments {
                 inner.bind(
                     &k.to_string(),
-                    eval_expression(Rc::clone(&state), expr, None)?,
+                    // evaluate the expression part of the argument
+                    eval_expression(Rc::clone(&state), expr, None).map_err(|_| {
+                        AstryxError::with_loc(*k, AstryxErrorKind::UnknownValue(k.to_string()))
+                    })?,
                 )?;
             }
 
