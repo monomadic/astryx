@@ -118,7 +118,6 @@ pub(crate) fn page<'a>(
     state: Rc<RefCell<State>>,
     input: Option<Node<Object>>,
 ) -> AstryxResult<Object> {
-    println!("page: {:?}", input);
     let path = state.borrow().require(Span::new_extra("path", "error"))?;
 
     // Ok(input.unwrap().borrow().clone())
@@ -130,7 +129,6 @@ pub(crate) fn asset<'a>(
     state: Rc<RefCell<State>>,
     input: Option<Node<Object>>,
 ) -> AstryxResult<Object> {
-    println!("page: {:?}", input);
     let path = state.borrow().require(Span::new_extra("path", "error"))?;
 
     // Ok(input.unwrap().borrow().clone())
@@ -154,3 +152,5 @@ pub(crate) fn write<'a>(
 
     Ok(Object::None)
 }
+
+// fn assert_argument_count(count: usize) -> EvalResult {}

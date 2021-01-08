@@ -16,7 +16,7 @@
         @route path=meta.route
           %html
             %head
-              %link { rel: "stylesheet", href: "/style.css" }
+              %link { rel: "stylesheet", href: ./style.css }
 
             %body
                   %h1
