@@ -21,17 +21,17 @@ pub fn import(state: Rc<RefCell<State>>) -> Rc<RefCell<State>> {
         .borrow_mut()
         .bind("markdown", Object::BuiltinFunction(markdown));
 
-    let _ = state
-        .borrow_mut()
-        .bind("page", Object::BuiltinFunction(page));
+    // let _ = state
+    //     .borrow_mut()
+    //     .bind("page", Object::BuiltinFunction(page));
 
     let _ = state
         .borrow_mut()
         .bind("asset", Object::BuiltinFunction(asset));
 
-    let _ = state
-        .borrow_mut()
-        .bind("write", Object::BuiltinFunction(write));
+    // let _ = state
+    //     .borrow_mut()
+    //     .bind("write", Object::BuiltinFunction(write));
 
     state
 }
@@ -75,32 +75,26 @@ pub(crate) fn markdown<'a>(
     state: Rc<RefCell<State>>,
     input: Option<Node<Object>>,
 ) -> AstryxResult<Object> {
-    match input {
-        Some(input) => Ok(Object::String(
-            markdown::parse(&input.borrow().to_string()).unwrap(),
-        )),
-        None => {
-            let doc = state
-                .borrow()
-                .get("$self")
-                .ok_or(AstryxError::Generic(format!("no $self")))?;
+    let path = match input {
+        Some(input) => input.borrow().clone(),
+        None => state.borrow().require(Span::new_extra("path", "error"))?,
+    };
 
-            let result = markdown::parse(&doc.to_string()).unwrap();
-            Ok(Object::String(result))
-        }
-    }
+    let content = read(state, Some(Node::new(path)))?.to_string();
+
+    Ok(Object::String(markdown::parse(&content).unwrap()))
 }
 
 pub(crate) fn parse_frontmatter<'a>(
     state: Rc<RefCell<State>>,
     input: Option<Node<Object>>,
 ) -> AstryxResult<Object> {
-    let doc = match input {
+    let path = match input {
         Some(input) => input.borrow().clone(),
         None => state.borrow().require(Span::new_extra("path", "error"))?,
     };
 
-    let content = read(state, Some(Node::new(doc)))?.to_string();
+    let content = read(state, Some(Node::new(path)))?.to_string();
 
     let (yaml, _document) = frontmatter::parse(&content).unwrap();
 
@@ -111,16 +105,16 @@ pub(crate) fn parse_frontmatter<'a>(
     }
 }
 
-pub(crate) fn page<'a>(
-    state: Rc<RefCell<State>>,
-    input: Option<Node<Object>>,
-) -> AstryxResult<Object> {
-    let path = state.borrow().require(Span::new_extra("path", "error"))?;
+// pub(crate) fn page<'a>(
+//     state: Rc<RefCell<State>>,
+//     input: Option<Node<Object>>,
+// ) -> AstryxResult<Object> {
+//     let path = state.borrow().require(Span::new_extra("path", "error"))?;
 
-    // Ok(input.unwrap().borrow().clone())
+//     // Ok(input.unwrap().borrow().clone())
 
-    Ok(Object::HTMLPage(path.to_string()))
-}
+//     Ok(Object::HTMLPage(path.to_string()))
+// }
 
 pub(crate) fn asset<'a>(
     state: Rc<RefCell<State>>,
@@ -133,22 +127,22 @@ pub(crate) fn asset<'a>(
     Ok(Object::File(path.to_string()))
 }
 
-/// takes an object and writes to a file
-pub(crate) fn write<'a>(
-    state: Rc<RefCell<State>>,
-    _input: Option<Node<Object>>,
-) -> AstryxResult<Object> {
-    let path = state
-        .borrow()
-        .get("path")
-        .ok_or(AstryxError::Generic(format!("no $self")))?;
+// /// takes an object and writes to a file
+// pub(crate) fn write<'a>(
+//     state: Rc<RefCell<State>>,
+//     _input: Option<Node<Object>>,
+// ) -> AstryxResult<Object> {
+//     let path = state
+//         .borrow()
+//         .get("path")
+//         .ok_or(AstryxError::Generic(format!("no $self")))?;
 
-    // state
-    //     .borrow()
-    //     .push_instruction(ProgramInstruction::SetPath(path.to_string()));
+//     // state
+//     //     .borrow()
+//     //     .push_instruction(ProgramInstruction::SetPath(path.to_string()));
 
-    Ok(Object::None)
-}
+//     Ok(Object::None)
+// }
 
 /// takes an path and writes to an object
 pub(crate) fn read<'a>(

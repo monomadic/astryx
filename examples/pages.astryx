@@ -7,10 +7,9 @@
       %h1 "Pages"
 
       for post in ./examples/*.md
-        --let post = post.read()
-        -- let body = post.markdown()
         let meta = post.frontmatter()
-        meta.log()
+        let md = post.markdown()
+        md.log()
 
         %a { href: meta.route }
           meta.title

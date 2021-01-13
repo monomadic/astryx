@@ -221,7 +221,7 @@ pub fn eval_expression<'a>(
             //     Object::Map(m) => {}
             // };
 
-            println!("state: {:?}", state.borrow().local);
+            // println!("state: {:?}", state.borrow().local);
 
             // note: state should not be used, just the builtins / object functions should work
             // this creates a state with invalid variables.
