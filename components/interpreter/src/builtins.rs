@@ -95,17 +95,14 @@ pub(crate) fn parse_frontmatter<'a>(
     state: Rc<RefCell<State>>,
     input: Option<Node<Object>>,
 ) -> AstryxResult<Object> {
-    let doc = state
-        .borrow()
-        .get("$self")
-        .ok_or(AstryxError::Generic(format!("no $self")))?;
-
-    let (yaml, _document) = match doc {
-        Object::String(s) => frontmatter::parse(&s).unwrap(),
-        _ => {
-            unimplemented!();
-        }
+    let doc = match input {
+        Some(input) => input.borrow().clone(),
+        None => state.borrow().require(Span::new_extra("path", "error"))?,
     };
+
+    let content = read(state, Some(Node::new(doc)))?.to_string();
+
+    let (yaml, _document) = frontmatter::parse(&content).unwrap();
 
     if let Some(yaml) = yaml {
         Ok(yaml.into())
@@ -127,13 +124,13 @@ pub(crate) fn page<'a>(
 
 pub(crate) fn asset<'a>(
     state: Rc<RefCell<State>>,
-    input: Option<Node<Object>>,
+    _input: Option<Node<Object>>,
 ) -> AstryxResult<Object> {
     let path = state.borrow().require(Span::new_extra("path", "error"))?;
 
     // Ok(input.unwrap().borrow().clone())
 
-    Ok(Object::String(path.to_string()))
+    Ok(Object::File(path.to_string()))
 }
 
 /// takes an object and writes to a file
@@ -151,6 +148,24 @@ pub(crate) fn write<'a>(
     //     .push_instruction(ProgramInstruction::SetPath(path.to_string()));
 
     Ok(Object::None)
+}
+
+/// takes an path and writes to an object
+pub(crate) fn read<'a>(
+    state: Rc<RefCell<State>>,
+    input: Option<Node<Object>>,
+) -> AstryxResult<Object> {
+    let path = match input {
+        Some(input) => input.borrow().clone(),
+        None => state.borrow().require(Span::new_extra("path", "error"))?,
+    };
+
+    match path {
+        Object::String(s) | Object::Path(s) => std::fs::read_to_string(s)
+            .map(Object::String)
+            .map_err(|_| AstryxError::Generic("<can't read file>".into())),
+        _ => unimplemented!(), // return error
+    }
 }
 
 // fn assert_argument_count(count: usize) -> EvalResult {}

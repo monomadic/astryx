@@ -179,7 +179,14 @@ pub fn eval_expression<'a>(
                 _ => unimplemented!(),
             }
         }
-        Expression::Reference(r) => state.borrow().require(*r),
+        Expression::Reference(r) => match input {
+            Some(n) => match n.borrow().clone() {
+                Object::None => Ok(Object::None),
+                Object::Map(m) => Ok(m.get(&r.to_string()).unwrap().borrow().clone()),
+                _ => unimplemented!(),
+            },
+            None => state.borrow().require(*r),
+        },
         Expression::Literal(l) => match l {
             parser::Literal::String(s) => Ok(Object::String(s.to_string())),
             parser::Literal::Number(_s, f) => Ok(Object::Number(f.clone())),
@@ -193,58 +200,116 @@ pub fn eval_expression<'a>(
                 .map(Node::new)
                 .collect(),
         )),
-        Expression::GlobPattern(s) => crate::util::import_files(s),
+        Expression::GlobPattern(s) => crate::util::glob_files(s),
         Expression::Index(l, r) => {
-            let lexpr = eval_expression(Rc::clone(&state), l, None)?;
+            let lexpr: Object = eval_expression(Rc::clone(&state), l, None)?;
 
-            // todo: FIX THIS, create micro-scope and use as input
+            // create micro state
+            // let mut inner = State::new();
 
-            match &lexpr {
-                Object::Map(ref m) => match **r {
-                    Expression::Reference(r) => m
-                        .get(r.to_string().as_str())
-                        .map(|o| o.borrow().clone())
-                        .ok_or(AstryxError::LocatedError(
-                            r.into(),
-                            AstryxErrorKind::Unexpected,
-                        )),
+            // check if state needs to be built
+            // match &lexpr {
+            //     Object::None => panic!("encountered none state"),
+            //     Object::String(_) => unimplemented!(),
+            //     Object::Number(_) => unimplemented!(),
+            //     Object::Path(_) => {}
+            //     Object::HTMLPage(_) => unimplemented!(),
+            //     Object::HTMLElement(_) => unimplemented!(),
+            //     Object::File(_) => unimplemented!(),
+            //     Object::BuiltinFunction(_) => unimplemented!(),
+            //     Object::Array(_) => unimplemented!(),
+            //     Object::Map(m) => {}
+            // };
 
-                    Expression::FunctionCall(_) => unimplemented!(),
-                    Expression::GlobPattern(_) => unimplemented!(),
-                    Expression::RelativePath(_) => unimplemented!(),
-                    Expression::Literal(_) => unimplemented!(),
-                    Expression::Array(_) => unimplemented!(),
-                    Expression::Index(_, _) => unimplemented!(),
-                },
-                Object::String(s) => match &**r {
-                    Expression::FunctionCall(f) => {
-                        // println!("string.fn: {:?}", lexpr);
-                        let mut inner = State::new();
-                        inner.bind("$self", lexpr.clone())?;
+            println!("state: {:?}", state.borrow().local);
 
-                        for (k, expr) in &f.arguments {
-                            inner.bind(
-                                &k.to_string(),
-                                eval_expression(Rc::clone(&state), expr, None)?,
-                            )?;
-                        }
+            // note: state should not be used, just the builtins / object functions should work
+            // this creates a state with invalid variables.
+            eval_expression(state, r, Some(Node::new(lexpr)))
 
-                        match eval_expression(state, &*f.ident, None)? {
-                            Object::BuiltinFunction(builtin) => {
-                                builtin(Rc::new(RefCell::new(inner)), Some(Node::new(lexpr)))
-                            }
-                            _ => unimplemented!(),
-                        }
-                    }
-                    Expression::GlobPattern(_) => unimplemented!(),
-                    Expression::RelativePath(_) => unimplemented!(),
-                    Expression::Reference(_) => unimplemented!(),
-                    Expression::Literal(_) => unimplemented!(),
-                    Expression::Array(_) => unimplemented!(),
-                    Expression::Index(_, _) => unimplemented!(),
-                },
-                _ => panic!("{}", lexpr.inspect()),
-            }
+            // match &**r {
+            //     Expression::FunctionCall(f) => {
+            //         for (k, expr) in &f.arguments {
+            //             inner.bind(
+            //                 &k.to_string(),
+            //                 eval_expression(Rc::clone(&state), expr, None)?,
+            //             )?;
+            //         }
+
+            //         match eval_expression(state, &*f.ident, None)? {
+            //             Object::BuiltinFunction(builtin) => {
+            //                 builtin(Rc::new(RefCell::new(inner)), Some(Node::new(lexpr)))
+            //             }
+            //             _ => unimplemented!(),
+            //         }
+            //     }
+
+            //     Expression::Reference(ident) => {
+            //         eval_expression(Rc::new(RefCell::new(inner)), ident, input)
+            //     }
+
+            //     // lexpr
+            //     //     .get(r.to_string().as_str())
+            //     //     .map(|o| o.borrow().clone())
+            //     //     .ok_or(AstryxError::LocatedError(
+            //     //         r.into(),
+            //     //         AstryxErrorKind::Unexpected,
+            //     //     )),
+            //     Expression::Literal(_) => unimplemented!(),
+            //     Expression::Array(_) => unimplemented!(),
+            //     Expression::Index(_, _) => unimplemented!(),
+
+            //     // should never work with index notation:
+            //     Expression::GlobPattern(_) => unimplemented!(),
+            //     Expression::RelativePath(_) => unimplemented!(),
+            // }
+
+            // match &lexpr {
+            //     Object::Map(ref m) => match **r {
+            //         Expression::Reference(r) => m
+            //             .get(r.to_string().as_str())
+            //             .map(|o| o.borrow().clone())
+            //             .ok_or(AstryxError::LocatedError(
+            //                 r.into(),
+            //                 AstryxErrorKind::Unexpected,
+            //             )),
+
+            //         Expression::FunctionCall(_) => unimplemented!(),
+            //         Expression::GlobPattern(_) => unimplemented!(),
+            //         Expression::RelativePath(_) => unimplemented!(),
+            //         Expression::Literal(_) => unimplemented!(),
+            //         Expression::Array(_) => unimplemented!(),
+            //         Expression::Index(_, _) => unimplemented!(),
+            //     },
+            //     Object::String(s) => match &**r {
+            //         Expression::FunctionCall(f) => {
+            //             // println!("string.fn: {:?}", lexpr);
+            //             let mut inner = State::new();
+            //             inner.bind("$self", lexpr.clone())?;
+
+            //             for (k, expr) in &f.arguments {
+            //                 inner.bind(
+            //                     &k.to_string(),
+            //                     eval_expression(Rc::clone(&state), expr, None)?,
+            //                 )?;
+            //             }
+
+            //             match eval_expression(state, &*f.ident, None)? {
+            //                 Object::BuiltinFunction(builtin) => {
+            //                     builtin(Rc::new(RefCell::new(inner)), Some(Node::new(lexpr)))
+            //                 }
+            //                 _ => unimplemented!(),
+            //             }
+            //         }
+            //         Expression::GlobPattern(_) => unimplemented!(),
+            //         Expression::RelativePath(_) => unimplemented!(),
+            //         Expression::Reference(_) => unimplemented!(),
+            //         Expression::Literal(_) => unimplemented!(),
+            //         Expression::Array(_) => unimplemented!(),
+            //         Expression::Index(_, _) => unimplemented!(),
+            //     },
+            //     _ => panic!("{}", lexpr.inspect()),
+            // }
         }
     }
 }

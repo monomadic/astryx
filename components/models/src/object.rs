@@ -17,6 +17,7 @@ pub enum Object {
     Path(String),
     HTMLPage(String),
     HTMLElement(HTMLElement),
+    File(String),
     // FunctionLiteral {
     //     params: Vec<String>,4
     //     statements: Vec<Statement<'a>>,
@@ -46,7 +47,9 @@ impl Object {
             Object::Number(f) => f.to_string(),
             Object::HTMLElement(e) => format!("{}{}", e.open_tag(), e.close_tag()),
             Object::HTMLPage(p) => format!("@route path={}", p),
-            Object::Path(_) => unimplemented!(),
+            Object::Path(p) => format!("(Path: {})", p),
+            Object::File(f) => format!("(File: {})", f),
+            _ => unimplemented!(),
         }
     }
 }
@@ -58,12 +61,13 @@ impl ToString for Object {
             Object::String(s) => s.clone(),
             // Object::FunctionLiteral { params, statements } => format!("__FunctionLiteral"),
             Object::Array(arr) => format!("{:?}", arr),
-            Object::Map(_) => unimplemented!(),
+            Object::Map(m) => format!("{:?}", m),
             Object::None => format!("(None)"),
             Object::Number(n) => format!("{}", n),
             Object::HTMLElement(_) => unimplemented!(),
             Object::HTMLPage(_) => unimplemented!(),
             Object::Path(p) => p.into(),
+            _ => unimplemented!(),
         }
     }
 }
@@ -81,6 +85,8 @@ impl Into<String> for Object {
             Object::HTMLElement(_) => unimplemented!(),
             Object::HTMLPage(_) => unimplemented!(),
             Object::Path(p) => p,
+            Object::File(p) => p,
+            _ => unimplemented!(),
         }
     }
 }

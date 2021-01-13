@@ -51,6 +51,7 @@ fn walk_nodes(node: Node<Object>, buffer: &mut HashMap<String, String>, mut path
         }
         Object::Map(_) => unimplemented!(),
         Object::Path(_) => unimplemented!(),
+        _ => unimplemented!(),
     };
 
     // children

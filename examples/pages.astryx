@@ -1,14 +1,16 @@
 @route path="/"
   %html
     %head
-      %link { rel: "stylesheet", href: asset(path: ./style.css) }
+      %link { rel: "stylesheet", href: ./style.css }
 
     %body
       %h1 "Pages"
 
       for post in ./examples/*.md
+        --let post = post.read()
         -- let body = post.markdown()
         let meta = post.frontmatter()
+        meta.log()
 
         %a { href: meta.route }
           meta.title
