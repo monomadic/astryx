@@ -1,7 +1,7 @@
 // use html::HTMLError;
 
 use crate::AstryxError;
-use parser::{error::ParserErrorKind, ParserError, Span};
+use parser::{error::ParserErrorKind, Span};
 
 // pub type AstryxResult<'a, T> = Result<T, AstryxError<'a>>;
 

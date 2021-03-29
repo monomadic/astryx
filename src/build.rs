@@ -3,7 +3,7 @@ use models::{Site, State};
 use std::cell::RefCell;
 use std::rc::Rc;
 
-pub(crate) fn build<'a>(file: &'a str, path: &str) -> AstryxResult<()> {
+pub(crate) fn build(file: &str, path: &str) -> AstryxResult<()> {
     let state = Rc::new(RefCell::new(State::new()));
 
     parser::run(file, path)

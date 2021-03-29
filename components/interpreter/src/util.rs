@@ -4,7 +4,7 @@ use models::object::Object;
 use parser::Span;
 use rctree::Node;
 
-pub(crate) fn glob_files<'a>(s: &Span<'a>) -> AstryxResult<Object> {
+pub(crate) fn glob_files(s: &Span) -> AstryxResult<Object> {
     let options = glob::MatchOptions {
         case_sensitive: false,
         require_literal_separator: false,
@@ -49,7 +49,7 @@ pub(crate) fn import_files<'a>(s: &Span<'a>) -> AstryxResult<Object> {
     Ok(Object::Array(files))
 }
 
-pub(crate) fn import_file<'a>(s: &Span<'a>) -> AstryxResult<Object> {
+pub(crate) fn import_file(s: &Span) -> AstryxResult<Object> {
     std::fs::read_to_string(s.fragment().to_string())
         .map(Object::String)
         .map_err(|e| AstryxError::with_loc(*s, AstryxErrorKind::Unexpected))

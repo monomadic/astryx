@@ -131,7 +131,7 @@ fn index_expression<'a>(i: Span<'a>) -> IResult<Span, Expression<'a>, ParserErro
         map(literal, |v| Expression::Literal(v)),
         map(alphanumeric1, |s| Expression::Reference(s)),
     ))(i)
-    .map_err(|e| {
+    .map_err(|_err| {
         nom::Err::Error(ParserError {
             kind: ParserErrorKind::Unexpected,
             pos: i,
