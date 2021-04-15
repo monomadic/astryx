@@ -3,23 +3,19 @@
 [![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Minimum rustc version](https://img.shields.io/badge/rustc-1.42.0+-green.svg)](#rust-version-requirements)
 
-Astryx is a declarative, safe, expressive DSL for generating static and semi-static web content. It is not designed to be a general purpose language. It is developed in rust as a single binary with minimal allocations during compilation and is designed to be extremely fast.
+_Note: Astryx is still in a very alpha state._
 
-As Astryx is fast and correct (safety wherever possible) and a single binary it can easily fit into a CI/CD workflow (or github actions) and generate static content in a psuedo-dynamic fashion. For example, it could pull data from an api, process images, and generate all required output (html, css, js, etc) to static files at periodic intervals, so many sites which previously could only be dynamic now can benefit from static caching and cdn delivery.
+Astryx is a declarative, safe, expressive language and compiler for generating static sites and single page web applications. It draws heavy inspiration from the projects svelte, deno, and flutter, but aims to be leaner, much faster, and far simpler to use and master.
 
-It is totally unlike and far more powerful than other templating languages and static content generators, which tend to focus on themes, blogs, etc. Astryx could build a simple blog program in a few lines of code, or an image gallery, a cryptocurrency tracker, anything.
+It is similar to **svelte** in that it acts as a complete compiler, not a framework or library. Output is as lean as possible.
 
-It's primary goals are:
-- rapid, simple, intuitive content creation
-  - a single astryx program can generate an entire site with many pages
-  - could replicate the behavior of much more complicated projects simply and rapidly to static content
-- safe domain types (html, css, markdown, etc)
-- elimites invalid state (like a typed compiler but for web)
-  - type checking
-  - asset checking
-  - api validation
+It is similar to **deno** in that it deploys as a single, portable rust binary, with minimal allocations during compilation and is extremely fast. If you're coming from node or a javascript compiler, the difference is brain-rocking.
 
-__NOTE: pre-production state, not even alpha yet. pushing updates regularly, check the kanban board for progress__
+It is similar to **flutter** through use of simple declarative code and the redux data flow architecture (soon).
+
+It is similar to **rust** in its use of highly correct type safety, attempting to capture as many errors as possible during compile time, so they don't make it to runtime.
+
+It is totally unlike and far more powerful than simple templating languages and static content generators, which tend to focus on themes, blogs, etc. Astryx could build a simple blog program like hugo in a few lines of code, or an image gallery constructor, a cryptocurrency tracker, etc.
 
 ## Compiling / Running (with cargo)
 
