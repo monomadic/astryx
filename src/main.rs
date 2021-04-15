@@ -73,6 +73,12 @@ enum Command {
     },
 }
 
+#[derive(StructOpt, Debug)]
+enum BuildOutput {
+    Parser,
+    Interpreter,
+}
+
 pub fn main() {
     match run() {
         Ok(r) => println!("{}", r),

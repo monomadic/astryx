@@ -51,6 +51,11 @@ mod test {
         assert_eq!(split(Span::new_extra("a\nb", "")).unwrap().1.len(), 2);
         assert_eq!(split(Span::new_extra("a\nb\n", "")).unwrap().1.len(), 2);
 
+        assert_eq!(
+            split(Span::new_extra("a\n\tb\nc\n", "")).unwrap().1.len(),
+            2
+        );
+
         println!("====={:?}", split(Span::new_extra("a\n\tb", "")).unwrap().1);
     }
 }

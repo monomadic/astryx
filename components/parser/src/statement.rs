@@ -16,6 +16,7 @@ use nom::{
     sequence::{terminated, tuple},
     IResult,
 };
+use rctree::Node;
 
 // fn array<'a>(i: Span) -> IResult<Span, Span, ParserError<Span>> {
 //     // fn letter(i: &str) -> IResult<&str, Token, ParserError> {
@@ -34,6 +35,12 @@ use nom::{
 // fn test_array() {
 //     assert!(array(Span::new("[g]")).is_ok());
 // }
+
+pub(crate) fn statement_node<'a>(
+    node: Node<Span<'a>>,
+) -> IResult<Span, Node<Statement<'a>>, ParserError<Span<'a>>> {
+    statement(node.borrow().clone()).map(|(r, s)| (r, Node::new(s)))
+}
 
 pub(crate) fn statement<'a>(i: Span<'a>) -> IResult<Span, Statement<'a>, ParserError<Span<'a>>> {
     all_consuming(alt((

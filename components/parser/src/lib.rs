@@ -37,6 +37,26 @@ pub use crate::error::ParserError;
 mod whitespace;
 pub use crate::models::*;
 
+pub fn parse<'a>(
+    lines: Vec<Node<Span<'a>>>,
+) -> Result<Vec<Node<Statement<'a>>>, ParserError<Span<'a>>> {
+    lines
+        .into_iter()
+        .map(statement::statement_node)
+        .collect::<Result<Vec<(Span, Node<Statement<'_>>)>, nom::Err<ParserError<Span<'a>>>>>()
+        .map(|result| {
+            result
+                .into_iter()
+                .map(|(_, statements)| statements)
+                .collect() // todo: if there are remainders, throw an error so this map is not required
+        })
+        .map_err(|e| match e {
+            // convert to a regular result, nom is awful in this situation.
+            Err::Error(e) | Err::Failure(e) => e,
+            _ => unreachable!(),
+        })
+}
+
 // this api absolutely needs a cleanup
 // todo: take a PathBuf for filename, if it is actually needed.
 pub fn run<'a>(
@@ -73,6 +93,20 @@ fn parse_line<'a>(line: Line<'a>) -> IResult<Span<'a>, Node<Statement<'a>>, Pars
     Ok((r, node))
 }
 
-pub fn parse<'a>(i: Span<'a>) -> IResult<Span<'a>, Statement<'a>, ParserError<Span<'a>>> {
+fn parse_node<'a>(
+    node: Node<Span<'a>>,
+) -> IResult<Span<'a>, Node<Statement<'a>>, ParserError<Span<'a>>> {
+    let (r, statement) = statement::statement(node.borrow().clone())?;
+    let mut node: Node<Statement> = Node::new(statement);
+
+    for child in node.children() {
+        // let (_, child_node) = parse(child.borrow().clone())?;
+        node.append(child);
+    }
+
+    Ok((r, node))
+}
+
+pub fn parse_statement<'a>(i: Span<'a>) -> IResult<Span<'a>, Statement<'a>, ParserError<Span<'a>>> {
     statement::statement(i)
 }

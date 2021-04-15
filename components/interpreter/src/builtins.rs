@@ -13,25 +13,13 @@ pub fn import(state: Rc<RefCell<State>>) -> Rc<RefCell<State>> {
         .borrow_mut()
         .bind("frontmatter", Object::BuiltinFunction(parse_frontmatter));
 
-    // let _ = state
-    //     .borrow_mut()
-    //     .bind("locals", Object::BuiltinFunction(inspect_all));
-
     let _ = state
         .borrow_mut()
         .bind("markdown", Object::BuiltinFunction(markdown));
 
-    // let _ = state
-    //     .borrow_mut()
-    //     .bind("page", Object::BuiltinFunction(page));
-
     let _ = state
         .borrow_mut()
         .bind("asset", Object::BuiltinFunction(asset));
-
-    // let _ = state
-    //     .borrow_mut()
-    //     .bind("write", Object::BuiltinFunction(write));
 
     state
 }
@@ -104,17 +92,6 @@ pub(crate) fn parse_frontmatter<'a>(
         Ok(Object::Map(HashMap::new()))
     }
 }
-
-// pub(crate) fn page<'a>(
-//     state: Rc<RefCell<State>>,
-//     input: Option<Node<Object>>,
-// ) -> AstryxResult<Object> {
-//     let path = state.borrow().require(Span::new_extra("path", "error"))?;
-
-//     // Ok(input.unwrap().borrow().clone())
-
-//     Ok(Object::HTMLPage(path.to_string()))
-// }
 
 pub(crate) fn asset<'a>(
     state: Rc<RefCell<State>>,

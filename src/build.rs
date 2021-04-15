@@ -1,5 +1,6 @@
 use error::{AstryxError, AstryxResult};
 use models::{Site, State};
+use nom_indent;
 use std::cell::RefCell;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
