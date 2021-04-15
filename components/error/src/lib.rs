@@ -6,9 +6,13 @@ pub type AstryxResult<T> = Result<T, AstryxError>;
 
 #[derive(Debug)]
 pub enum AstryxError {
-    LocatedError(Location, AstryxErrorKind),
+    /// An error with an associated file context
+    LocatedError(Location, AstryxErrorKind), // todo: should contain a pathbuf for source file
+
+    /// A generic error without context
     Generic(String),
-    // HTMLError,
+
+    /// File or IO error
     IO(std::io::Error),
 }
 

@@ -6,11 +6,14 @@ use models::{Site, State};
 use simple_server::{Server, StatusCode};
 use std::cell::RefCell;
 use std::fs::read_to_string;
+use std::path::Path;
 use std::rc::Rc;
 
-pub(crate) fn start<'a>(path: String, port: u32) -> AstryxResult<()> {
+// todo: give the server an already complete project
+pub(crate) fn start<'a, P: AsRef<Path>>(path: P, port: u32) -> AstryxResult<()> {
     let host = "127.0.0.1";
     let port = port.to_string();
+    let path: String = path.as_ref().to_str().unwrap().into();
 
     let mut server = Server::new(move |request, mut response| {
         // info!("Request received. {} {}", request.method(), request.uri());

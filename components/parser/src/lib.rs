@@ -38,6 +38,7 @@ mod whitespace;
 pub use crate::models::*;
 
 // this api absolutely needs a cleanup
+// todo: take a PathBuf for filename, if it is actually needed.
 pub fn run<'a>(
     i: &'a str,
     filename: &'a str,

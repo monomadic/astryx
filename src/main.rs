@@ -25,23 +25,27 @@ enum Command {
     /// Start a server for the current project
     Serve {
         /// Input file
-        file: Option<String>,
+        #[structopt(parse(from_os_str))]
+        file: Option<PathBuf>,
         port: Option<u32>,
     },
     /// Build the project into output files
     Build {
         /// Input file
-        input: Option<String>,
+        #[structopt(parse(from_os_str))]
+        input: Option<PathBuf>,
         output: Option<String>,
     },
     /// Check the project for errors but do not build anything
     Check {
         /// Input file
-        file: Option<String>,
+        #[structopt(parse(from_os_str))]
+        file: Option<PathBuf>,
     },
     /// Create a new project
     Init {
         /// Init path
+        #[structopt(parse(from_os_str))]
         path: Option<PathBuf>,
     },
 }
@@ -55,35 +59,38 @@ pub fn main() {
 
 /// run cli commands
 fn run() -> Result<String, String> {
-    let opt = Opt::from_args();
-
     // todo: match arm should be an AstryxError until last minute for string conversion
-    match opt.command {
+    match Opt::from_args().command {
         Command::Serve { file, port } => {
-            let path = &file.unwrap_or(String::from("site.astryx"));
+            let path = file.unwrap_or(PathBuf::from("site.astryx"));
+            let port = port.unwrap_or(8888);
 
-            server::start(path.into(), port.unwrap_or(8888)).map_err(|e| display_error(&e, path))
+            server::start(&path, port)
+                .map_err(|e| display_error(&e, path.clone().to_str().unwrap()))
         }
         Command::Build { input, output } => {
-            let path = &input.unwrap_or(String::from("site.astryx"));
-            let file = std::fs::read_to_string(&path).expect(&format!("could not open {}", path));
+            let path = input.unwrap_or(PathBuf::from("site.astryx"));
+            let file = std::fs::read_to_string(&path)
+                .expect(&format!("could not open {}", path.display()));
 
-            println!("building: {}\n", &path);
-            build::build(&file, &path).map_err(|e| display_error(&e, path))
+            println!("building: {}\n", path.display());
+
+            build::build(file, &path).map_err(|e| display_error(&e, path.to_str().unwrap()))
         }
         Command::Check { file } => {
-            let path = &file.unwrap_or(String::from("site.astryx"));
-            let file = std::fs::read_to_string(&path).expect(&format!("could not open {}", path));
-
-            println!("checking: {}\n", &path);
+            let path = file.unwrap_or(PathBuf::from("site.astryx"));
+            let file = std::fs::read_to_string(&path)
+                .expect(&format!("could not open {}", path.display()));
             let state = Rc::new(RefCell::new(State::new()));
 
-            parser::run(&file, path)
+            println!("checking: {}\n", path.display());
+
+            parser::run(&file, path.to_str().unwrap()) // fixme: remove unwrap
                 .map_err(AstryxError::from)
                 .and_then(|nodes| interpreter::run(&nodes, state))
                 .map(Site::render)
                 .map(|_| println!("no errors."))
-                .map_err(|e| display_error(&e, path))
+                .map_err(|e| display_error(&e, path.to_str().unwrap()))
         }
         Command::Init { path } => {
             init::init_project().map_err(|e| format!("error creating new project: {:?}", e))
