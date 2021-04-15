@@ -9,7 +9,7 @@ use nom::{
 };
 use rctree::Node;
 
-pub(crate) fn split<'a>(i: Span<'a>) -> IResult<Span<'a>, Vec<Node<Span<'a>>>> {
+pub(crate) fn split(i: Span) -> IResult<Span, Vec<Node<Span>>> {
     let (r, lines) = cut(many0(line))(i)?;
     let mut current_indent = 0;
 

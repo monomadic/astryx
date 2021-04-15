@@ -1,5 +1,3 @@
-// use html::HTMLError;
-
 use crate::AstryxError;
 use parser::{error::ParserErrorKind, Span};
 
@@ -92,30 +90,6 @@ fn get_line_from_file<'a>(path: &str, line: usize) -> String {
         .map(|file| file.lines().map(String::from).collect::<Vec<String>>()[line].clone())
         .unwrap_or(String::new())
 }
-
-fn parser_reason(kind: &ParserErrorKind<Span>) -> String {
-    format!("{:?}", kind)
-}
-
-// fn interpreter_reason(kind: &InterpreterErrorKind) -> String {
-//     match &kind {
-//         InterpreterErrorKind::NoWriter => {
-//             format!("cannot write to output without a specified file or stdout target.")
-//         }
-//         InterpreterErrorKind::Unhandled => format!("unhandler interpreter error."),
-//         InterpreterErrorKind::Generic(e) => format!("{:?}", e),
-//         InterpreterErrorKind::FunctionNotFound(f) => format!("function not found {:?}", f),
-//         InterpreterErrorKind::ReferenceIsNotAFunction => format!("ReferenceIsNotAFunction"),
-//         InterpreterErrorKind::InvalidReference(r) => format!("invalid reference: {}", r),
-//         InterpreterErrorKind::UnexpectedToken { expected, got } => {
-//             format!("expected {}, got {}", expected, got)
-//         }
-//         InterpreterErrorKind::IOError => format!("error reading file"),
-//         InterpreterErrorKind::UnknownMemberFunction(mf) => {
-//             format!("missing member function: {}", mf)
-//         }
-//     }
-// }
 
 // terminal view for errors
 fn error_with_line(

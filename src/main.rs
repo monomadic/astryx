@@ -2,10 +2,12 @@ use error::{display::display_error, AstryxError, AstryxResult};
 use models::{Site, State};
 use repl;
 use std::cell::RefCell;
+use std::path::PathBuf;
 use std::rc::Rc;
 use structopt::StructOpt;
 
 mod build;
+mod init;
 mod server;
 
 #[derive(StructOpt, Debug)]
@@ -35,7 +37,10 @@ enum Command {
         /// Input file
         file: Option<String>,
     },
-    New,
+    Init {
+        /// Init path
+        path: Option<PathBuf>,
+    },
 }
 
 pub fn main() {
@@ -49,6 +54,7 @@ pub fn main() {
 fn run() -> Result<String, String> {
     let opt = Opt::from_args();
 
+    // todo: match arm should be an AstryxError until last minute for string conversion
     match opt.command {
         Command::Serve { file, port } => {
             let path = &file.unwrap_or(String::from("site.astryx"));
@@ -76,16 +82,13 @@ fn run() -> Result<String, String> {
                 .map(|_| println!("no errors."))
                 .map_err(|e| display_error(&e, path))
         }
-        Command::New => new_project().map_err(|e| format!("error creating new project: {:?}", e)),
+        Command::Init { path } => {
+            init::init_project().map_err(|e| format!("error creating new project: {:?}", e))
+        }
         Command::Repl => {
-            repl::run();
+            repl::run(); // todo: bubble up error
             Ok(())
         }
     }
     .map(|_| "\ndone.".to_string())
-}
-
-/// set up a new project in the current directory
-fn new_project<'a>() -> AstryxResult<()> {
-    unimplemented!()
 }
