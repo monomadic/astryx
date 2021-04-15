@@ -20,23 +20,26 @@ struct Opt {
 
 #[derive(StructOpt, Debug)]
 enum Command {
+    /// Start an instance of the Astryx REPL
     Repl,
-    /// start a server
+    /// Start a server for the current project
     Serve {
         /// Input file
         file: Option<String>,
         port: Option<u32>,
     },
-    /// build the project
+    /// Build the project into output files
     Build {
         /// Input file
         input: Option<String>,
         output: Option<String>,
     },
+    /// Check the project for errors but do not build anything
     Check {
         /// Input file
         file: Option<String>,
     },
+    /// Create a new project
     Init {
         /// Init path
         path: Option<PathBuf>,
