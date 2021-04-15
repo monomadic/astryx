@@ -53,19 +53,18 @@ enum Command {
 pub fn main() {
     match run() {
         Ok(r) => println!("{}", r),
-        Err(e) => println!("{}", e),
+        Err(e) => println!("{}", display_error(e)),
     }
 }
 
 /// run cli commands
-fn run() -> Result<String, String> {
-    // todo: match arm should be an AstryxError until last minute for string conversion
+fn run() -> AstryxResult<String> {
     match Opt::from_args().command {
         Command::Serve { file, port } => {
             let path = file.unwrap_or(PathBuf::from("site.astryx"));
             let port = port.unwrap_or(8888);
 
-            server::start(&path, port).map_err(display_error)
+            server::start(&path, port)
         }
         Command::Build { input, output } => {
             let path = input.unwrap_or(PathBuf::from("site.astryx"));
@@ -74,7 +73,7 @@ fn run() -> Result<String, String> {
 
             println!("building: {}\n", path.display());
 
-            build::build(file, &path).map_err(display_error)
+            build::build(file, &path)
         }
         Command::Check { file } => {
             let path = file.unwrap_or(PathBuf::from("site.astryx"));
@@ -89,11 +88,8 @@ fn run() -> Result<String, String> {
                 .and_then(|nodes| interpreter::run(&nodes, state))
                 .map(Site::render)
                 .map(|_| println!("no errors."))
-                .map_err(display_error)
         }
-        Command::Init { path } => {
-            init::init_project().map_err(|e| format!("error creating new project: {:?}", e))
-        }
+        Command::Init { path } => init::init_project(),
         Command::Repl => {
             repl::run(); // todo: bubble up error
             Ok(())
