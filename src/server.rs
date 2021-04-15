@@ -27,7 +27,7 @@ pub(crate) fn start<'a, P: AsRef<Path>>(path: P, port: u32) -> AstryxResult<()> 
 
                 match ast {
                     Ok(page) => Ok(response.body(page.as_bytes().to_vec())?),
-                    Err(e) => Ok(response.body(display_error(&e, &path).as_bytes().to_vec())?),
+                    Err(e) => Ok(response.body(display_error(e).as_bytes().to_vec())?),
                 }
             }
             // "/__program" => {
@@ -103,9 +103,8 @@ pub(crate) fn start<'a, P: AsRef<Path>>(path: P, port: u32) -> AstryxResult<()> 
                     },
                     Err(e) => {
                         response.status(StatusCode::INTERNAL_SERVER_ERROR);
-                        let error_text = display_error(&e, &path);
+                        let error_text = display_error(e);
                         println!("{}", error_text);
-
                         html_error_page(&error_text)
                     }
                 };

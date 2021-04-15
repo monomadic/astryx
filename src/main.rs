@@ -65,8 +65,7 @@ fn run() -> Result<String, String> {
             let path = file.unwrap_or(PathBuf::from("site.astryx"));
             let port = port.unwrap_or(8888);
 
-            server::start(&path, port)
-                .map_err(|e| display_error(&e, path.clone().to_str().unwrap()))
+            server::start(&path, port).map_err(display_error)
         }
         Command::Build { input, output } => {
             let path = input.unwrap_or(PathBuf::from("site.astryx"));
@@ -75,7 +74,7 @@ fn run() -> Result<String, String> {
 
             println!("building: {}\n", path.display());
 
-            build::build(file, &path).map_err(|e| display_error(&e, path.to_str().unwrap()))
+            build::build(file, &path).map_err(display_error)
         }
         Command::Check { file } => {
             let path = file.unwrap_or(PathBuf::from("site.astryx"));
@@ -90,7 +89,7 @@ fn run() -> Result<String, String> {
                 .and_then(|nodes| interpreter::run(&nodes, state))
                 .map(Site::render)
                 .map(|_| println!("no errors."))
-                .map_err(|e| display_error(&e, path.to_str().unwrap()))
+                .map_err(display_error)
         }
         Command::Init { path } => {
             init::init_project().map_err(|e| format!("error creating new project: {:?}", e))

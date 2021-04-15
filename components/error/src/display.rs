@@ -1,5 +1,5 @@
 use crate::AstryxError;
-use parser::{error::ParserErrorKind, Span};
+use parser::error::ParserErrorKind;
 
 // pub type AstryxResult<'a, T> = Result<T, AstryxError<'a>>;
 
@@ -40,7 +40,7 @@ pub fn html_error_page(content: &str) -> String {
 }
 
 /// convert an error to a display-friendly string
-pub fn display_error<S: Into<String>>(err: &AstryxError, path: S) -> String {
+pub fn display_error(err: AstryxError) -> String {
     match err {
         AstryxError::LocatedError(l, kind) => error_with_line(
             &l.context,
