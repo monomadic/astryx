@@ -9,14 +9,12 @@ use std::fs::read_to_string;
 use std::path::Path;
 use std::rc::Rc;
 
-// todo: give the server an already complete project
-pub(crate) fn start<'a, P: AsRef<Path>>(path: P, port: u32) -> AstryxResult<()> {
+pub(crate) fn start<'a, P: AsRef<Path>>(file: P, port: u32) -> AstryxResult<()> {
     let host = "127.0.0.1";
     let port = port.to_string();
-    let path: String = path.as_ref().to_str().unwrap().into();
+    let path: String = file.as_ref().to_str().unwrap().into();
 
     let mut server = Server::new(move |request, mut response| {
-        // info!("Request received. {} {}", request.method(), request.uri());
         let request_path = request.uri().path();
 
         match request_path {

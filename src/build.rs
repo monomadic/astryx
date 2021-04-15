@@ -4,6 +4,7 @@ use std::cell::RefCell;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
+/// Compiles an input file into an output graph
 pub(crate) fn build<S: Into<String>, P: AsRef<Path>>(file: S, path: P) -> AstryxResult<()> {
     let state = Rc::new(RefCell::new(State::new()));
     let input: String = file.into();

@@ -91,7 +91,7 @@ fn take_children(i: Span) -> IResult<Span, Line> {
     ))
 }
 
-/// take a single line in the format (indent, content) and chomp newline
+/// Take a single line in the format (indent, content) and chomp newline
 fn line(i: Span) -> IResult<Span, (usize, Span)> {
     tuple((
         opt(many0(tuple((space0, newline)))), // throw away blank lines
