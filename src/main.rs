@@ -25,28 +25,51 @@ enum Command {
     /// Start a server for the current project
     Serve {
         /// Input file
-        #[structopt(parse(from_os_str))]
-        file: Option<PathBuf>,
-        port: Option<u32>,
+        #[structopt(
+            parse(from_os_str),
+            short = "i",
+            long = "input",
+            default_value = "site.astryx"
+        )]
+        input: PathBuf,
+        #[structopt(short = "p", long = "port", default_value = "8888")]
+        port: u32,
     },
     /// Build the project into output files
     Build {
         /// Input file
-        #[structopt(parse(from_os_str))]
-        input: Option<PathBuf>,
-        output: Option<String>,
+        #[structopt(
+            parse(from_os_str),
+            short = "i",
+            long = "input",
+            default_value = "site.astryx"
+        )]
+        input: PathBuf,
+        /// output path
+        #[structopt(
+            parse(from_os_str),
+            short = "o",
+            long = "output",
+            default_value = "./build"
+        )]
+        output: PathBuf,
     },
     /// Check the project for errors but do not build anything
     Check {
         /// Input file
-        #[structopt(parse(from_os_str))]
-        file: Option<PathBuf>,
+        #[structopt(
+            parse(from_os_str),
+            short = "i",
+            long = "input",
+            default_value = "site.astryx"
+        )]
+        input: PathBuf,
     },
     /// Create a new project
     Init {
         /// Init path
-        #[structopt(parse(from_os_str))]
-        path: Option<PathBuf>,
+        #[structopt(parse(from_os_str), short = "p", long = "path", default_value = ".")]
+        path: PathBuf,
     },
 }
 
@@ -60,30 +83,23 @@ pub fn main() {
 /// run cli commands
 fn run() -> AstryxResult<String> {
     match Opt::from_args().command {
-        Command::Serve { file, port } => {
-            let path = file.unwrap_or(PathBuf::from("site.astryx"));
-            let port = port.unwrap_or(8888);
-
-            server::start(&path, port)
-        }
+        Command::Serve { input, port } => server::start(&input, port),
         Command::Build { input, output } => {
-            let path = input.unwrap_or(PathBuf::from("site.astryx"));
-            let file = std::fs::read_to_string(&path)
-                .expect(&format!("could not open {}", path.display()));
+            let file = std::fs::read_to_string(&input)
+                .expect(&format!("could not open {}", input.display()));
 
-            println!("building: {}\n", path.display());
+            println!("building: {}\n", input.display());
 
-            build::build(file, &path)
+            build::build(file, &input)
         }
-        Command::Check { file } => {
-            let path = file.unwrap_or(PathBuf::from("site.astryx"));
-            let file = std::fs::read_to_string(&path)
-                .expect(&format!("could not open {}", path.display()));
+        Command::Check { input } => {
+            let file = std::fs::read_to_string(&input)
+                .expect(&format!("could not open {}", input.display()));
             let state = Rc::new(RefCell::new(State::new()));
 
-            println!("checking: {}\n", path.display());
+            println!("checking: {}\n", input.display());
 
-            parser::run(&file, path.to_str().unwrap()) // fixme: remove unwrap
+            parser::run(&file, input.to_str().unwrap()) // fixme: remove unwrap
                 .map_err(AstryxError::from)
                 .and_then(|nodes| interpreter::run(&nodes, state))
                 .map(Site::render)
