@@ -65,7 +65,10 @@ pub(crate) fn markdown<'a>(
 ) -> AstryxResult<Object> {
     let path = match input {
         Some(input) => input.borrow().clone(),
-        None => state.borrow().require(Span::new_extra("path", "error"))?,
+        None => state
+            .borrow()
+            .get("path")
+            .ok_or(AstryxError::Generic("variable path not found".into()))?, // todo: better error class
     };
 
     let content = read(state, Some(Node::new(path)))?.to_string();
@@ -79,7 +82,10 @@ pub(crate) fn parse_frontmatter<'a>(
 ) -> AstryxResult<Object> {
     let path = match input {
         Some(input) => input.borrow().clone(),
-        None => state.borrow().require(Span::new_extra("path", "error"))?,
+        None => state
+            .borrow()
+            .get("path")
+            .ok_or(AstryxError::Generic("variable path not found".into()))?,
     };
 
     let content = read(state, Some(Node::new(path)))?.to_string();
@@ -97,7 +103,10 @@ pub(crate) fn asset<'a>(
     state: Rc<RefCell<State>>,
     _input: Option<Node<Object>>,
 ) -> AstryxResult<Object> {
-    let path = state.borrow().require(Span::new_extra("path", "error"))?;
+    let path = state
+        .borrow()
+        .get("path")
+        .ok_or(AstryxError::Generic("variable path not found".into()))?;
 
     // Ok(input.unwrap().borrow().clone())
 
@@ -128,7 +137,10 @@ pub(crate) fn read<'a>(
 ) -> AstryxResult<Object> {
     let path = match input {
         Some(input) => input.borrow().clone(),
-        None => state.borrow().require(Span::new_extra("path", "error"))?,
+        None => state
+            .borrow()
+            .get("path")
+            .ok_or(AstryxError::Generic("variable path not found".into()))?,
     };
 
     match path {

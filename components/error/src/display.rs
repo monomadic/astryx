@@ -1,5 +1,5 @@
 use crate::AstryxError;
-use parser::error::ParserErrorKind;
+// use parser::error::ParserErrorKind;
 
 // pub type AstryxResult<'a, T> = Result<T, AstryxError<'a>>;
 

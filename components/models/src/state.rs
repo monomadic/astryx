@@ -10,6 +10,17 @@ pub struct State {
     outer: Option<Rc<RefCell<State>>>,
 }
 
+// // todo: duplicate. fix.
+// fn span_to_location(span: Span) -> Location {
+//     Location {
+//         line: span.location_line(),
+//         column: span.get_column(),
+//         length: span.location_offset(),
+//         filename: span.extra.into(),
+//         context: String::from_utf8(span.get_line_beginning().into()).unwrap(),
+//     }
+// }
+
 impl<'a> State {
     // replace with default()
     pub fn new() -> Self {
@@ -29,14 +40,14 @@ impl<'a> State {
         }
     }
 
-    /// fetch a variable from state and throw an error upon failure
-    pub fn require<S: Into<Location> + ToString>(&self, ident: S) -> AstryxResult<Object> {
-        let i = ident.to_string();
-        self.get(&i).ok_or(AstryxError::LocatedError(
-            ident.into(),
-            AstryxErrorKind::MissingRequiredArgument(i),
-        ))
-    }
+    // /// fetch a variable from state and throw an error upon failure
+    // pub fn require(&self, ident: Span) -> AstryxResult<Object> {
+    //     let i = ident.to_string();
+    //     self.get(&i).ok_or(AstryxError::LocatedError(
+    //         span_to_location(ident),
+    //         AstryxErrorKind::MissingRequiredArgument(i),
+    //     ))
+    // }
 
     /// bind a variable to local state
     pub fn bind(&mut self, ident: &str, obj: Object) -> AstryxResult<()> {

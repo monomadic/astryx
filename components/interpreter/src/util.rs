@@ -1,8 +1,18 @@
-use error::{AstryxError, AstryxErrorKind, AstryxResult};
+use error::{AstryxError, AstryxErrorKind, AstryxResult, Location};
 use glob::Paths;
 use models::object::Object;
 use parser::Span;
 use rctree::Node;
+
+pub(crate) fn span_to_location(span: Span) -> Location {
+    Location {
+        line: span.location_line(),
+        column: span.get_column(),
+        length: span.location_offset(),
+        filename: span.extra.into(),
+        context: String::from_utf8(span.get_line_beginning().into()).unwrap(),
+    }
+}
 
 pub(crate) fn glob_files(s: &Span) -> AstryxResult<Object> {
     let options = glob::MatchOptions {
@@ -12,8 +22,9 @@ pub(crate) fn glob_files(s: &Span) -> AstryxResult<Object> {
     };
 
     let mut files = Vec::new();
-    let globs: Paths = glob::glob_with(&s.to_string(), options)
-        .map_err(|e| AstryxError::with_loc(*s, AstryxErrorKind::Unexpected))?;
+    let globs: Paths = glob::glob_with(&s.to_string(), options).map_err(|e| {
+        AstryxError::LocatedError(span_to_location(*s), AstryxErrorKind::Unexpected)
+    })?;
 
     for file in globs {
         // TODO wrap unwrap in error
@@ -34,8 +45,9 @@ pub(crate) fn import_files<'a>(s: &Span<'a>) -> AstryxResult<Object> {
     };
 
     let mut files = Vec::new();
-    let globs: Paths = glob::glob_with(&s.to_string(), options)
-        .map_err(|e| AstryxError::with_loc(*s, AstryxErrorKind::Unexpected))?;
+    let globs: Paths = glob::glob_with(&s.to_string(), options).map_err(|e| {
+        AstryxError::LocatedError(span_to_location(*s), AstryxErrorKind::Unexpected)
+    })?;
 
     for file in globs {
         // TODO wrap unwrap in error
@@ -52,5 +64,5 @@ pub(crate) fn import_files<'a>(s: &Span<'a>) -> AstryxResult<Object> {
 pub(crate) fn import_file(s: &Span) -> AstryxResult<Object> {
     std::fs::read_to_string(s.fragment().to_string())
         .map(Object::String)
-        .map_err(|e| AstryxError::with_loc(*s, AstryxErrorKind::Unexpected))
+        .map_err(|e| AstryxError::LocatedError(span_to_location(*s), AstryxErrorKind::Unexpected))
 }

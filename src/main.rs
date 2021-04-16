@@ -106,7 +106,7 @@ fn run() -> AstryxResult<String> {
             let (_, lines) = nom_indent::indent(&file, &path).unwrap();
 
             parser::parse(lines)
-                .map_err(AstryxError::from)
+                .map_err(|e| AstryxError::Generic("unimplmeneted".into()))
                 .and_then(|nodes| interpreter::run(&nodes, state))
                 .map(Site::render)
                 .map(|_| println!("no errors."))

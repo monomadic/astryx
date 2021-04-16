@@ -1,10 +1,33 @@
-use error::{AstryxError, AstryxErrorKind, AstryxResult};
+use crate::util::span_to_location;
+use error::{AstryxError, AstryxErrorKind, AstryxResult, Location};
 use html::HTMLElement;
 use models::{object::Object, state::State};
-use parser::{Expression, Statement, StringToken};
+use parser::{Expression, ParserError, Span, Statement, StringToken};
 use rctree::Node;
 use std::cell::RefCell;
 use std::{collections::HashMap, rc::Rc};
+
+// impl<'a> Into<Location> for Span<'a> {
+//     fn into(self) -> Location {
+//         Location {
+//             line: span.location_line(),
+//             column: span.get_column(),
+//             length: span.location_offset(),
+//             filename: span.extra.into(),
+//             context: String::from_utf8(span.get_line_beginning().into()).unwrap(),
+//         }
+//     }
+// }
+
+// fn span_to_location(span: Span) -> Location {
+//     Location {
+//         line: span.location_line(),
+//         column: span.get_column(),
+//         length: span.location_offset(),
+//         filename: span.extra.into(),
+//         context: String::from_utf8(span.get_line_beginning().into()).unwrap(),
+//     }
+// }
 
 pub(crate) fn eval_statement<'a>(
     statement: &Node<Statement<'a>>,
@@ -110,7 +133,7 @@ pub(crate) fn eval_statement<'a>(
                 }
             } else {
                 return Err(AstryxError::LocatedError(
-                    ident.into(),
+                    span_to_location(ident),
                     AstryxErrorKind::Unexpected,
                 ));
             }
@@ -132,7 +155,7 @@ pub(crate) fn eval_statement<'a>(
             match route.ident.to_string().as_str() {
                 "route" => {
                     let path = attributes.get("path").ok_or(AstryxError::LocatedError(
-                        route.ident.into(),
+                        span_to_location(route.ident),
                         AstryxErrorKind::MissingRequiredArgument(route.ident.to_string()),
                     ))?;
 
@@ -169,7 +192,7 @@ pub fn eval_expression<'a>(
                     &k.to_string(),
                     // evaluate the expression part of the argument
                     eval_expression(Rc::clone(&state), expr, None).map_err(|_| {
-                        AstryxError::with_loc(*k, AstryxErrorKind::UnknownValue(k.to_string()))
+                        AstryxError::LocatedError(span_to_location(*k), AstryxErrorKind::Unexpected)
                     })?,
                 )?;
             }
@@ -185,7 +208,13 @@ pub fn eval_expression<'a>(
                 Object::Map(m) => Ok(m.get(&r.to_string()).unwrap().borrow().clone()),
                 _ => unimplemented!(),
             },
-            None => state.borrow().require(*r),
+            None => state
+                .borrow()
+                .get(&r.to_string())
+                .ok_or(AstryxError::LocatedError(
+                    span_to_location(*r),
+                    AstryxErrorKind::Unexpected,
+                )),
         },
         Expression::Literal(l) => match l {
             parser::Literal::String(s) => Ok(Object::String(s.to_string())),

@@ -87,7 +87,7 @@ pub(crate) fn start<'a, P: AsRef<Path>>(file: P, port: u32) -> AstryxResult<()> 
                 let (_, lines) = nom_indent::indent(&file, &path).unwrap();
 
                 let result = parser::parse(lines)
-                    .map_err(AstryxError::from)
+                    .map_err(|e| AstryxError::Generic("todo".into()))
                     .and_then(|nodes| interpreter::run(&nodes, state))
                     .map(Site::render);
 

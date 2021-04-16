@@ -5,6 +5,10 @@ use std::cell::RefCell;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
+// pub fn from_path<'a, P: AsRef<Path>>(path: P) -> AstryxResult<()> {
+//     std::fs::read_to_string(&path).and_then(|file| indent(&file, path))
+// }
+
 /// Compiles an input file into an output graph
 pub(crate) fn build<P: AsRef<Path>>(input: P) -> AstryxResult<()> {
     let file = std::fs::read_to_string(&input).map_err(|e| AstryxError::IO(e))?;
@@ -16,7 +20,7 @@ pub(crate) fn build<P: AsRef<Path>>(input: P) -> AstryxResult<()> {
     // todo: check rem for errors
 
     parser::parse(lines)
-        .map_err(AstryxError::from)
+        .map_err(|e| AstryxError::Generic("todo".into()))
         .and_then(|statements| interpreter::run(&statements, state))
         .map(Site::render)
         .map(|site| site.write())

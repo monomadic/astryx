@@ -36,6 +36,7 @@ mod variable;
 pub use crate::error::ParserError;
 mod whitespace;
 pub use crate::models::*;
+use std::panic::Location;
 
 pub fn parse<'a>(
     lines: Vec<Node<Span<'a>>>,
