@@ -9,3 +9,4 @@ rustyline = "6.3.0"
 interpreter = { path = "../interpreter" }
 parser = { path = "../parser" }
 models = { path = "../models" }
+nom-indent = { git = "https://github.com/monomadic/nom-indent" }

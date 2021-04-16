@@ -93,20 +93,6 @@ fn parse_line<'a>(line: Line<'a>) -> IResult<Span<'a>, Node<Statement<'a>>, Pars
     Ok((r, node))
 }
 
-fn parse_node<'a>(
-    node: Node<Span<'a>>,
-) -> IResult<Span<'a>, Node<Statement<'a>>, ParserError<Span<'a>>> {
-    let (r, statement) = statement::statement(node.borrow().clone())?;
-    let mut node: Node<Statement> = Node::new(statement);
-
-    for child in node.children() {
-        // let (_, child_node) = parse(child.borrow().clone())?;
-        node.append(child);
-    }
-
-    Ok((r, node))
-}
-
-pub fn parse_statement<'a>(i: Span<'a>) -> IResult<Span<'a>, Statement<'a>, ParserError<Span<'a>>> {
+pub fn parse<'a>(i: Span<'a>) -> IResult<Span<'a>, Statement<'a>, ParserError<Span<'a>>> {
     statement::statement(i)
 }

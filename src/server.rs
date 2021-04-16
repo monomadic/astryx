@@ -18,16 +18,16 @@ pub(crate) fn start<'a, P: AsRef<Path>>(file: P, port: u32) -> AstryxResult<()> 
         let request_path = request.uri().path();
 
         match request_path {
-            "/__ast" => {
-                let ast = read_to_string(&path)
-                    .map_err(AstryxError::from)
-                    .map(|ref file| format!("{:#?}", parser::run(file, &path)));
-
-                match ast {
-                    Ok(page) => Ok(response.body(page.as_bytes().to_vec())?),
-                    Err(e) => Ok(response.body(display_error(e).as_bytes().to_vec())?),
-                }
-            }
+            // "/__ast" => {
+            //     let ast = read_to_string(&path)
+            //         .map_err(AstryxError::from)
+            //         .map(|ref file| format!("{:#?}", parser::run(file, &path)));
+            //
+            //     match ast {
+            //         Ok(page) => Ok(response.body(page.as_bytes().to_vec())?),
+            //         Err(e) => Ok(response.body(display_error(e).as_bytes().to_vec())?),
+            //     }
+            // }
             // "/__program" => {
             //     let file = read_to_string(&path)?;
             //     let program = parser::run(&file)
@@ -81,7 +81,12 @@ pub(crate) fn start<'a, P: AsRef<Path>>(file: P, port: u32) -> AstryxResult<()> 
 
                 let state = Rc::new(RefCell::new(State::new()));
 
-                let result = parser::run(&read_to_string(&path)?, &path)
+                let file = read_to_string(&path)?;
+                let path: String = file.as_str().into();
+                // todo: fix unwrap
+                let (_, lines) = nom_indent::indent(&file, &path).unwrap();
+
+                let result = parser::parse(lines)
                     .map_err(AstryxError::from)
                     .and_then(|nodes| interpreter::run(&nodes, state))
                     .map(Site::render);

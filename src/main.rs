@@ -91,12 +91,9 @@ fn run() -> AstryxResult<String> {
     match Opt::from_args().command {
         Command::Serve { input, port } => server::start(&input, port),
         Command::Build { input, output } => {
-            let file = std::fs::read_to_string(&input)
-                .expect(&format!("could not open {}", input.display()));
-
             println!("building: {}\n", input.display());
 
-            build::build(file, &input)
+            build::build(input)
         }
         Command::Check { input } => {
             let file = std::fs::read_to_string(&input)
@@ -105,7 +102,10 @@ fn run() -> AstryxResult<String> {
 
             println!("checking: {}\n", input.display());
 
-            parser::run(&file, input.to_str().unwrap()) // fixme: remove unwrap
+            let path: String = input.to_str().unwrap().into();
+            let (_, lines) = nom_indent::indent(&file, &path).unwrap();
+
+            parser::parse(lines)
                 .map_err(AstryxError::from)
                 .and_then(|nodes| interpreter::run(&nodes, state))
                 .map(Site::render)

@@ -986,6 +986,7 @@ version = "0.1.0"
 dependencies = [
  "interpreter",
  "models",
+ "nom-indent",
  "parser",
  "rustyline",
 ]

@@ -1,5 +1,6 @@
 use interpreter::builtins;
 use models::State;
+use nom_indent;
 use rustyline::{error::ReadlineError, Editor};
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -20,12 +21,15 @@ fn repl(state: Rc<RefCell<State>>, editor: &mut Editor<()>) {
                     continue;
                 }
 
-                if line.chars().collect::<Vec<char>>()[0] == ':' {
-                    println!("{:#?}", parser::run(&pop_chars(&line, 1), "<repl>"));
-                    continue;
-                }
+                // todo: bring back : for quick parse
+                // if line.chars().collect::<Vec<char>>()[0] == ':' {
+                //     println!("{:#?}", parser::parse(&pop_chars(&line, 1), "<repl>"));
+                //     continue;
+                // }
 
-                match parser::run(&line, "<repl>") {
+                let (_, lines) = nom_indent::indent(&line, "<repl>").unwrap();
+
+                match parser::parse(lines) {
                     Ok(statements) => {
                         for statement in statements {
                             match interpreter::eval(statement.borrow().clone(), Rc::clone(&state)) {
