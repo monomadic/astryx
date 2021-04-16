@@ -47,3 +47,9 @@ cargo install --path components/cli
 ``` bash
 nix-env --install astryx --file https://github.com/monomadic/astryx/astryx.nix
 ```
+
+## Forks
+
+I've worked hard to make the codebase readable, modular and hackable. I believe it serves as a great starting point for forking if you want to make a rust language and compiler of your own. I will continue to push for modularity and simplicity and make the code more readable as time goes on.
+
+Having said that I'm just one person at the moment, so any PRs for code quality are more than appreciated.

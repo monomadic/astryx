@@ -1,3 +1,6 @@
-%html
-    %body
-        %h1 Hello World!
+@route path="/"
+  %h1 { style: "color: red;" } first header
+    %a { href: "#" } blah
+    %a { href: "#" } blah blah blah
+    %div
+      %h2 another header

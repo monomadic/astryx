@@ -12,7 +12,8 @@ pub(crate) fn build<P: AsRef<Path>>(input: P) -> AstryxResult<()> {
     let state = Rc::new(RefCell::new(State::new()));
 
     // todo: fix this unwrap
-    let (_, lines) = nom_indent::indent(&file, &path).unwrap();
+    let (rem, lines) = nom_indent::indent(&file, &path).unwrap();
+    // todo: check rem for errors
 
     parser::parse(lines)
         .map_err(AstryxError::from)
