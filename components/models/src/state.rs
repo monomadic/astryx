@@ -1,5 +1,5 @@
 use crate::object::Object;
-use error::{AstryxError, AstryxErrorKind, AstryxResult, Location};
+use error::AstryxResult;
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 type LocalData = HashMap<String, Object>;

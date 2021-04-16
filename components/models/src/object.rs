@@ -49,7 +49,6 @@ impl Object {
             Object::HTMLPage(p) => format!("@route path={}", p),
             Object::Path(p) => format!("(Path: {})", p),
             Object::File(f) => format!("(File: {})", f),
-            _ => unimplemented!(),
         }
     }
 }
@@ -86,7 +85,6 @@ impl Into<String> for Object {
             Object::HTMLPage(_) => unimplemented!(),
             Object::Path(p) => p,
             Object::File(p) => p,
-            _ => unimplemented!(),
         }
     }
 }
