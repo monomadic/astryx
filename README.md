@@ -17,21 +17,6 @@ Astryx is a declarative, safe, expressive language and compiler for generating s
 
 It is totally unlike and far more powerful than simple templating languages and static content generators, which tend to focus on themes, blogs, etc. Astryx could build a simple blog program like hugo in a few lines of code, or an image gallery constructor, a cryptocurrency tracker, etc.
 
-## Compiling / Running (with cargo)
-
-``` bash
-cargo run -- serve examples/pages.astryx
-```
-
-Or start a server:
-``` bash
-cargo run -- serve examples/pages.astryx
-```
-
-### NixOS
-
-A NixOS shell has been provided for convenience. This will be a flake very soon.
-
 ## Installation
 
 ### Cargo
@@ -39,13 +24,24 @@ A NixOS shell has been provided for convenience. This will be a flake very soon.
 ``` bash
 cargo install --path https://github.com/monomadic/astryx
 # or, locally:
-cargo install --path components/cli
+cargo install --path .
 ```
 
-### NixOS / Nixpkgs (soon...)
+## Usage
 
+Initialising a project in the current directory:
 ``` bash
-nix-env --install astryx --file https://github.com/monomadic/astryx/astryx.nix
+astryx init
+```
+
+Starting a webserver (the default file is `site.astryx`):
+``` bash
+astryx serve site.astryx
+```
+
+Building all files (the default output directory is `./build`):
+``` bash
+astryx build
 ```
 
 ## Forks
