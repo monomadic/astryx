@@ -53,6 +53,9 @@ enum Command {
             default_value = "./build"
         )]
         output: PathBuf,
+        /// Perform a read-only check (don't write files)
+        #[structopt(long = "check")]
+        check: bool,
     },
     /// Check the project for errors but do not build anything
     Check {
@@ -86,15 +89,19 @@ pub fn main() {
     }
 }
 
-/// run cli commands
 fn run() -> AstryxResult<String> {
     match Opt::from_args().command {
         Command::Serve { input, port } => server::start(&input, port),
-        Command::Build { input, output } => {
+        Command::Build {
+            input,
+            output,
+            check,
+        } => {
             println!("building: {}\n", input.display());
 
-            build::build(input)
+            build::build(input, check)
         }
+        // todo: make this an option on build --check
         Command::Check { input } => {
             let file = std::fs::read_to_string(&input)
                 .expect(&format!("could not open {}", input.display()));

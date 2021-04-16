@@ -1,5 +1,6 @@
 
-.title background.color(blue) text.color(white)
+.title
+    background-color: blue
 
 page route="/"
   h1 .title

@@ -5,12 +5,8 @@ use std::cell::RefCell;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
-// pub fn from_path<'a, P: AsRef<Path>>(path: P) -> AstryxResult<()> {
-//     std::fs::read_to_string(&path).and_then(|file| indent(&file, path))
-// }
-
 /// Compiles an input file into an output graph
-pub(crate) fn build<P: AsRef<Path>>(input: P) -> AstryxResult<()> {
+pub(crate) fn build<P: AsRef<Path>>(input: P, check: bool) -> AstryxResult<()> {
     let file = std::fs::read_to_string(&input).map_err(|e| AstryxError::IO(e))?;
     let path: String = input.as_ref().to_str().unwrap().into();
     let state = Rc::new(RefCell::new(State::new()));
@@ -23,7 +19,13 @@ pub(crate) fn build<P: AsRef<Path>>(input: P) -> AstryxResult<()> {
         .map_err(|e| AstryxError::Generic("todo".into()))
         .and_then(|statements| interpreter::run(&statements, state))
         .map(Site::render)
-        .map(|site| site.write())
+        .map(|site| {
+            if !check {
+                site.write()
+            } else {
+                println!("read only check. skipping file write...")
+            }
+        })
         .map_err(AstryxError::from)
     // nom_indent::indent(&file, &path)
     //     .map_err(AstryxError::from)
