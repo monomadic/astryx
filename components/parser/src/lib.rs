@@ -37,6 +37,7 @@ use std::panic::Location;
 pub type Span<'a> = LocatedSpan<&'a str, &'a str>;
 pub type ParserResult<T, I> = Result<T, ParserError<I>>;
 
+// todo: return AstryxResult here
 /// Parses a tree of Spans into a tree of Statements.
 pub fn parse<'a>(
     lines: Vec<Node<Span<'a>>>,

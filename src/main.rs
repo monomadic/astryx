@@ -56,6 +56,9 @@ enum Command {
         /// Perform a read-only check (don't write files)
         #[structopt(long = "check")]
         check: bool,
+        /// Write the file output to stdout instead of files
+        #[structopt(long = "stdout")]
+        stdout: bool,
     },
     /// Check the project for errors but do not build anything
     Check {
@@ -96,10 +99,11 @@ fn run() -> AstryxResult<String> {
             input,
             output,
             check,
+            stdout,
         } => {
             println!("building: {}\n", input.display());
 
-            build::build(input, check)
+            build::build(input, check, stdout)
         }
         // todo: make this an option on build --check
         Command::Check { input } => {
