@@ -36,10 +36,21 @@ use rctree::Node;
 //     assert!(array(Span::new("[g]")).is_ok());
 // }
 
+/// Tries to parse a Statement tree from a Span tree.
 pub(crate) fn statement_node<'a>(
     node: Node<Span<'a>>,
 ) -> IResult<Span, Node<Statement<'a>>, ParserError<Span<'a>>> {
-    statement(node.borrow().clone()).map(|(r, s)| (r, Node::new(s)))
+    let (rem, stmt) = statement(node.borrow().clone())?;
+    let mut stmt_node = Node::new(stmt);
+
+    for child in node.children() {
+        stmt_node.append({
+            let (rem, st) = statement_node(child)?;
+            st
+        });
+    }
+
+    Ok((rem, stmt_node))
 }
 
 pub(crate) fn statement<'a>(i: Span<'a>) -> IResult<Span, Statement<'a>, ParserError<Span<'a>>> {
