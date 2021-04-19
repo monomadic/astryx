@@ -67,16 +67,16 @@ pub(crate) fn statement_node<'a>(
 }
 
 /// Attempt to parse a Statement from a text Span
-pub(crate) fn statement<'a>(i: Span<'a>) -> IResult<Span, Statement<'a>, AstryxError> {
+pub fn statement<'a>(i: Span<'a>) -> IResult<Span, Statement<'a>, AstryxError> {
     all_consuming(alt((
         // map(function_call, |f| Statement::FunctionCall(f)),
-        map(comment, |s| Statement::Comment(s)),
+        map(comment, Statement::Comment),
         map(for_loop, |(ident, expr)| Statement::ForLoop { ident, expr }),
         map(binding, |(ident, expr)| Statement::Binding(ident, expr)),
-        map(expression, |e| Statement::Expression(e)),
-        map(route, |r| Statement::Route(r)),
-        map(element, |e| Statement::Element(e)),
-        map(piped_string, |e| Statement::Text(e)),
+        map(expression, Statement::Expression),
+        map(route, Statement::Route),
+        map(element, Statement::Element),
+        map(piped_string, Statement::Text),
         // map(alpha1, |e| Statement::Element(e)),
         // return_statement
     )))(i)
@@ -121,9 +121,7 @@ fn route<'a>(i: Span<'a>) -> IResult<Span<'a>, Route<'a>, ParserError<Span<'a>>>
 }
 
 // todo: replace
-fn attribute_assignment<'a>(
-    i: Span<'a>,
-) -> IResult<Span<'a>, (Span<'a>, Expression), ParserError<Span<'a>>> {
+fn attribute_assignment(i: Span) -> IResult<Span, (Span, Expression), ParserError<Span>> {
     nom::sequence::tuple((
         multispace0,
         alpha1,
@@ -147,9 +145,7 @@ pub(crate) fn expression<'a>(i: Span<'a>) -> IResult<Span, Expression<'a>, Parse
     ))(i)
 }
 
-fn index<'a>(
-    i: Span<'a>,
-) -> IResult<Span<'a>, (Expression<'a>, Expression<'a>), ParserError<Span<'a>>> {
+fn index(i: Span) -> IResult<Span, (Expression, Expression), ParserError<Span>> {
     tuple((index_expression, tag("."), expression))(i)
         .map(|(r, (index, _, expr))| (r, (index, expr)))
     // separated_list(tag("."), expression)(i)
@@ -173,7 +169,7 @@ fn index_expression<'a>(i: Span<'a>) -> IResult<Span, Expression<'a>, ParserErro
     })
 }
 
-fn comment<'a>(i: Span<'a>) -> IResult<Span<'a>, Span<'a>, ParserError<Span<'a>>> {
+fn comment(i: Span) -> IResult<Span, Span, ParserError<Span>> {
     tag("--")(i).map(|(r, _)| (Span::new_extra("", ""), r)) // FXIME
                                                             // .map_err(|e| {
                                                             //     e.map(|(span, _kind)| ParserError {

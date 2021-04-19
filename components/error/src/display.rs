@@ -85,11 +85,11 @@ pub fn display_error(err: AstryxError) -> String {
     // }
 }
 
-fn get_line_from_file<'a>(path: &str, line: usize) -> String {
-    std::fs::read_to_string(&path)
-        .map(|file| file.lines().map(String::from).collect::<Vec<String>>()[line].clone())
-        .unwrap_or(String::new())
-}
+// fn get_line_from_file<'a>(path: &str, line: usize) -> String {
+//     std::fs::read_to_string(&path)
+//         .map(|file| file.lines().map(String::from).collect::<Vec<String>>()[line].clone())
+//         .unwrap_or(String::new())
+// }
 
 // terminal view for errors
 fn error_with_line(

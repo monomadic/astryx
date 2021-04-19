@@ -7,30 +7,8 @@ use rctree::Node;
 use std::cell::RefCell;
 use std::{collections::HashMap, rc::Rc};
 
-// impl<'a> Into<Location> for Span<'a> {
-//     fn into(self) -> Location {
-//         Location {
-//             line: span.location_line(),
-//             column: span.get_column(),
-//             length: span.location_offset(),
-//             filename: span.extra.into(),
-//             context: String::from_utf8(span.get_line_beginning().into()).unwrap(),
-//         }
-//     }
-// }
-
-// fn span_to_location(span: Span) -> Location {
-//     Location {
-//         line: span.location_line(),
-//         column: span.get_column(),
-//         length: span.location_offset(),
-//         filename: span.extra.into(),
-//         context: String::from_utf8(span.get_line_beginning().into()).unwrap(),
-//     }
-// }
-
-pub(crate) fn eval_statement<'a>(
-    statement: &Node<Statement<'a>>,
+pub(crate) fn eval_statement(
+    statement: &Node<Statement>,
     state: Rc<RefCell<State>>,
 ) -> AstryxResult<Node<Object>> {
     match statement.borrow().clone() {
@@ -47,18 +25,12 @@ pub(crate) fn eval_statement<'a>(
 
             let element = HTMLElement::new(e.ident.fragment(), attributes).expect("valid html");
 
-            // println!("element: {:?}", element);
             // todo, these really should be html nodes, so that we can optimise them all later...
             // examples:
             // - removing empty or unneeded classes/styles/ids/empty elements (optional)
             // - link rewriters
             // - searching for specific elements
             // - injection? (might need tree for this though...?)
-            // program.push(ProgramInstruction::Text(element.clone().open_tag()));
-
-            // state
-            //     .borrow()
-            //     .push_instruction(ProgramInstruction::Text(element.clone().open_tag()));
 
             let mut node = Node::new(Object::HTMLElement(element));
 
@@ -70,9 +42,7 @@ pub(crate) fn eval_statement<'a>(
             }
 
             for child in statement.children() {
-                // println!("child");
                 let obj = eval_statement(&child, Rc::clone(&state))?;
-                // node.append child
                 node.append(obj);
             }
 
@@ -176,9 +146,9 @@ pub(crate) fn eval_statement<'a>(
     }
 }
 
-pub fn eval_expression<'a>(
+pub fn eval_expression(
     state: Rc<RefCell<State>>,
-    expr: &Expression<'a>,
+    expr: &Expression,
     input: Option<Node<Object>>,
 ) -> AstryxResult<Object> {
     match expr {
@@ -354,9 +324,9 @@ pub fn eval_expression<'a>(
 // }
 
 /// Convert string tokens to a fully interpolated string
-fn eval_interpolation<'a>(
+fn eval_interpolation(
     state: Rc<RefCell<State>>,
-    components: Vec<StringToken<'a>>,
+    components: Vec<StringToken>,
 ) -> AstryxResult<String> {
     Ok(components
         .into_iter()
