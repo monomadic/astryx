@@ -7,6 +7,8 @@ use crate::{
     variable::{glob_pattern, literal, relative_path},
     Expression, ParserError, Route, Span,
 };
+use error::AstryxError;
+use nom::error::ParseError;
 use nom::{
     branch::alt,
     bytes::complete::tag,
@@ -36,10 +38,10 @@ use rctree::Node;
 //     assert!(array(Span::new("[g]")).is_ok());
 // }
 
-/// Tries to parse a Statement tree from a Span tree.
+/// Attempt to parse a Statement tree from a Span tree.
 pub(crate) fn statement_node<'a>(
     node: Node<Span<'a>>,
-) -> IResult<Span, Node<Statement<'a>>, ParserError<Span<'a>>> {
+) -> IResult<Span, Node<Statement<'a>>, AstryxError> {
     let (rem, stmt) = statement(node.borrow().clone())?;
     let mut stmt_node = Node::new(stmt);
 
@@ -53,7 +55,8 @@ pub(crate) fn statement_node<'a>(
     Ok((rem, stmt_node))
 }
 
-pub(crate) fn statement<'a>(i: Span<'a>) -> IResult<Span, Statement<'a>, ParserError<Span<'a>>> {
+/// Attempt to parse a Statement from a text Span
+pub(crate) fn statement<'a>(i: Span<'a>) -> IResult<Span, Statement<'a>, AstryxError> {
     all_consuming(alt((
         // map(function_call, |f| Statement::FunctionCall(f)),
         map(comment, |s| Statement::Comment(s)),
@@ -66,13 +69,7 @@ pub(crate) fn statement<'a>(i: Span<'a>) -> IResult<Span, Statement<'a>, ParserE
         // map(alpha1, |e| Statement::Element(e)),
         // return_statement
     )))(i)
-    .map_err(|e| {
-        e.map(|s| ParserError {
-            context: i, // we need to reset the context to the whole line
-            kind: s.kind,
-            pos: s.pos,
-        })
-    })
+    .map_err(|e| nom::Err::Error(AstryxError::Generic("statement error".into())))
 }
 
 fn for_loop<'a>(i: Span<'a>) -> IResult<Span, (Span<'a>, Expression<'a>), ParserError<Span<'a>>> {

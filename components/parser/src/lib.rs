@@ -33,6 +33,7 @@ pub use crate::errorold::ParserError;
 mod whitespace;
 pub use crate::models::*;
 use error::AstryxError;
+mod util;
 
 pub type Span<'a> = LocatedSpan<&'a str, &'a str>;
 pub type ParserResult<T, I> = Result<T, ParserError<I>>;
@@ -42,7 +43,7 @@ pub fn parse<'a>(lines: Vec<Node<Span<'a>>>) -> Result<Vec<Node<Statement<'a>>>,
     lines
         .into_iter()
         .map(statement::statement_node)
-        .collect::<Result<Vec<(Span, Node<Statement<'_>>)>, nom::Err<ParserError<Span<'a>>>>>()
+        .collect::<Result<Vec<(Span, Node<Statement<'_>>)>, nom::Err<AstryxError>>>()
         .map(|result| {
             result
                 .into_iter()

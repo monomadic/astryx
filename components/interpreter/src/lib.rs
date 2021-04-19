@@ -27,7 +27,7 @@ pub fn run<'a>(
 
     nodes
         .iter()
-        .map(|node| eval::eval_statement(&node, Rc::clone(inner)))
+        .map(|node| eval::eval_statement(node, Rc::clone(inner)))
         .collect::<AstryxResult<Vec<Node<Object>>>>()
 }
 
