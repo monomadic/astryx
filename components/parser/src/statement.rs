@@ -7,7 +7,7 @@ use crate::{
     variable::{glob_pattern, literal, relative_path},
     Expression, ParserError, Route, Span,
 };
-use error::AstryxError;
+use error::{AstryxError, AstryxErrorKind, Location};
 use nom::error::ParseError;
 use nom::{
     branch::alt,
@@ -18,7 +18,18 @@ use nom::{
     sequence::{terminated, tuple},
     IResult,
 };
+use nom_locate::LocatedSpan;
 use rctree::Node;
+
+pub(crate) fn span_to_location(span: Span) -> Location {
+    Location {
+        line: span.location_line(),
+        column: span.get_column(),
+        length: span.location_offset(),
+        filename: span.extra.into(),
+        context: String::from_utf8(span.get_line_beginning().into()).unwrap(),
+    }
+}
 
 // fn array<'a>(i: Span) -> IResult<Span, Span, ParserError<Span>> {
 //     // fn letter(i: &str) -> IResult<&str, Token, ParserError> {
@@ -69,7 +80,14 @@ pub(crate) fn statement<'a>(i: Span<'a>) -> IResult<Span, Statement<'a>, AstryxE
         // map(alpha1, |e| Statement::Element(e)),
         // return_statement
     )))(i)
-    .map_err(|e| nom::Err::Error(AstryxError::Generic("statement error".into())))
+    .map_err(|e| {
+        e.map(|e| {
+            AstryxError::LocatedError(
+                span_to_location(e.context),
+                AstryxErrorKind::Unimplemented(format!("parser error: {:?}", e.kind)), // fixme: account for actual parser errors
+            )
+        })
+    })
 }
 
 fn for_loop<'a>(i: Span<'a>) -> IResult<Span, (Span<'a>, Expression<'a>), ParserError<Span<'a>>> {

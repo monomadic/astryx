@@ -1,9 +1,2 @@
-
-
 for post in ./examples/*.md
-  let meta = post.frontmatter()
-
-  %h1
-    meta.title
-  
   post.markdown()

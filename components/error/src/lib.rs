@@ -65,6 +65,7 @@ pub enum AstryxErrorKind {
     UnexpectedToken(String),
     ExpectedValue,
     UnknownValue(String),
+    Unimplemented(String),
 }
 
 #[derive(Debug, PartialEq, Clone)]
