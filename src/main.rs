@@ -32,6 +32,8 @@ enum Command {
             default_value = "site.astryx"
         )]
         input: PathBuf,
+
+        /// Server port
         #[structopt(short = "p", long = "port", default_value = "8888")]
         port: u32,
     },
@@ -45,6 +47,7 @@ enum Command {
             default_value = "site.astryx"
         )]
         input: PathBuf,
+
         /// output path
         #[structopt(
             parse(from_os_str),
@@ -53,9 +56,11 @@ enum Command {
             default_value = "./build"
         )]
         output: PathBuf,
+
         /// Perform a read-only check (don't write files)
         #[structopt(long = "check")]
         check: bool,
+
         /// Write the file output to stdout instead of files
         #[structopt(long = "stdout")]
         stdout: bool,

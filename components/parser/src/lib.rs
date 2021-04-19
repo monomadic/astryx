@@ -8,7 +8,7 @@
 //! everything you need is in this crate.
 //!
 //! ## Usage
-//! ```
+//! ``` rust
 //! use parser;
 //!
 //! let source = "page\n";
@@ -30,7 +30,6 @@ pub mod statement;
 mod text;
 mod variable;
 pub use crate::errorold::ParserError;
-mod whitespace;
 pub use crate::models::*;
 use error::AstryxError;
 mod util;
@@ -39,11 +38,11 @@ pub type Span<'a> = LocatedSpan<&'a str, &'a str>;
 pub type ParserResult<T, I> = Result<T, ParserError<I>>;
 
 /// Parses a tree of Spans into a tree of Statements.
-pub fn parse<'a>(lines: Vec<Node<Span<'a>>>) -> Result<Vec<Node<Statement<'a>>>, AstryxError> {
+pub fn parse(lines: Vec<Node<Span>>) -> Result<Vec<Node<Statement>>, AstryxError> {
     lines
         .into_iter()
         .map(statement::statement_node)
-        .collect::<Result<Vec<(Span, Node<Statement<'_>>)>, nom::Err<AstryxError>>>()
+        .collect::<Result<Vec<_>, _>>()
         .map(|result| {
             result
                 .into_iter()
@@ -51,8 +50,7 @@ pub fn parse<'a>(lines: Vec<Node<Span<'a>>>) -> Result<Vec<Node<Statement<'a>>>,
                 .collect() // todo: if there are remainders, throw an error so this map is not required
         })
         .map_err(|e| match e {
-            // convert to a regular result, nom is awful in this situation.
-            Err::Error(e) | Err::Failure(e) => AstryxError::Generic("parser".into()),
+            Err::Error(e) | Err::Failure(e) => e,
             _ => unreachable!(),
         })
 }

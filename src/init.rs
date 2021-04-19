@@ -9,5 +9,5 @@ pub(crate) fn init_project<'a>() -> AstryxResult<()> {
     let index = include_str!("../templates/site.astryx");
     let path = Path::new("site.astryx");
 
-    fs::write(path, index).map_err(|e| AstryxError::IO(e))
+    fs::write(path, index).map_err(AstryxError::from)
 }
