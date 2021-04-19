@@ -16,7 +16,6 @@ pub(crate) fn build<P: AsRef<Path>>(input: P, check: bool, stdout: bool) -> Astr
     // todo: check rem for errors
 
     parser::parse(lines)
-        .map_err(|e| AstryxError::Generic("todo".into()))
         .and_then(|statements| interpreter::run(&statements, state))
         .map(Site::render)
         .map(|site| {
