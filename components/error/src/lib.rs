@@ -8,7 +8,8 @@ quick_error! {
     #[derive(Debug)]
     pub enum AstryxError {
         /// An error with an associated file context
-        LocatedError(location: Location, kind: AstryxErrorKind) {} // todo: should contain a pathbuf for source file
+        LocatedError(location: Location, kind: AstryxErrorKind) {
+        } // todo: should contain a pathbuf for source file
 
         /// A generic error without context
         Generic(err: String) {

@@ -23,6 +23,7 @@ yaml-rust = "0.4"
 
 [workspace]
 members = [
+  "cli",
   "components/error",
   "components/html",
   "components/interpreter",

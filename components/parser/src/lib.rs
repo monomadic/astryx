@@ -31,14 +31,14 @@ mod text;
 mod variable;
 pub use crate::errorold::ParserError;
 pub use crate::models::*;
-use error::AstryxError;
+use error::{AstryxError, AstryxResult};
 mod util;
 
 pub type Span<'a> = LocatedSpan<&'a str, &'a str>;
 pub type ParserResult<T, I> = Result<T, ParserError<I>>;
 
 /// Parses a tree of Spans into a tree of Statements.
-pub fn parse(lines: Vec<Node<Span>>) -> Result<Vec<Node<Statement>>, AstryxError> {
+pub fn parse(lines: Vec<Node<Span>>) -> AstryxResult<Vec<Node<Statement>>> {
     lines
         .into_iter()
         .map(statement::statement_node)
