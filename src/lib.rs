@@ -5,7 +5,6 @@ use std::path::Path;
 use std::rc::Rc;
 
 // exports
-pub use build::build;
 pub use error::{AstryxError, AstryxResult};
 pub use models::{Site, State};
 

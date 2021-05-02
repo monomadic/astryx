@@ -5,21 +5,11 @@ authors = ["monomadic <deathdisco@protonmail.com>"]
 edition = "2018"
 
 [dependencies]
-glob = "0.3.0"
-html = { path = "components/html" }
 interpreter = { path = "components/interpreter" }
-nom = { version = "5.1.1", features = ["std"] }
 nom-indent = { git = "https://github.com/monomadic/nom-indent" }
 parser = { path = "components/parser" }
-program = { path = "components/program" }
 models = { path = "components/models" }
 error = { path = "components/error" }
-rctree = "0.3.3"
-repl = { path = "components/repl" }
-simple-server = "0.4.0"
-structopt = "0.3"
-syntect = "4.2.0"
-yaml-rust = "0.4"
 
 [workspace]
 members = [
