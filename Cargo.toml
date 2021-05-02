@@ -14,13 +14,4 @@ error = { path = "components/error" }
 [workspace]
 members = [
   "cli",
-  "components/error",
-  "components/html",
-  "components/interpreter",
-  "components/markdown",
-  "components/models",
-  "components/parser",
-  "components/program",
-  "components/repl",
-  "components/search",
 ]
