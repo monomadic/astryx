@@ -81,7 +81,7 @@ enum BuildOutput {
 pub fn main() {
     match run() {
         Ok(r) => println!("{}", r),
-        Err(e) => println!("{:?}", e), // todo: print error properly
+        Err(e) => println!("{}", e.output()), // todo: print error properly
     }
 }
 

@@ -1,3 +1,4 @@
+use crate::display::display_error;
 use quick_error::quick_error;
 
 pub mod display;
@@ -20,6 +21,12 @@ quick_error! {
         IO(err: std::io::Error) {
             from()
         }
+    }
+}
+
+impl AstryxError {
+    pub fn output(self) -> String {
+        display_error(self)
     }
 }
 

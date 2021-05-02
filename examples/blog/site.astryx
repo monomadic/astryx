@@ -1,24 +1,18 @@
 %html
   %head
     %link { rel: "stylesheet", href: ./style.css }
-
   %body
     %h1 Pages
-
-    for post in ./examples/*.md
+    for post in ./posts/*.md
       let meta = post.frontmatter()
       let md = post.markdown()
-
       %a { href: meta.route }
         meta.title
-      
       @route path=meta.route
         %html
           %head
             %link { rel: "stylesheet", href: ./style.css }
-
           %body
                 %h1
                   meta.title
-                
                 post.markdown()

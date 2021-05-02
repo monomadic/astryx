@@ -84,7 +84,7 @@ pub fn statement<'a>(i: Span<'a>) -> IResult<Span, Statement<'a>, AstryxError> {
         e.map(|e| {
             AstryxError::LocatedError(
                 span_to_location(e.context),
-                AstryxErrorKind::Unimplemented(format!("parser error: {:?}", e.kind)), // fixme: account for actual parser errors
+                AstryxErrorKind::Unimplemented(format!("{:?}", e)), // fixme: account for actual parser errors
             )
         })
     })

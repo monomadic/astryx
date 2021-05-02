@@ -102,8 +102,8 @@ fn error_with_line(
 ) -> String {
     // panic!("context: {:?}", context.fragment());
     [
-        format!("{}", reason),
-        format!("--> {}:{}:{}", path, line, col),
+        format!("error: {}", reason),
+        format!(" --> {}:{}:{}", path, line, col),
         String::from("  |"),
         format!("{} | {}", line, context), //file.lines().into_iter().enumerate().collect::<Vec<String>>()[context.location_line() as usize]),
         format!(
