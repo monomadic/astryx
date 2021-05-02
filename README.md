@@ -22,8 +22,10 @@ It is totally unlike and far more powerful than simple templating languages and 
 ### Cargo
 
 ``` bash
-cargo install --git https://github.com/monomadic/astryx/ --bin cli
+cargo install --git https://github.com/monomadic/astryx/
+
 # or, locally:
+git clone --depth=1 https://github.com/monomadic/astryx/
 cargo install --path cli
 ```
 
