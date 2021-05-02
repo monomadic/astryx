@@ -1,5 +1,0 @@
-file(_)
-  html
-    head
-    body path=%
-      h1

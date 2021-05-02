@@ -1,9 +1,0 @@
-
-
-page(route: "/", title: "monomadic")
-  rect direction.rows width.fixed(640px)
-
-// todo later on: syntax for functions like this
-fn page(route: string, opt title: string) {
-  
-}

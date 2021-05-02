@@ -46,6 +46,12 @@ Building all files (the default output directory is `./build`):
 astryx build
 ```
 
+## Running the Examples
+
+``` bash
+astryx build --input examples/basic.astryx --stdout
+```
+
 ## Forks
 
 I've worked hard to make the codebase readable, modular and hackable. I believe it serves as a great starting point for forking if you want to make a rust language and compiler of your own. I will continue to push for modularity and simplicity and make the code more readable as time goes on.
