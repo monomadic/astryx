@@ -1,0 +1,10 @@
+[package]
+name = "cli"
+version = "0.1.0"
+authors = ["nom <nom@nom.org>"]
+edition = "2018"
+
+[dependencies]
+structopt = "0.3"
+astryx = { path = ".." }
+simple-server = "0.4.0"

@@ -6,7 +6,7 @@ mod server;
 
 pub use build::build;
 pub use init::init_project;
-use models::{Site, State};
+pub use models::{Site, State};
 use std::cell::RefCell;
 use std::path::Path;
 use std::rc::Rc;
