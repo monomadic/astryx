@@ -1,5 +1,5 @@
 [package]
-name = "cli"
+name = "astryx-cli"
 version = "0.1.0"
 authors = ["nom <nom@nom.org>"]
 edition = "2018"

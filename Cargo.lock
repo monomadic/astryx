@@ -33,6 +33,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "astryx-cli"
+version = "0.1.0"
+dependencies = [
+ "astryx",
+ "simple-server",
+ "structopt",
+]
+
+[[package]]
 name = "atty"
 version = "0.2.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -146,15 +155,6 @@ dependencies = [
  "textwrap",
  "unicode-width",
  "vec_map",
-]
-
-[[package]]
-name = "cli"
-version = "0.1.0"
-dependencies = [
- "astryx",
- "simple-server",
- "structopt",
 ]
 
 [[package]]
