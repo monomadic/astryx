@@ -6,7 +6,6 @@ use std::path::PathBuf;
 use std::rc::Rc;
 use structopt::StructOpt;
 
-mod build;
 mod init;
 // mod server;
 
@@ -65,17 +64,6 @@ enum Command {
         #[structopt(long = "stdout")]
         stdout: bool,
     },
-    // /// Check the project for errors but do not build anything
-    // Check {
-    //     /// Input file
-    //     #[structopt(
-    //         parse(from_os_str),
-    //         short = "i",
-    //         long = "input",
-    //         default_value = "site.astryx"
-    //     )]
-    //     input: PathBuf,
-    // },
     /// Create a new project
     Init {
         /// Init path
@@ -108,25 +96,20 @@ fn run() -> AstryxResult<String> {
         } => {
             println!("building: {}\n", input.display());
 
-            astryx::build(input, check, stdout)
+            astryx::parse_from_file(input, None).map(|site| {
+                if check {
+                    println!("read only check. skipping file write...")
+                } else {
+                    if stdout {
+                        for (route, document) in site.documents {
+                            println!("{}: {}", route, document);
+                        }
+                    } else {
+                        site.write()
+                    }
+                }
+            })
         }
-        // // todo: make this an option on build --check
-        // Command::Check { input } => {
-        //     let file = std::fs::read_to_string(&input)
-        //         .expect(&format!("could not open {}", input.display()));
-        //     let state = Rc::new(RefCell::new(State::new()));
-        //
-        //     println!("checking: {}\n", input.display());
-        //
-        //     let path: String = input.to_str().unwrap().into();
-        //     let (_, lines) = nom_indent::indent(&file, &path).unwrap();
-        //
-        //     parser::parse(lines)
-        //         .map_err(|e| AstryxError::Generic("unimplmeneted".into()))
-        //         .and_then(|nodes| interpreter::run(&nodes, state))
-        //         .map(Site::render)
-        //         .map(|_| println!("no errors."))
-        // }
         Command::Init { path } => init::init_project(),
         // Command::Repl => {
         //     repl::run(); // todo: bubble up error

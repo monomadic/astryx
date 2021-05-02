@@ -1,7 +1,5 @@
 // public api interface for astryx
 
-mod build;
-
 use std::cell::RefCell;
 use std::path::Path;
 use std::rc::Rc;
