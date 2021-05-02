@@ -1,7 +1,7 @@
 <p align="center"><img src="https://raw.githubusercontent.com/monomadic/astryx/master/assets/logo-v2.svg" /></p>
 
-[![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Minimum rustc version](https://img.shields.io/badge/rustc-1.42.0+-green.svg)](#rust-version-requirements)
+[![UNLICENSE](https://img.shields.io/badge/unlicense-blue.svg)](UNLICENSE)
+[![rustc version](https://img.shields.io/badge/rustc-1.50.0+-green.svg)](https://rust.org)
 
 _Note: Astryx is still in a very alpha state._
 
