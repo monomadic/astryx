@@ -19,8 +19,8 @@ pub fn parse_from_string(input: &str, path: &str, state: Option<State>) -> Astry
 
     // check for unexpected remaining content from indenter
     if !rem.len() == 0 {
-        // fixme: return astryxerror
-        panic!("non empty!");
+        // fixme: indenter should return custom errors for incorrect indentation
+        panic!("indentation failed: this should never happen! please file a bug");
     }
 
     // parse each line into statements, interpret them, and render a Site collection
