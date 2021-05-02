@@ -94,7 +94,7 @@ fn run() -> AstryxResult<String> {
             check,
             stdout,
         } => {
-            println!("building: {}\n", input.display());
+            println!("parsing {}\n", input.display());
 
             astryx::parse_from_file(input, None).map(|site| {
                 if check {
@@ -102,7 +102,7 @@ fn run() -> AstryxResult<String> {
                 } else {
                     if stdout {
                         for (route, document) in site.documents {
-                            println!("{}: {}", route, document);
+                            println!("{}:\n{}", route, document);
                         }
                     } else {
                         site.write()

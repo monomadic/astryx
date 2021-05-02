@@ -14,3 +14,6 @@ markdown = { path = "../markdown" }
 frontmatter = { path = "../frontmatter" }
 error = { path = "../error" }
 models = { path = "../models" }
+
+[dev-dependencies]
+nom-indent = { git = "https://github.com/monomadic/nom-indent" }

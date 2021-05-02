@@ -291,6 +291,7 @@ dependencies = [
  "html",
  "markdown",
  "models",
+ "nom-indent",
  "parser",
  "program",
  "rctree",

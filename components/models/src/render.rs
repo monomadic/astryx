@@ -5,6 +5,7 @@ use crate::Object;
 use rctree::Node;
 use std::collections::HashMap;
 
+#[derive(Debug)]
 pub struct Site {
     pub documents: HashMap<String, String>,
 }
