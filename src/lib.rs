@@ -1,15 +1,15 @@
-pub use error::{AstryxError, AstryxResult};
+// public api interface for astryx
 
 mod build;
-mod init;
-mod server;
 
-pub use build::build;
-pub use init::init_project;
-pub use models::{Site, State};
 use std::cell::RefCell;
 use std::path::Path;
 use std::rc::Rc;
+
+// exports
+pub use build::build;
+pub use error::{AstryxError, AstryxResult};
+pub use models::{Site, State};
 
 // Compiles program text into an output graph
 pub fn parse_from_string(input: &str, path: &str, state: Option<State>) -> AstryxResult<Site> {

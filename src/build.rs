@@ -36,11 +36,4 @@ pub fn build<P: AsRef<Path>>(input: P, check: bool, stdout: bool) -> AstryxResul
                 }
             }
         })
-    // .map_err(AstryxError::from)
-    // nom_indent::indent(&file, &path)
-    //     .map_err(AstryxError::from)
-    //     .and_then(|(_, lines)| parser::parse(lines))
-    //     .map(|nodes| interpreter::run(&nodes, state))
-    //     .map(Site::render)
-    //     .map(|site| site.write())
 }

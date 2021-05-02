@@ -1,3 +1,5 @@
+// cli tool for the astryx compiler
+
 use astryx::{AstryxError, AstryxResult, Site, State};
 use std::cell::RefCell;
 use std::path::PathBuf;
