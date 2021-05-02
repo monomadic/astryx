@@ -17,14 +17,14 @@ Astryx is a declarative, safe, expressive language and compiler for generating s
 
 It is totally unlike and far more powerful than simple templating languages and static content generators, which tend to focus on themes, blogs, etc. Astryx could build a simple blog program like hugo in a few lines of code, or an image gallery constructor, a cryptocurrency tracker, etc.
 
-## Installation
+## CLI Installation
 
 ### Cargo
 
 ``` bash
-cargo install --path https://github.com/monomadic/astryx
+cargo install --git https://github.com/monomadic/astryx/ --bin cli
 # or, locally:
-cargo install --path .
+cargo install --path cli
 ```
 
 ## Usage

@@ -8,3 +8,7 @@ edition = "2018"
 structopt = "0.3"
 astryx = { path = ".." }
 simple-server = "0.4.0"
+
+[[bin]]
+name = "astryx"
+path = "src/main.rs"
