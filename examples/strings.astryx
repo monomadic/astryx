@@ -1,6 +1,0 @@
-
--- Plain text output
-| Hello, World!
-
--- Expression interpolation
-| Hello, { "World" }!

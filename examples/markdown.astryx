@@ -1,2 +1,0 @@
-for post in ./examples/*.md
-  post.markdown()

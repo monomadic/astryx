@@ -1,7 +1,0 @@
-
-.title
-    background-color: blue
-
-page route="/"
-  h1 .title
-    | hello

@@ -91,13 +91,14 @@ pub(crate) fn eval_statement(
 
             if let Object::Array(array) = iter {
                 for index in array {
+                    // NOT REACHING
                     let childstate = state.clone();
                     childstate
                         .borrow_mut()
                         .bind(&ident.to_string(), index.borrow().clone())?;
                     for child in statement.children() {
                         // BUG HERE - CHILDSTATE IS THE SAME
-                        // println!("---{:?}", &childstate.borrow().local);
+                        println!("---{:?}", &childstate.borrow().local);
                         let _ = eval_statement(&child, Rc::clone(&childstate))?;
                     }
                 }
