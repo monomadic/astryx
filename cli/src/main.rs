@@ -1,9 +1,7 @@
 // cli tool for the astryx compiler
 
-use astryx::{AstryxError, AstryxResult, Site, State};
-use std::cell::RefCell;
+use astryx::AstryxResult;
 use std::path::PathBuf;
-use std::rc::Rc;
 use structopt::StructOpt;
 
 mod init;

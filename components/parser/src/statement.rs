@@ -8,7 +8,6 @@ use crate::{
     Expression, ParserError, Route, Span,
 };
 use error::{AstryxError, AstryxErrorKind, Location};
-use nom::error::ParseError;
 use nom::{
     branch::alt,
     bytes::complete::tag,
@@ -18,7 +17,6 @@ use nom::{
     sequence::{terminated, tuple},
     IResult,
 };
-use nom_locate::LocatedSpan;
 use rctree::Node;
 
 pub(crate) fn span_to_location(span: Span) -> Location {

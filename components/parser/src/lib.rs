@@ -16,7 +16,6 @@
 //!
 //! ```
 
-use linesplit::Line;
 use nom::Err;
 use nom_locate::LocatedSpan;
 use rctree::Node;
@@ -24,15 +23,13 @@ use rctree::Node;
 mod element;
 pub mod errorold;
 mod function;
-mod linesplit;
 pub mod models;
 pub mod statement;
 mod text;
 mod variable;
 pub use crate::errorold::ParserError;
 pub use crate::models::*;
-use error::{AstryxError, AstryxResult};
-mod util;
+use error::AstryxResult;
 
 pub type Span<'a> = LocatedSpan<&'a str, &'a str>;
 pub type ParserResult<T, I> = Result<T, ParserError<I>>;

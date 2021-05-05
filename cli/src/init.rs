@@ -1,7 +1,5 @@
 use astryx::{AstryxError, AstryxResult};
-use std::fs;
-use std::fs::copy;
-use std::path::Path;
+use std::{fs, path::Path};
 
 /// set up a new project in the current directory
 pub fn init_project<'a>() -> AstryxResult<()> {

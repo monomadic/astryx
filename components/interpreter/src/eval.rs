@@ -1,8 +1,8 @@
 use crate::util::span_to_location;
-use error::{AstryxError, AstryxErrorKind, AstryxResult, Location};
+use error::{AstryxError, AstryxErrorKind, AstryxResult};
 use html::HTMLElement;
 use models::{object::Object, state::State};
-use parser::{Expression, ParserError, Span, Statement, StringToken};
+use parser::{Expression, Statement, StringToken};
 use rctree::Node;
 use std::cell::RefCell;
 use std::{collections::HashMap, rc::Rc};
@@ -89,27 +89,28 @@ pub(crate) fn eval_statement(
         Statement::ForLoop { ident, expr } => {
             let iter: Object = eval_expression(Rc::clone(&state), &expr, None)?;
 
-            if let Object::Array(array) = iter {
-                for index in array {
-                    // NOT REACHING
-                    let childstate = state.clone();
-                    childstate
-                        .borrow_mut()
-                        .bind(&ident.to_string(), index.borrow().clone())?;
-                    for child in statement.children() {
-                        // BUG HERE - CHILDSTATE IS THE SAME
-                        println!("---{:?}", &childstate.borrow().local);
-                        let _ = eval_statement(&child, Rc::clone(&childstate))?;
+            match iter {
+                Object::Array(array) => {
+                    let mut node = Node::new(Object::None);
+
+                    for index in array {
+                        let childstate = state.clone();
+
+                        childstate
+                            .borrow_mut()
+                            .bind(&ident.to_string(), index.borrow().clone())?;
+
+                        for child in statement.children() {
+                            node.append(eval_statement(&child, Rc::clone(&childstate))?);
+                        }
                     }
+                    Ok(node)
                 }
-            } else {
-                return Err(AstryxError::LocatedError(
+                _ => Err(AstryxError::LocatedError(
                     span_to_location(ident),
                     AstryxErrorKind::Unexpected,
-                ));
+                )),
             }
-
-            Ok(Node::new(Object::None)) // FIXME
         }
         Statement::Route(route) => {
             // collect attributes

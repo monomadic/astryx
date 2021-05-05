@@ -1,6 +1,5 @@
 use error::{AstryxError, AstryxResult};
 use models::{object::Object, state::State};
-use parser::Span;
 use rctree::Node;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -46,18 +45,18 @@ pub(crate) fn log(state: Rc<RefCell<State>>, input: Option<Node<Object>>) -> Ast
     }
 }
 
-/// returns a debug representation of an object as a string
-pub(crate) fn inspect_all(state: Rc<RefCell<State>>) -> AstryxResult<Object> {
-    let args = state
-        .borrow()
-        .local
-        .iter()
-        .map(|(_k, v)| format!("{:?}", v.to_string()))
-        .collect::<Vec<String>>()
-        .join(", ");
-
-    Ok(Object::String(args)) // todo: return ()
-}
+// /// returns a debug representation of an object as a string
+// pub(crate) fn inspect_all(state: Rc<RefCell<State>>) -> AstryxResult<Object> {
+//     let args = state
+//         .borrow()
+//         .local
+//         .iter()
+//         .map(|(_k, v)| format!("{:?}", v.to_string()))
+//         .collect::<Vec<String>>()
+//         .join(", ");
+//
+//     Ok(Object::String(args)) // todo: return ()
+// }
 
 pub(crate) fn markdown<'a>(
     state: Rc<RefCell<State>>,
