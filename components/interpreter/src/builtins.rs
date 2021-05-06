@@ -71,8 +71,9 @@ pub(crate) fn markdown<'a>(
     };
 
     let content = read(state, Some(Node::new(path)))?.to_string();
+    let (_yaml, document) = frontmatter::parse(&content).unwrap();
 
-    Ok(Object::String(markdown::parse(&content).unwrap()))
+    Ok(Object::String(markdown::parse(&document).unwrap()))
 }
 
 pub(crate) fn parse_frontmatter<'a>(
