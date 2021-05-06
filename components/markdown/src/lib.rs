@@ -1,8 +1,8 @@
-mod highlighter;
-
 use crate::highlighter::SyntaxHighlighter;
 use error::AstryxError;
 use pulldown_cmark::{html, CodeBlockKind, Event, Options, Parser, Tag};
+
+mod highlighter;
 
 pub fn parse(i: &str) -> Result<String, AstryxError> {
     let mut h = SyntaxHighlighter::new();

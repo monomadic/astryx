@@ -6,12 +6,14 @@ use std::rc::Rc;
 
 // exports
 pub use error::{AstryxError, AstryxResult};
+use models::Object;
 pub use models::{Site, State};
 
 // Compiles program text into an output graph
 pub fn parse_from_string(input: &str, path: &str, state: Option<State>) -> AstryxResult<Site> {
     // if no initial state is given to us, pass new empty state.
-    let state = Rc::new(RefCell::new(state.unwrap_or(State::new())));
+    let mut state = state.unwrap_or(State::new());
+    let state = Rc::new(RefCell::new(state));
 
     // try to read commands based on whitespace indentation
     let (rem, lines) =
@@ -31,8 +33,16 @@ pub fn parse_from_string(input: &str, path: &str, state: Option<State>) -> Astry
 
 // Compiles a source file into an output graph
 pub fn parse_from_file<P: AsRef<Path>>(input: P, state: Option<State>) -> AstryxResult<Site> {
+    // if no initial state is given to us, pass new empty state.
+    let mut state = state.unwrap_or(State::new());
+
+    if let Some(pwd) = input.as_ref().parent() {
+        // create the working directory as an environment variable
+        state.bind("$PWD", Object::String(pwd.to_str().unwrap().into()));
+    }
+
     let path: String = input.as_ref().to_str().unwrap().into();
     let input: String = std::fs::read_to_string(input).map_err(|e| AstryxError::IO(e))?;
 
-    parse_from_string(&input, &path, state)
+    parse_from_string(&input, &path, Some(state))
 }

@@ -3,6 +3,7 @@ use glob::Paths;
 use models::object::Object;
 use parser::Span;
 use rctree::Node;
+use std::path::PathBuf;
 
 pub(crate) fn span_to_location(span: Span) -> Location {
     Location {
@@ -14,7 +15,12 @@ pub(crate) fn span_to_location(span: Span) -> Location {
     }
 }
 
-pub(crate) fn glob_files(s: &Span) -> AstryxResult<Object> {
+pub(crate) fn glob_files(s: &Span, pwd: Option<Object>) -> AstryxResult<Object> {
+    let pattern = match pwd {
+        Some(pwd) => format!("{}/{}", pwd.to_string(), s),
+        None => s.to_string(),
+    };
+
     let options = glob::MatchOptions {
         case_sensitive: false,
         require_literal_separator: false,
@@ -22,7 +28,7 @@ pub(crate) fn glob_files(s: &Span) -> AstryxResult<Object> {
     };
 
     let mut files = Vec::new();
-    let globs: Paths = glob::glob_with(&s.to_string(), options).map_err(|e| {
+    let globs: Paths = glob::glob_with(&pattern, options).map_err(|e| {
         AstryxError::LocatedError(span_to_location(*s), AstryxErrorKind::Unexpected)
     })?;
 

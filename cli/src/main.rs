@@ -1,12 +1,10 @@
-// cli tool for the astryx compiler
-
+/// cli interface tool  for the astryx compiler
 use astryx::AstryxResult;
 use std::path::PathBuf;
 use structopt::StructOpt;
 
 mod init;
 mod server;
-// mod server;
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "astryx")]
@@ -109,7 +107,7 @@ fn run() -> AstryxResult<String> {
                 }
             })
         }
-        Command::Init { path } => init::init_project(),
+        Command::Init { path } => init::init_project(path),
         // Command::Repl => {
         //     repl::run(); // todo: bubble up error
         //     Ok(())

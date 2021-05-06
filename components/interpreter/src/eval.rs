@@ -201,7 +201,7 @@ pub fn eval_expression(
                 .map(Node::new)
                 .collect(),
         )),
-        Expression::GlobPattern(s) => crate::util::glob_files(s),
+        Expression::GlobPattern(s) => crate::util::glob_files(s, state.borrow().get("$PWD")),
         Expression::Index(l, r) => {
             let lexpr: Object = eval_expression(Rc::clone(&state), l, None)?;
 

@@ -3,7 +3,7 @@
     %link { rel: "stylesheet", href: ./style.css }
   %body
     %h1 My Blog
-    for post in ./examples/blog/posts/*.md
+    for post in ./posts/*.md
       let meta = post.frontmatter()
       %ul
         %li
