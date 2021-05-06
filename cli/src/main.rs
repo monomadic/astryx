@@ -5,6 +5,7 @@ use std::path::PathBuf;
 use structopt::StructOpt;
 
 mod init;
+mod server;
 // mod server;
 
 #[derive(StructOpt, Debug)]
@@ -20,20 +21,20 @@ enum Command {
     // /// Start an instance of the Astryx REPL
     // Repl,
     /// Start a server for the current project
-    // Serve {
-    //     /// Input file
-    //     #[structopt(
-    //         parse(from_os_str),
-    //         short = "i",
-    //         long = "input",
-    //         default_value = "site.astryx"
-    //     )]
-    //     input: PathBuf,
-    //
-    //     /// Server port
-    //     #[structopt(short = "p", long = "port", default_value = "8888")]
-    //     port: u32,
-    // },
+    Serve {
+        /// Input file
+        #[structopt(
+            parse(from_os_str),
+            short = "i",
+            long = "input",
+            default_value = "site.astryx"
+        )]
+        input: PathBuf,
+
+        /// Server port
+        #[structopt(short = "p", long = "port", default_value = "8888")]
+        port: u32,
+    },
     /// Build the project into output files
     Build {
         /// Input file
@@ -85,7 +86,7 @@ pub fn main() {
 
 fn run() -> AstryxResult<String> {
     match Opt::from_args().command {
-        // Command::Serve { input, port } => server::start(&input, port),
+        Command::Serve { input, port } => server::start(&input, port),
         Command::Build {
             input,
             output,

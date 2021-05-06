@@ -7,6 +7,7 @@ edition = "2018"
 [dependencies]
 structopt = "0.3"
 astryx = { path = ".." }
+#server = { path = "../components/server"}
 simple-server = "0.4.0"
 
 [[bin]]
