@@ -4,9 +4,7 @@ use std::path::Path;
 
 pub(crate) fn start<'a, P: AsRef<Path>>(input: P, port: u32) -> AstryxResult<()> {
     let host = "127.0.0.1";
-    // let port = port.to_string();
     let path: String = input.as_ref().to_str().unwrap().into();
-    // let input: PathBuf = input.into();
 
     let mut server = Server::new(move |request, mut response| {
         let request_path = request.uri().path();
@@ -71,23 +69,7 @@ pub(crate) fn start<'a, P: AsRef<Path>>(input: P, port: u32) -> AstryxResult<()>
             _ => {
                 println!("{} {}", request.method(), request_path);
 
-                // let file = read_to_string(&path)?;
-
-                // let state = Rc::new(RefCell::new(State::new()));
-                //
-                // let file = read_to_string(&path)?;
-                // let path: String = file.as_str().into();
-                // // todo: fix unwrap
-                // let (_, lines) = nom_indent::indent(&file, &path).unwrap();
-                //
-                // let result = parser::parse(lines)
-                //     .map_err(|e| AstryxError::Generic("todo".into()))
-                //     .and_then(|nodes| interpreter::run(&nodes, state))
-                //     .map(Site::render);
-
-                let result = astryx::parse_from_file(&path, None)
-                    .map_err(|e| AstryxError::Generic(format!("server error: {:?}", e)));
-                // TODO: proper error for server
+                let result = astryx::parse_from_file(&path, None);
 
                 // if request_path.contains("svg") {
                 //     response.header("content-type", "image/svg+xml");
