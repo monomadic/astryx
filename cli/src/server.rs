@@ -1,9 +1,6 @@
-use astryx::{AstryxError, AstryxResult, Site, State};
+use astryx::{AstryxError, AstryxResult};
 use simple_server::{Server, StatusCode};
-use std::cell::RefCell;
-use std::fs::read_to_string;
-use std::path::{Path, PathBuf};
-use std::rc::Rc;
+use std::path::Path;
 
 pub(crate) fn start<'a, P: AsRef<Path>>(input: P, port: u32) -> AstryxResult<()> {
     let host = "127.0.0.1";
@@ -89,7 +86,8 @@ pub(crate) fn start<'a, P: AsRef<Path>>(input: P, port: u32) -> AstryxResult<()>
                 //     .map(Site::render);
 
                 let result = astryx::parse_from_file(&path, None)
-                    .map_err(|e| AstryxError::Generic("server error".into()));
+                    .map_err(|e| AstryxError::Generic(format!("server error: {:?}", e)));
+                // TODO: proper error for server
 
                 // if request_path.contains("svg") {
                 //     response.header("content-type", "image/svg+xml");

@@ -1,7 +1,7 @@
 // public api interface for astryx
 
 use std::cell::RefCell;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::rc::Rc;
 
 // exports
