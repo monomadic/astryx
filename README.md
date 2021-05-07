@@ -5,7 +5,7 @@
 
 _Note: Astryx is still in a very alpha state._
 
-Astryx is a declarative, safe, expressive language and compiler for generating static sites and single page web applications. It draws heavy inspiration from the projects svelte, deno, and flutter, but aims to be leaner, much faster, and far simpler to use and master.
+Astryx 🧚🏼‍ is a declarative, safe, expressive language and compiler for generating static sites and single page web applications. It draws heavy inspiration from the projects svelte, deno, and flutter, but aims to be leaner, much faster, and far simpler to use and master.
 
 - It is similar to **svelte** in that it acts as a complete compiler, not a framework or library. Output is as lean as possible.
 
@@ -16,6 +16,35 @@ Astryx is a declarative, safe, expressive language and compiler for generating s
 - It is similar to **rust** in its use of highly correct type safety, attempting to capture as many errors as possible during compile time, so they don't make it to runtime.
 
 It is totally unlike and far more powerful than simple templating languages and static content generators, which tend to focus on themes, blogs, etc. Astryx could build a simple blog program like hugo in a few lines of code, or an image gallery constructor, a cryptocurrency tracker, etc.
+
+## What's The Syntax Like?
+
+So far, the syntax looks like a programmatic version of HAML, but this is heavily subject to change before v1 launches.
+
+This astryx program creates an entire blog.
+
+``` haml
+%html
+  %head
+    %link { rel: "stylesheet", href: ./style.css }
+  %body
+    %h1 My Blog
+    for post in ./posts/*.md
+      let meta = post.frontmatter()
+      %ul
+        %li
+          %a { href: meta.route }
+            meta.title
+      @route path=meta.route
+        %html
+          %head
+            %link { rel: "stylesheet", href: ./style.css }
+          %body
+            %a { href: "/" } My Blog
+            %h1
+              meta.title
+            post.markdown()
+```
 
 ## CLI Installation
 
@@ -52,8 +81,8 @@ astryx build
 astryx build --input examples/basic.astryx --stdout
 ```
 
-## Forks
+## Forking
 
-I've worked hard to make the codebase readable, modular and hackable. I believe it serves as a great starting point for forking if you want to make a rust language and compiler of your own. I will continue to push for modularity and simplicity and make the code more readable as time goes on.
+I've worked hard to make the codebase readable, modular and hackable. I believe it serves as a great starting point for forking if you want to make a parser-combinator, interpreter and compiler of your own in rust. I will continue to push for modularity and simplicity and make the code more readable as time goes on.
 
 Having said that I'm just one person at the moment, so any PRs for code quality are more than appreciated.
