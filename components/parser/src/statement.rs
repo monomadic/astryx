@@ -75,6 +75,7 @@ pub fn statement<'a>(i: Span<'a>) -> IResult<Span, Statement<'a>, AstryxError> {
         map(route, Statement::Route),
         map(element, Statement::Element),
         map(piped_string, Statement::Text),
+        map(space0, |ws| Statement::Blank(ws)),
         // map(alpha1, |e| Statement::Element(e)),
         // return_statement
     )))(i)

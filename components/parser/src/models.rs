@@ -23,6 +23,7 @@ pub enum Statement<'a> {
         ident: Span<'a>,
         expr: Expression<'a>,
     },
+    Blank(Span<'a>),
 }
 
 impl Statement<'_> {
@@ -35,6 +36,7 @@ impl Statement<'_> {
             Statement::Comment(_) => unimplemented!(),
             Statement::ForLoop { ident: _, expr: _ } => unimplemented!(),
             Statement::Route(_) => unimplemented!(),
+            Statement::Blank(_) => unimplemented!(),
         }
     }
 }

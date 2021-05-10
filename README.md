@@ -77,6 +77,8 @@ astryx build
 
 ## Running the Examples
 
+You need to have checked out the code (or at least the examples directory) first.
+
 ``` bash
 astryx build --input examples/basic.astryx --stdout
 ```

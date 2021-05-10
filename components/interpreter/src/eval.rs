@@ -12,6 +12,7 @@ pub(crate) fn eval_statement(
     state: Rc<RefCell<State>>,
 ) -> AstryxResult<Node<Object>> {
     match statement.borrow().clone() {
+        Statement::Blank(_) => Ok(Node::new(Object::None)),
         Statement::Element(e) => {
             let mut attributes: HashMap<String, String> = HashMap::new();
 
