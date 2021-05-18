@@ -27,11 +27,11 @@ pub fn run(
 
     nodes
         .iter()
-        .map(|node| eval::eval_statement(node, Rc::clone(inner)))
+        .map(|node| eval::eval_statement(Rc::clone(inner), node))
         .collect::<AstryxResult<Vec<Node<Object>>>>()
 }
 
 /// evaluate a single expression with a given state
 pub fn eval(statement: Statement, state: Rc<RefCell<State>>) -> AstryxResult<Node<Object>> {
-    eval::eval_statement(&Node::new(statement), Rc::clone(&state))
+    eval::eval_statement(Rc::clone(&state), &Node::new(statement))
 }

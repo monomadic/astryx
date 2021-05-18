@@ -2,14 +2,13 @@ use crate::util::span_to_location;
 use error::{AstryxError, AstryxErrorKind, AstryxResult};
 use html::HTMLElement;
 use models::{object::Object, state::State};
-use parser::{Expression, Statement, StringToken};
+use parser::{Expression, Span, Statement, StringToken};
 use rctree::Node;
-use std::cell::RefCell;
-use std::{collections::HashMap, rc::Rc};
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 pub(crate) fn eval_statement(
-    statement: &Node<Statement>,
     state: Rc<RefCell<State>>,
+    statement: &Node<Statement>,
 ) -> AstryxResult<Node<Object>> {
     match statement.borrow().clone() {
         Statement::Blank(_) => Ok(Node::new(Object::None)),
@@ -18,6 +17,13 @@ pub(crate) fn eval_statement(
 
             // collect the attributes
             for (ident, expr) in e.attributes {
+                if let Expression::RelativePath(s) = expr {
+                    println!("file reference found: {:?}", s);
+                    // todo: how can we copy?
+                    // - use state?
+                    // - add some additional information to an Object::Element?
+                    // --> attach another child object (fileref)
+                }
                 attributes.insert(
                     ident.fragment().to_string(),
                     eval_expression(Rc::clone(&state), &expr, None)?.into(),
@@ -25,13 +31,6 @@ pub(crate) fn eval_statement(
             }
 
             let element = HTMLElement::new(e.ident.fragment(), attributes).expect("valid html");
-
-            // todo, these really should be html nodes, so that we can optimise them all later...
-            // examples:
-            // - removing empty or unneeded classes/styles/ids/empty elements (optional)
-            // - link rewriters
-            // - searching for specific elements
-            // - injection? (might need tree for this though...?)
 
             let mut node = Node::new(Object::HTMLElement(element));
 
@@ -43,21 +42,19 @@ pub(crate) fn eval_statement(
             }
 
             for child in statement.children() {
-                let obj = eval_statement(&child, Rc::clone(&state))?;
+                let obj = eval_statement(Rc::clone(&state), &child)?;
                 node.append(obj);
             }
 
             Ok(node)
         }
         Statement::Expression(expr) => {
+            // evaluate children first... (state??)
+            // fixme: might be a bug where state is not passed to children
             let return_objects: Vec<Node<Object>> = statement
                 .children()
-                .map(|child| eval_statement(&child, Rc::clone(&state)))
+                .map(|child| eval_statement(Rc::clone(&state), &child))
                 .collect::<AstryxResult<Vec<Node<Object>>>>()?;
-
-            // for statement in statement.children() {
-
-            // }
 
             let return_value = eval_expression(
                 Rc::clone(&state),
@@ -102,7 +99,7 @@ pub(crate) fn eval_statement(
                             .bind(&ident.to_string(), index.borrow().clone())?;
 
                         for child in statement.children() {
-                            node.append(eval_statement(&child, Rc::clone(&childstate))?);
+                            node.append(eval_statement(Rc::clone(&childstate), &child)?);
                         }
                     }
                     Ok(node)
@@ -136,7 +133,7 @@ pub(crate) fn eval_statement(
 
                     for child in statement.children() {
                         // println!("child");
-                        let obj = eval_statement(&child, Rc::clone(&state))?;
+                        let obj = eval_statement(Rc::clone(&state), &child)?;
                         // node.append child
                         node.append(obj);
                     }
@@ -149,7 +146,7 @@ pub(crate) fn eval_statement(
     }
 }
 
-pub fn eval_expression(
+fn eval_expression(
     state: Rc<RefCell<State>>,
     expr: &Expression,
     input: Option<Node<Object>>,
@@ -202,7 +199,7 @@ pub fn eval_expression(
                 .map(Node::new)
                 .collect(),
         )),
-        Expression::GlobPattern(s) => crate::util::glob_files(s, state.borrow().get("$PWD")),
+        Expression::GlobPattern(pattern) => glob(state, pattern),
         Expression::Index(l, r) => {
             let lexpr: Object = eval_expression(Rc::clone(&state), l, None)?;
 
@@ -316,16 +313,6 @@ pub fn eval_expression(
     }
 }
 
-// fn eval_reference<'a>(name: &Span<'a>, state: Rc<RefCell<State>>) -> InterpreterResult<Object> {
-//     state
-//         .borrow()
-//         .get(&name.fragment().to_string())
-//         .ok_or(InterpreterError {
-//             kind: InterpreterErrorKind::InvalidReference(name.to_string()),
-//             location: Some((*name).into()),
-//         })
-// }
-
 /// Convert string tokens to a fully interpolated string
 fn eval_interpolation(
     state: Rc<RefCell<State>>,
@@ -343,4 +330,8 @@ fn eval_interpolation(
         .collect::<Result<Vec<String>, AstryxError>>()?
         .into_iter()
         .collect())
+}
+
+fn glob(state: Rc<RefCell<State>>, pattern: &Span) -> AstryxResult<Object> {
+    crate::util::glob_files(pattern, state.borrow().get("$PWD"))
 }

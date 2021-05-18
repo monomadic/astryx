@@ -24,7 +24,7 @@ impl Site {
     /// todo: supply output path
     pub fn write(&self) {
         for (hash, document) in &self.documents {
-            let path = format!("./build{}/index.html", hash);
+            let path = format!("./build{}/index.html", hash); // todo: don't do this.
             let path = std::path::Path::new(&path);
             let prefix = path.parent().unwrap();
 
@@ -44,7 +44,7 @@ fn walk_nodes(node: Node<Object>, buffer: &mut HashMap<String, String>, mut path
         Object::Number(_) => unimplemented!(),
         Object::HTMLPage(p) => path = p,
         Object::HTMLElement(el) => write_to_buffer(buffer, &path, &el.open_tag()),
-        Object::BuiltinFunction(_) => unimplemented!(),
+        Object::BuiltinFunction(_) => unimplemented!(), // todo: why is this here?
         Object::Array(arr) => {
             for item in arr {
                 walk_nodes(item, buffer, path.clone());
