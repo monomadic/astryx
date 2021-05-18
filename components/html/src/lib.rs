@@ -1,5 +1,7 @@
 use error::HTMLError;
+use rctree::Node;
 use std::collections::HashMap;
+
 pub mod error;
 
 #[derive(Debug, Clone)]
@@ -16,6 +18,20 @@ pub struct HTMLElement {
     attributes: Attributes,
     // pub classes: Vec<String>,
     // pub styles: Vec<String>, // should be type safe
+}
+
+pub fn render_document(node: &Node<HTMLElement>) -> String {
+    let el = node.borrow().clone();
+    // todo: check for self terminated tags?
+    format!(
+        "{}{}{}",
+        el.open_tag(),
+        node.children()
+            .map(|n| render_document(&n))
+            .collect::<Vec<String>>()
+            .join(""),
+        el.close_tag()
+    )
 }
 
 impl HTMLElement {

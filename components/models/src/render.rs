@@ -2,15 +2,77 @@
 // so that all pages aren't rendered at once on the webserver frontend.
 
 use crate::Object;
+use html::{render_document, HTMLElement};
 use rctree::Node;
 use std::collections::HashMap;
+use std::fmt::Formatter;
 
 #[derive(Debug)]
 pub struct Site {
     pub documents: HashMap<String, String>,
+    pub pages: HashMap<String, Node<HTMLElement>>,
+}
+
+impl Into<Site> for Vec<Node<Object>> {
+    fn into(self) -> Site {
+        let mut site = Site::new();
+
+        for node in self.clone() {
+            wwalk_nodes(node, String::from("/"), &mut site);
+        }
+
+        // for (path, page) in site.pages.iter() {
+        //     println!(
+        //         "{}:\n{:?}",
+        //         &path,
+        //         &page
+        //             .children()
+        //             .map(|n| { format!("{:?}", n.borrow().clone()) })
+        //             .collect::<Vec<String>>()
+        //     )
+        // }
+
+        for (path, page) in site.pages.iter() {
+            println!("{}:\n{:?}", &path, render_document(page))
+        }
+
+        site
+    }
+}
+
+/// Organise each node into pages, styles, and scripts.
+fn wwalk_nodes(node: Node<Object>, mut path: String, site: &mut Site) {
+    // entry
+    match node.borrow().clone() {
+        Object::None => {}
+        Object::HTMLElement(el) => {
+            if let Some(page_node) = site.pages.get_mut(&path) {
+                page_node.append(Node::new(el));
+            } else {
+                site.pages.insert(path.clone(), Node::new(el));
+            }
+        }
+        Object::HTMLPage(p) => path = p,
+        // Object::String(s) => write_to_buffer(buffer, &path, &s),
+        _ => println!("node found {:?}", &node),
+    }
+
+    // children
+    for child in node.children() {
+        wwalk_nodes(child, path.clone(), site);
+    }
+
+    // Node::new(HTMLElement::new("hi", Default::default()).unwrap())
 }
 
 impl Site {
+    pub fn new() -> Self {
+        Self {
+            documents: HashMap::new(),
+            pages: HashMap::new(),
+        }
+    }
+
     pub fn render(nodes: Vec<Node<Object>>) -> Site {
         let mut documents = HashMap::new();
 
@@ -18,7 +80,10 @@ impl Site {
             walk_nodes(node, &mut documents, String::from("/"));
         }
 
-        Site { documents }
+        Site {
+            documents,
+            pages: HashMap::new(),
+        }
     }
 
     /// todo: supply output path

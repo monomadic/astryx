@@ -28,7 +28,7 @@ pub fn parse_from_string(input: &str, path: &str, state: Option<State>) -> Astry
     // parse each line into statements, interpret them, and render a Site collection
     parser::parse(lines)
         .and_then(|statements| interpreter::run(&statements, state))
-        .map(Site::render)
+        .map(|objects| objects.into())
 }
 
 // Compiles a source file into an output graph
