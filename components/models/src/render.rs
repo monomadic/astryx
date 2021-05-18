@@ -2,7 +2,7 @@
 // so that all pages aren't rendered at once on the webserver frontend.
 
 use crate::Object;
-use html::{render_document, HTMLElement};
+use html::{render_document, HTMLElement, HTMLNode};
 use rctree::Node;
 use std::collections::HashMap;
 use std::fmt::Formatter;
@@ -10,7 +10,7 @@ use std::fmt::Formatter;
 #[derive(Debug)]
 pub struct Site {
     pub documents: HashMap<String, String>,
-    pub pages: HashMap<String, Node<HTMLElement>>,
+    pub pages: HashMap<String, Node<HTMLNode>>,
 }
 
 impl Into<Site> for Vec<Node<Object>> {
@@ -47,13 +47,21 @@ fn wwalk_nodes(node: Node<Object>, mut path: String, site: &mut Site) {
         Object::None => {}
         Object::HTMLElement(el) => {
             if let Some(page_node) = site.pages.get_mut(&path) {
-                page_node.append(Node::new(el));
+                page_node.append(Node::new(HTMLNode::Element(el)));
             } else {
-                site.pages.insert(path.clone(), Node::new(el));
+                site.pages
+                    .insert(path.clone(), Node::new(HTMLNode::Element(el)));
             }
         }
         Object::HTMLPage(p) => path = p,
-        // Object::String(s) => write_to_buffer(buffer, &path, &s),
+        Object::String(s) => {
+            if let Some(page_node) = site.pages.get_mut(&path) {
+                page_node.append(Node::new(HTMLNode::Text(s)));
+            } else {
+                site.pages
+                    .insert(path.clone(), Node::new(HTMLNode::Text(s)));
+            }
+        }
         _ => println!("node found {:?}", &node),
     }
 

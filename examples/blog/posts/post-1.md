@@ -1,6 +1,6 @@
 ---
 title: "a title!"
-route: "/hello"
+route: ./hello/index.html
 description: "a description"
 ---
 body text
