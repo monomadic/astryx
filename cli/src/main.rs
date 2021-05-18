@@ -98,8 +98,8 @@ fn run() -> AstryxResult<String> {
                     println!("read only check. skipping file write...")
                 } else {
                     if stdout {
-                        for (route, document) in site.documents {
-                            println!("{}:\n{}", route, document);
+                        for (route, page) in site.render_pages() {
+                            println!("{}:\n{}", route, page);
                         }
                     } else {
                         site.write()

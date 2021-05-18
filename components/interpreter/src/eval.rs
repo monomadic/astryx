@@ -23,6 +23,7 @@ pub(crate) fn eval_statement(
                     // - use state?
                     // - add some additional information to an Object::Element?
                     // --> attach another child object (fileref)
+                    // - don't copy for solo elements, use internal function instead
                 }
                 attributes.insert(
                     ident.fragment().to_string(),

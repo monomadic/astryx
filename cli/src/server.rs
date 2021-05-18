@@ -77,7 +77,7 @@ pub(crate) fn start<'a, P: AsRef<Path>>(input: P, port: u32) -> AstryxResult<()>
                 // }
 
                 let body = match result {
-                    Ok(site) => match site.documents.get(request_path) {
+                    Ok(site) => match site.render_pages().get(request_path) {
                         Some(page) => page.clone(),
                         None => {
                             response.status(StatusCode::NOT_FOUND);

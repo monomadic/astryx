@@ -108,8 +108,6 @@ pub(crate) fn asset<'a>(
         .get("path")
         .ok_or(AstryxError::Generic("variable path not found".into()))?;
 
-    // Ok(input.unwrap().borrow().clone())
-
     Ok(Object::File(path.to_string()))
 }
 
@@ -150,5 +148,3 @@ pub(crate) fn read<'a>(
         _ => unimplemented!(), // return error
     }
 }
-
-// fn assert_argument_count(count: usize) -> EvalResult {}
