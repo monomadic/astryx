@@ -1,6 +1,3 @@
-%h1 { style: "color: red;" } Basic Page
-    %a { href: "#" } blah
-    %a { href: "#" } blah blah blah
-
-    %div
-        %h2 another header
+%h1 { style: "color: red;" } Header
+  %div { href: "#" } blah
+		%a { href: "#" } blah blah blah
