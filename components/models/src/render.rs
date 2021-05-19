@@ -20,9 +20,7 @@ impl Into<Site> for Vec<Node<Object>> {
         for node in self {
             let root_node = walk_nodes(
                 node,
-                Node::new(HTMLNode::Element(
-                    HTMLElement::new("root", Default::default()).unwrap(),
-                )),
+                Node::new(HTMLNode::Root),
                 String::from("/"),
                 &mut site,
             );

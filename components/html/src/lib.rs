@@ -6,6 +6,7 @@ pub mod error;
 
 #[derive(Debug, Clone)]
 pub enum HTMLNode {
+    Root,
     Element(HTMLElement),
     Text(String),
 }
@@ -24,6 +25,11 @@ pub fn render_document(node: &Node<HTMLNode>) -> String {
     // todo: check for self terminated tags?
 
     match node.borrow().clone() {
+        HTMLNode::Root => node
+            .children()
+            .map(|n| render_document(&n))
+            .collect::<Vec<String>>()
+            .join(""),
         HTMLNode::Element(el) => format!(
             "{}{}{}",
             el.open_tag(),
