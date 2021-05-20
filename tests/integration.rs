@@ -3,7 +3,7 @@ use astryx;
 #[cfg(test)]
 mod tests {
     #[test]
-    fn it_works() {
+    fn test_for_loop() {
         assert_eq!(2 + 2, 4);
     }
 }

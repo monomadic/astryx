@@ -1,4 +1,4 @@
 %h1 { style: "color: red;" } Header
-  %div { href: "#" } blah
-		%a { href: "#" } blah blah blah
+  %div { href: "#" } Main section
+		%a { href: "#" } a link
 	%h2 Second Header

@@ -15,7 +15,8 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 pub mod builtins;
-mod eval;
+mod expression;
+mod statement;
 mod util;
 
 /// run the interpreter on an AST tree and return a HTMLNode tree for each page
@@ -27,11 +28,11 @@ pub fn run(
 
     nodes
         .iter()
-        .map(|node| eval::eval_statement(Rc::clone(inner), node))
+        .map(|node| statement::eval_statement(Rc::clone(inner), node))
         .collect::<AstryxResult<Vec<Node<Object>>>>()
 }
 
 /// evaluate a single expression with a given state
 pub fn eval(statement: Statement, state: Rc<RefCell<State>>) -> AstryxResult<Node<Object>> {
-    eval::eval_statement(Rc::clone(&state), &Node::new(statement))
+    statement::eval_statement(Rc::clone(&state), &Node::new(statement))
 }
