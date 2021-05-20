@@ -17,6 +17,7 @@ impl Into<Site> for Vec<Node<Object>> {
     fn into(self) -> Site {
         let mut site = Site::new();
 
+        // fixme: if this is an array, all trees will be rendered as /
         for node in self {
             let default_path = String::from("/");
 
@@ -26,7 +27,7 @@ impl Into<Site> for Vec<Node<Object>> {
                 default_path.clone(),
                 &mut site,
             );
-            // println!("root node found: {:?}", render_document(&root_node));
+
             site.pages.insert(default_path, root_node);
         }
 
@@ -64,10 +65,10 @@ fn walk_nodes(
     mut node: Node<Object>,
     mut cursor: Node<HTMLNode>,
     mut path: String,
-    site: &mut Site,
+    mut site: &mut Site,
 ) -> Node<HTMLNode> {
     // println!("site: {:?}", site.pages);
-    // println!("node: {:?}", node);
+    println!("node: {:?}", node);
 
     // if let Some(collision) = site.pages.get(&path.clone()) {
     //     // collision found
@@ -77,7 +78,12 @@ fn walk_nodes(
     // println!("walking {:?} ", render_document(&cursor));
 
     match node.borrow().clone() {
-        Object::None => {}
+        Object::None => {
+            for child in node.children() {
+                // println!("child {:?}", child);
+                walk_nodes(child, cursor.clone(), path.clone(), site);
+            }
+        }
         Object::HTMLElement(el) => {
             let mut new_child = Node::new(HTMLNode::Element(el));
             // println!("appending child: {:?}", render_document(&new_child));
@@ -125,59 +131,72 @@ fn walk_nodes(
             }
         }
         // Object::Path(s) => println!("path: {:?}", s),
-        Object::HTMLPage(s) => println!("change path: {:?}", s),
-        _ => println!("other {:?}", node),
+        // Object::HTMLPage(s) => println!("change path: {:?}", s),
+        // _ => println!("other {:?}", node),
+        Object::HTMLPage(path) => {
+            for page_node in node.children() {
+                let root_node = walk_nodes(
+                    page_node.clone(),
+                    Node::new(HTMLNode::Root),
+                    path.clone(),
+                    &mut site,
+                );
+                // fixme: don't insert, collect the children together
+                site.pages.insert(path.clone(), root_node);
+            }
+        }
+        _ => todo!(),
     }
 
     // println!("returning {:?}", render_document(&cursor.clone()));
     // println!("document {:?}", render_document(&cursor.root().clone()));
     cursor
 }
-
-/// Organise each node into pages, styles, and scripts.
-fn wwalk_nodes(
-    mut node: Node<Object>,
-    mut cursor: Node<HTMLNode>,
-    mut path: String,
-    site: &mut Site,
-) {
-    println!("object: Object::{:?}", node);
-    println!("cursor: HTMLNode::{:?}", cursor);
-    println!("render_document {:?}", render_document(&cursor));
-
-    match node.borrow().clone() {
-        Object::None => {}
-        Object::HTMLElement(el) => {
-            let mut new_node = Node::new(HTMLNode::Element(el));
-            cursor.append(new_node.make_deep_copy());
-            // cursor = new_node.make_deep_copy();
-            site.pages.insert(path.clone(), new_node.make_deep_copy());
-            println!(" ** HTMLNode::{:?}", &cursor);
-
-            for child in node.children() {
-                walk_nodes(child, new_node.make_deep_copy(), path.clone(), site);
-            }
-        }
-        Object::HTMLPage(p) => path = p,
-        Object::String(s) => {
-            let mut new_node = Node::new(HTMLNode::Text(s));
-            cursor.append(new_node.make_deep_copy());
-            // cursor = new_node.make_deep_copy();
-            site.pages.insert(path.clone(), new_node.make_deep_copy());
-            println!(" *3 HTMLNode::{:?}", &cursor);
-
-            for child in node.children() {
-                walk_nodes(child, new_node.make_deep_copy(), path.clone(), site);
-            }
-        }
-        _ => println!("node found {:?}", &node),
-    }
-    println!(
-        "render_document post {} {:?}",
-        path,
-        render_document(&cursor)
-    );
-}
+//
+// /// Organise each node into pages, styles, and scripts.
+// fn wwalk_nodes(
+//     mut node: Node<Object>,
+//     mut cursor: Node<HTMLNode>,
+//     mut path: String,
+//     site: &mut Site,
+// ) {
+//     println!("object: Object::{:?}", node);
+//     println!("cursor: HTMLNode::{:?}", cursor);
+//     println!("render_document {:?}", render_document(&cursor));
+//
+//     match node.borrow().clone() {
+//         Object::None => {}
+//         Object::HTMLElement(el) => {
+//             let mut new_node = Node::new(HTMLNode::Element(el));
+//             cursor.append(new_node.make_deep_copy());
+//             // cursor = new_node.make_deep_copy();
+//             site.pages.insert(path.clone(), new_node.make_deep_copy());
+//             println!(" ** HTMLNode::{:?}", &cursor);
+//
+//             for child in node.children() {
+//                 walk_nodes(child, new_node.make_deep_copy(), path.clone(), site);
+//             }
+//         }
+//         Object::HTMLPage(p) => path = p,
+//         Object::String(s) => {
+//             let mut new_node = Node::new(HTMLNode::Text(s));
+//             cursor.append(new_node.make_deep_copy());
+//             // cursor = new_node.make_deep_copy();
+//             site.pages.insert(path.clone(), new_node.make_deep_copy());
+//             println!(" *3 HTMLNode::{:?}", &cursor);
+//
+//             for child in node.children() {
+//                 walk_nodes(child, new_node.make_deep_copy(), path.clone(), site);
+//             }
+//         }
+//         _ => println!("node found {:?}", &node),
+//     }
+//     println!(
+//         "render_document post {} {:?}",
+//         path,
+//         render_document(&cursor)
+//     );
+// }
 
 impl Site {
     pub fn new() -> Self {
