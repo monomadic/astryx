@@ -1,4 +1,4 @@
-use astryx::{AstryxError, AstryxResult};
+use astryx::AstryxResult;
 use simple_server::{Server, StatusCode};
 use std::path::Path;
 

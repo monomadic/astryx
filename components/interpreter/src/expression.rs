@@ -1,12 +1,10 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use crate::util::span_to_location;
 use error::{AstryxError, AstryxErrorKind, AstryxResult};
 use models::{Node, Object, State};
 use parser::{Expression, Span};
-
-use crate::statement;
-use crate::util::span_to_location;
 
 pub fn eval_expression(
     state: Rc<RefCell<State>>,

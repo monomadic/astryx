@@ -1,14 +1,11 @@
-use std::{cell::RefCell, collections::HashMap, rc::Rc};
-
-use rctree::Node;
-
+use crate::expression;
+use crate::util::span_to_location;
 use error::{AstryxError, AstryxErrorKind, AstryxResult};
 use html::HTMLElement;
 use models::{object::Object, state::State};
 use parser::{Expression, Span, Statement, StringToken};
-
-use crate::expression;
-use crate::util::span_to_location;
+use rctree::Node;
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 pub(crate) fn eval_statement(
     state: Rc<RefCell<State>>,
@@ -17,18 +14,30 @@ pub(crate) fn eval_statement(
     match statement.borrow().clone() {
         Statement::Blank(_) => Ok(Node::new(Object::None)),
         Statement::Element(e) => {
+            // let attributes = e
+            //     .attributes
+            //     .iter()
+            //     .map(|(ident, expr)| {
+            //         // todo: file references
+            //         (
+            //             ident.fragment().to_string(),
+            //             expression::eval_expression(Rc::clone(&state), &expr, None)?.into(),
+            //         )
+            //     })
+            //     .collect();
+
             let mut attributes: HashMap<String, String> = HashMap::new();
 
             // collect the attributes
             for (ident, expr) in e.attributes {
-                if let Expression::RelativePath(s) = expr {
-                    // println!("file reference found: {:?}", s);
-                    // todo: how can we copy?
-                    // - use state?
-                    // - add some additional information to an Object::Element?
-                    // --> attach another child object (fileref)
-                    // - don't copy for solo elements, use internal function instead
-                }
+                // if let Expression::RelativePath(s) = expr {
+                //     // println!("file reference found: {:?}", s);
+                //     // todo: how can we copy?
+                //     // - use state?
+                //     // - add some additional information to an Object::Element?
+                //     // --> attach another child object (fileref)
+                //     // - don't copy for solo elements, use internal function instead
+                // }
                 attributes.insert(
                     ident.fragment().to_string(),
                     expression::eval_expression(Rc::clone(&state), &expr, None)?.into(),

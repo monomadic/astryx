@@ -30,6 +30,28 @@ impl AstryxError {
     }
 }
 
+#[derive(Debug, PartialEq)]
+pub enum AstryxErrorKind {
+    SyntaxError,
+    FunctionArgumentError,
+    MissingRequiredArgument(String),
+    Unexpected,
+    UnexpectedToken(String),
+    ExpectedValue,
+    UnknownValue(String),
+    Unimplemented(String),
+    FilePatternError(String),
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct Location {
+    pub line: u32,
+    pub column: usize,
+    pub length: usize,
+    pub filename: String,
+    pub context: String,
+}
+
 // #[derive(Debug)]
 // pub enum AstryxError {
 //     /// An error with an associated file context
@@ -63,27 +85,6 @@ impl AstryxError {
 //         }
 //     }
 // }
-
-#[derive(Debug, PartialEq)]
-pub enum AstryxErrorKind {
-    SyntaxError,
-    FunctionArgumentError,
-    MissingRequiredArgument(String),
-    Unexpected,
-    UnexpectedToken(String),
-    ExpectedValue,
-    UnknownValue(String),
-    Unimplemented(String),
-}
-
-#[derive(Debug, PartialEq, Clone)]
-pub struct Location {
-    pub line: u32,
-    pub column: usize,
-    pub length: usize,
-    pub filename: String,
-    pub context: String,
-}
 
 // impl<'a> From<Span<'a>> for Location {
 //     fn from(span: Span) -> Self {

@@ -2,14 +2,12 @@
 // so that all pages aren't rendered at once on the webserver frontend.
 
 use crate::Object;
-use html::{render_document, HTMLElement, HTMLNode};
+use html::{render_document, HTMLNode};
 use rctree::Node;
 use std::collections::HashMap;
-use std::fmt::Formatter;
 
 #[derive(Debug)]
 pub struct Site {
-    // pub documents: HashMap<String, String>,
     pub pages: HashMap<String, Node<HTMLNode>>,
 }
 
@@ -31,44 +29,18 @@ impl Into<Site> for Vec<Node<Object>> {
             site.pages.insert(default_path, root_node);
         }
 
-        // for (path, node) in site.pages.iter() {
-        //     println!("\n{}: {}", &path, render_document(&node))
-        // }
-
         site
     }
 }
 
-fn append_child_node(site: &mut Site, path: String, child: HTMLNode) {
-    let mut new_node = Node::new(child);
-    if let Some(mut prev) = site.pages.insert(path.into(), new_node.make_copy()) {
-        prev.append(new_node);
-    }
-
-    // let mut new_node = Node::new(child);
-    //
-    // // println!("new_node: {:?}", (&path, &new_node));
-    //
-    // // if this is not the first element for this page,
-    // if let Some(page_node) = site.pages.get_mut(&path) {
-    //     println!("page_node: {:?}", page_node);
-    //     page_node.append(new_node.make_copy());
-    //     println!("render_document: {:?}", render_document(page_node));
-    // }
-    //
-    // // println!("page_node: {:?}", new_node);
-    //
-    // site.pages.insert(path.into(), new_node);
-}
-
 fn walk_nodes(
-    mut node: Node<Object>,
+    node: Node<Object>,
     mut cursor: Node<HTMLNode>,
-    mut path: String,
+    path: String,
     mut site: &mut Site,
 ) -> Node<HTMLNode> {
     // println!("site: {:?}", site.pages);
-    println!("node: {:?}", node);
+    // println!("node: {:?}", node);
 
     // if let Some(collision) = site.pages.get(&path.clone()) {
     //     // collision found
@@ -85,7 +57,7 @@ fn walk_nodes(
             }
         }
         Object::HTMLElement(el) => {
-            let mut new_child = Node::new(HTMLNode::Element(el));
+            let new_child = Node::new(HTMLNode::Element(el));
             // println!("appending child: {:?}", render_document(&new_child));
 
             cursor.append(new_child.clone());
@@ -113,7 +85,7 @@ fn walk_nodes(
             // println!("render_document: {:?}", render_document(&cursor.root()));
         }
         Object::String(s) => {
-            let mut new_child = Node::new(HTMLNode::Text(s));
+            let new_child = Node::new(HTMLNode::Text(s));
             // println!("appending text child: {:?}", render_document(&new_child));
 
             cursor.append(new_child.clone());
@@ -201,20 +173,18 @@ fn walk_nodes(
 impl Site {
     pub fn new() -> Self {
         Self {
-            // documents: HashMap::new(),
             pages: HashMap::new(),
         }
     }
 
     pub fn render_pages(&self) -> HashMap<String, String> {
-        // println!("site {:?}", self);
         self.pages
             .iter()
             .map(|(path, node)| (path.clone(), render_document(node)))
             .collect()
     }
 
-    /// todo: supply output path
+    /// todo: supply output directory
     pub fn write(&self) {
         for (hash, document) in &self.pages {
             let path = format!("./build{}/index.html", hash); // todo: don't do this.
