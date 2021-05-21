@@ -4,7 +4,6 @@
   %body
     %h1 My Blog
     for post in ./posts/*.md
-      %h2 Page
       let meta = post.frontmatter()
       %ul
         %li

@@ -64,7 +64,7 @@ enum Command {
     /// Create a new project
     Init {
         /// Init path
-        #[structopt(parse(from_os_str), short = "p", long = "path", default_value = ".")]
+        #[structopt(parse(from_os_str), default_value = ".")]
         path: PathBuf,
     },
 }

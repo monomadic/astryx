@@ -3,9 +3,17 @@ use std::{fs, path::Path};
 
 /// set up a new project in the current directory
 pub fn init_project<'a, P: AsRef<Path>>(output: P) -> AstryxResult<()> {
-    // copy site.astryx file
-    let index = include_str!("../templates/site.astryx");
-    let path = Path::new("site.astryx");
+    let output_path = output.as_ref();
 
-    fs::write(path, index).map_err(AstryxError::from)
+    // create output dir if it doesn't exist
+    if !output_path.exists() {
+        std::fs::create_dir(output_path)?;
+    }
+
+    // copy site.astryx file
+    fs::write(
+        output_path.join("site.astryx"),
+        include_str!("../templates/site.astryx"),
+    )
+    .map_err(AstryxError::from)
 }
