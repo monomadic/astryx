@@ -1,6 +1,6 @@
 ---
 title: "a title!"
-route: ./hello
+route: /hello
 description: "a description"
 ---
 body text

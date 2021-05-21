@@ -77,13 +77,16 @@ pub(crate) fn start<'a, P: AsRef<Path>>(input: P, port: u32) -> AstryxResult<()>
                 // }
 
                 let body = match result {
-                    Ok(site) => match site.render_pages().get(request_path) {
-                        Some(page) => page.clone(),
-                        None => {
-                            response.status(StatusCode::NOT_FOUND);
-                            format!("<h1>404</h1><p>Path not found: {}<p>", request_path)
+                    Ok(site) => {
+                        // println!("site.pages {:?}", site.render_pages());
+                        match site.render_pages().get(request_path) {
+                            Some(page) => page.clone(),
+                            None => {
+                                response.status(StatusCode::NOT_FOUND);
+                                format!("<h1>404</h1><p>Path not found: {}<p>", request_path)
+                            }
                         }
-                    },
+                    }
                     Err(e) => {
                         response.status(StatusCode::INTERNAL_SERVER_ERROR);
                         // let error_text = display_error(e);

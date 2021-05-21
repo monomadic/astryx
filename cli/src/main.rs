@@ -99,7 +99,7 @@ fn run() -> AstryxResult<String> {
                 } else {
                     if stdout {
                         for (route, page) in site.render_pages() {
-                            println!("{}:\n{}", route, page);
+                            println!("\n{}:\n{}", route, page);
                         }
                     } else {
                         site.write(output)
