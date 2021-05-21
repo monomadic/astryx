@@ -121,9 +121,7 @@ pub(crate) fn eval_statement(
                     let mut node = Node::new(Object::HTMLPage(path.clone()));
 
                     for child in statement.children() {
-                        // println!("child");
                         let obj = eval_statement(Rc::clone(&state), &child)?;
-                        // node.append child
                         node.append(obj);
                     }
 
@@ -174,7 +172,6 @@ fn for_loop(
                     .bind(&ident.to_string(), index.borrow().clone())?;
 
                 for child in statement.children() {
-                    // println!("child {:?}", eval_statement(Rc::clone(&childstate), &child));
                     node.append(eval_statement(Rc::clone(&childstate), &child)?);
                 }
             }
