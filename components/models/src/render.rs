@@ -5,6 +5,7 @@ use crate::Object;
 use html::{render_document, HTMLNode};
 use rctree::Node;
 use std::collections::HashMap;
+use std::path::Path;
 
 #[derive(Debug)]
 pub struct Site {
@@ -185,7 +186,7 @@ impl Site {
     }
 
     /// todo: supply output directory
-    pub fn write(&self) {
+    pub fn write<P: AsRef<Path>>(&self, path: P) {
         for (hash, document) in &self.pages {
             let path = format!("./build{}/index.html", hash); // todo: don't do this.
             let path = std::path::Path::new(&path);

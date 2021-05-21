@@ -1,15 +1,13 @@
-// public api interface for astryx
-
+/// public api interface for astryx
 use std::cell::RefCell;
 use std::path::Path;
 use std::rc::Rc;
 
-// exports
+// re-exports
 pub use error::{AstryxError, AstryxResult};
-use models::Object;
-pub use models::{Site, State};
+pub use models::{Object, Site, State};
 
-// Compiles program text into an output graph
+/// Compiles program text into an output graph
 pub fn parse_from_string(input: &str, path: &str, state: Option<State>) -> AstryxResult<Site> {
     // if no initial state is given to us, pass new empty state.
     let mut state = state.unwrap_or(State::new());
@@ -31,14 +29,14 @@ pub fn parse_from_string(input: &str, path: &str, state: Option<State>) -> Astry
         .map(|objects| objects.into())
 }
 
-// Compiles a source file into an output graph
+/// Compiles a source file into an output graph
 pub fn parse_from_file<P: AsRef<Path>>(input: P, state: Option<State>) -> AstryxResult<Site> {
     // if no initial state is given to us, pass new empty state.
     let mut state = state.unwrap_or(State::new());
 
     if let Some(pwd) = input.as_ref().parent() {
         // create the working directory as an environment variable
-        state.bind("$PWD", Object::String(pwd.to_str().unwrap().into()));
+        state.bind("$PWD", Object::String(pwd.to_str().unwrap().into()))?;
     }
 
     let path: String = input.as_ref().to_str().unwrap().into();

@@ -102,7 +102,7 @@ fn run() -> AstryxResult<String> {
                             println!("{}:\n{}", route, page);
                         }
                     } else {
-                        site.write()
+                        site.write(output)
                     }
                 }
             })
