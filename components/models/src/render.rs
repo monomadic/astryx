@@ -81,7 +81,7 @@ fn walk_nodes(
                 site.pages.insert(path.clone(), root_node);
             }
         }
-        _ => todo!(),
+        _ => todo!("object not supported: {:?}", &node),
     }
 
     // println!("returning {:?}", render_document(&cursor.clone()));

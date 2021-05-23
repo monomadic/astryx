@@ -14,7 +14,6 @@ pub fn eval_expression(
     match expr {
         Expression::FunctionCall(ref f) => {
             let mut inner = State::new();
-            // inner.program = Rc::clone(&state.borrow().program);
 
             // add function arguments into scope
             for (k, expr) in &f.arguments {
@@ -22,7 +21,10 @@ pub fn eval_expression(
                     &k.to_string(),
                     // evaluate the expression part of the argument
                     eval_expression(Rc::clone(&state), expr, None).map_err(|_| {
-                        AstryxError::LocatedError(span_to_location(*k), AstryxErrorKind::Unexpected)
+                        AstryxError::LocatedError(
+                            span_to_location(*k),
+                            AstryxErrorKind::UnknownValue(k.fragment().to_string()),
+                        )
                     })?,
                 )?;
             }
@@ -43,7 +45,7 @@ pub fn eval_expression(
                 .get(&r.to_string())
                 .ok_or(AstryxError::LocatedError(
                     span_to_location(*r),
-                    AstryxErrorKind::Unexpected,
+                    AstryxErrorKind::UnknownValue(r.fragment().to_string()),
                 )),
         },
         Expression::Literal(l) => match l {

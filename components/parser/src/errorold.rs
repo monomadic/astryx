@@ -10,9 +10,8 @@ pub struct ParserError<I> {
 
 impl<'a> ParseError<Span<'a>> for ParserError<Span<'a>> {
     fn from_error_kind(input: Span<'a>, _kind: ErrorKind) -> Self {
-        // panic!("incoming: {:?}", input);
         ParserError {
-            kind: ParserErrorKind::Unexpected,
+            kind: ParserErrorKind::InternalParserError(_kind.description().into()),
             pos: input,
             context: input,
         }
@@ -25,6 +24,7 @@ impl<'a> ParseError<Span<'a>> for ParserError<Span<'a>> {
 
 #[derive(Debug, PartialEq)]
 pub enum ParserErrorKind<I> {
+    InternalParserError(String),
     SyntaxError,
     FunctionArgumentError,
     Unexpected,

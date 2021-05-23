@@ -10,9 +10,7 @@ use nom::{
     IResult,
 };
 
-fn function_call_argument<'a>(
-    i: Span<'a>,
-) -> IResult<Span<'a>, (Span<'a>, Expression<'a>), ParserError<Span<'a>>> {
+fn function_call_argument(i: Span) -> IResult<Span, (Span, Expression), ParserError<Span>> {
     tuple((
         alpha1,
         terminated(multispace0, char(':')),
@@ -29,9 +27,7 @@ fn function_call_argument<'a>(
     })
 }
 
-fn function_call_arguments<'a>(
-    i: Span<'a>,
-) -> IResult<Span<'a>, Vec<(Span<'a>, Expression<'a>)>, ParserError<Span<'a>>> {
+fn function_call_arguments(i: Span) -> IResult<Span, Vec<(Span, Expression)>, ParserError<Span>> {
     // many0(function_call_argument)(i)
 
     separated_list0(tuple((space0, char(','), space0)), function_call_argument)(i)
