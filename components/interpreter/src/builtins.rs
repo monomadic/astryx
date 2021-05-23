@@ -20,7 +20,28 @@ pub fn import(state: Rc<RefCell<State>>) -> Rc<RefCell<State>> {
         .borrow_mut()
         .bind("asset", Object::BuiltinFunction(asset));
 
+    let _ = state
+        .borrow_mut()
+        .bind("copy", Object::BuiltinFunction(copy_file));
+
     state
+}
+
+pub(crate) fn copy_file(
+    state: Rc<RefCell<State>>,
+    input: Option<Node<Object>>,
+) -> AstryxResult<Object> {
+    let path = match input {
+        Some(input) => input.borrow().clone(),
+        None => state
+            .borrow()
+            .get("path")
+            .ok_or(AstryxError::Generic("variable path not found".into()))?, // todo: better error class
+    };
+
+    // fixme: path should be relative to $PWD variable
+
+    Ok(Object::File(path.to_string()))
 }
 
 pub(crate) fn log(state: Rc<RefCell<State>>, input: Option<Node<Object>>) -> AstryxResult<Object> {

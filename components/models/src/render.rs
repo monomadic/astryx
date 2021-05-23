@@ -11,6 +11,7 @@ use std::path::{Path, PathBuf};
 #[derive(Debug)]
 pub struct Site {
     pub pages: HashMap<String, Node<HTMLNode>>,
+    pub files: HashMap<String, Vec<u8>>,
 }
 
 impl Into<Site> for Vec<Node<Object>> {
@@ -81,6 +82,13 @@ fn walk_nodes(
                 site.pages.insert(path.clone(), root_node);
             }
         }
+        Object::File(path) => {
+            // fixme: return error
+            let file =
+                std::fs::read(path.clone()).expect(&format!("file to be readable: {}", path));
+
+            site.files.insert(path.clone(), file);
+        }
         _ => todo!("object not supported: {:?}", &node),
     }
 
@@ -93,6 +101,7 @@ impl Site {
     pub fn new() -> Self {
         Self {
             pages: HashMap::new(),
+            files: HashMap::new(),
         }
     }
 
