@@ -2,10 +2,11 @@
 // so that all pages aren't rendered at once on the webserver frontend.
 
 use crate::Object;
+use error::AstryxResult;
 use html::{render_document, HTMLNode};
 use rctree::Node;
 use std::collections::HashMap;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 #[derive(Debug)]
 pub struct Site {
@@ -103,17 +104,21 @@ impl Site {
     }
 
     /// todo: supply output directory
-    pub fn write<P: AsRef<Path>>(&self, output_dir: P) {
+    pub fn write<P: AsRef<Path>>(&self, output_dir: P) -> AstryxResult<()> {
         for (route, document) in &self.pages {
-            let output_dir = output_dir.as_ref().join(route);
+            let output_dir = PathBuf::from("./")
+                .join(output_dir.as_ref())
+                .join(format!("./{}", route));
             let file = output_dir.join("index.html");
 
             println!("writing {}", file.to_str().unwrap());
 
             // todo: don't panic, return error
-            std::fs::create_dir_all(output_dir).unwrap();
-            std::fs::write(file, render_document(document)).unwrap();
+            std::fs::create_dir_all(output_dir)?;
+            std::fs::write(file, render_document(document))?;
         }
+
+        Ok(())
     }
 }
 //

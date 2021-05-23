@@ -10,8 +10,7 @@ pub use models::{Object, Site, State};
 /// Compiles program text into an output graph
 pub fn parse_from_string(input: &str, path: &str, state: Option<State>) -> AstryxResult<Site> {
     // if no initial state is given to us, pass new empty state.
-    let mut state = state.unwrap_or(State::new());
-    let state = Rc::new(RefCell::new(state));
+    let state = Rc::new(RefCell::new(state.unwrap_or(State::new())));
 
     // try to read commands based on whitespace indentation
     let (rem, lines) =
