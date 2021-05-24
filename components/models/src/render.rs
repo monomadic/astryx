@@ -112,6 +112,20 @@ impl Site {
             .collect()
     }
 
+    pub fn render_as_bytes(&self) -> HashMap<String, Vec<u8>> {
+        let mut blobs = HashMap::new();
+
+        for (path, node) in &self.pages {
+            blobs.insert(path.clone(), render_document(&node).as_bytes().to_vec());
+        }
+
+        for (path, file) in &self.files {
+            blobs.insert(format!("/{}", path), file.clone());
+        }
+
+        blobs
+    }
+
     /// write all files to disk
     pub fn write<P: AsRef<Path>>(&self, output_dir: P) -> AstryxResult<()> {
         for (route, document) in &self.pages {

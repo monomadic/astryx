@@ -79,23 +79,39 @@ pub(crate) fn start<'a, P: AsRef<Path>>(input: P, port: u32) -> AstryxResult<()>
                 let body = match result {
                     Ok(site) => {
                         // println!("site.pages {:?}", site.render_pages());
-                        match site.render_pages().get(request_path) {
+                        // match site.render_pages().get(request_path) {
+                        //     Some(page) => page.clone(),
+                        //     None => {
+                        //         response.status(StatusCode::NOT_FOUND);
+                        //         format!("<h1>404</h1><p>Path not found: {}<p>", request_path)
+                        //     }
+                        // }
+
+                        // println!("{}", request_path.split_at(1).1);
+                        // split_at removes the /
+                        match site.render_as_bytes().get(request_path) {
                             Some(page) => page.clone(),
                             None => {
                                 response.status(StatusCode::NOT_FOUND);
-                                format!("<h1>404</h1><p>Path not found: {}<p>", request_path)
+                                format!(
+                                    "<h1>404</h1><p>Path not found: {}<p><p>pages: {:?}",
+                                    request_path,
+                                    site.render_as_bytes().keys() // fixme: redundant, make better 404 page
+                                )
+                                .as_bytes()
+                                .to_vec()
                             }
                         }
                     }
                     Err(e) => {
                         response.status(StatusCode::INTERNAL_SERVER_ERROR);
                         // let error_text = display_error(e);
-                        format!("{:?}", e)
+                        format!("{:?}", e).as_bytes().to_vec()
                         // html_error_page(&error_text)
                     }
                 };
 
-                Ok(response.body(body.as_bytes().to_vec())?)
+                Ok(response.body(body)?)
             }
         }
     });
