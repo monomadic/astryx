@@ -31,7 +31,7 @@ pub(crate) fn copy_file(
     state: Rc<RefCell<State>>,
     input: Option<Node<Object>>,
 ) -> AstryxResult<Object> {
-    let path = match input {
+    let path = match input.clone() {
         Some(input) => input.borrow().clone(),
         None => state
             .borrow()
@@ -40,6 +40,8 @@ pub(crate) fn copy_file(
     };
 
     // fixme: path should be relative to $PWD variable
+
+    // panic!("file {:?}", input);
 
     Ok(Object::File(path.to_string()))
 }

@@ -83,7 +83,7 @@ fn walk_nodes(
             }
         }
         Object::File(path) => {
-            // fixme: return error
+            // fixme: return AstryxError, don't panic
             let file =
                 std::fs::read(path.clone()).expect(&format!("file to be readable: {}", path));
 

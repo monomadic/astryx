@@ -65,16 +65,20 @@ pub(crate) fn eval_statement(
         Statement::Expression(expr) => {
             // evaluate children first... (state??)
             // fixme: might be a bug where state is not passed to children
-            let return_objects: Vec<Node<Object>> = statement
-                .children()
-                .map(|child| eval_statement(Rc::clone(&state), &child))
-                .collect::<AstryxResult<Vec<Node<Object>>>>()?;
 
-            let return_value = expression::eval_expression(
-                Rc::clone(&state),
-                &expr,
-                Some(Node::new(Object::Array(return_objects))),
-            )?;
+            let input = if statement.has_children() {
+                Some(Node::new(Object::Array(
+                    statement
+                        .children()
+                        .map(|child| eval_statement(Rc::clone(&state), &child))
+                        .collect::<AstryxResult<Vec<Node<Object>>>>()?,
+                )))
+            } else {
+                None
+            };
+
+            // fixme: this sucks. children are passed as input? that's dumb.
+            let return_value = expression::eval_expression(Rc::clone(&state), &expr, input)?;
 
             // state
             //     .borrow()

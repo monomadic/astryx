@@ -40,9 +40,7 @@ fn function_call_arguments(i: Span) -> IResult<Span, Vec<(Span, Expression)>, Pa
     // })
 }
 
-pub(crate) fn function_call<'a>(
-    i: Span<'a>,
-) -> IResult<Span<'a>, FunctionCall<'a>, ParserError<Span<'a>>> {
+pub(crate) fn function_call(i: Span) -> IResult<Span, FunctionCall, ParserError<Span>> {
     tuple((alpha1, char('('), function_call_arguments, cut(char(')'))))(i).map(
         |(r, (ident, _, arguments, _))| {
             (
