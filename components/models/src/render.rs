@@ -112,7 +112,7 @@ impl Site {
             .collect()
     }
 
-    /// todo: supply output directory
+    /// write all files to disk
     pub fn write<P: AsRef<Path>>(&self, output_dir: P) -> AstryxResult<()> {
         for (route, document) in &self.pages {
             let output_dir = PathBuf::from("./")
@@ -122,11 +122,18 @@ impl Site {
 
             println!("writing {}", file.to_str().unwrap());
 
-            // todo: don't panic, return error
             std::fs::create_dir_all(output_dir)?;
             std::fs::write(file, render_document(document))?;
         }
+        for (route, document) in &self.files {
+            let file = PathBuf::from("./")
+                .join(output_dir.as_ref())
+                .join(format!("./{}", route));
 
+            println!("writing {}", file.to_str().unwrap());
+
+            std::fs::write(file, document)?;
+        }
         Ok(())
     }
 }
