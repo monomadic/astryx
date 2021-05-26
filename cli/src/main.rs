@@ -1,6 +1,7 @@
 /// cli interface tool  for the astryx compiler
 use astryx::AstryxResult;
 use std::path::PathBuf;
+use std::time::Instant;
 use structopt::StructOpt;
 
 mod init;
@@ -91,6 +92,7 @@ fn run() -> AstryxResult<String> {
             check,
             stdout,
         } => {
+            let t0 = Instant::now();
             println!("parsing {}\n", input.display());
 
             astryx::parse_from_file(input, None).and_then(|site| {
@@ -107,7 +109,11 @@ fn run() -> AstryxResult<String> {
                         site.write(output)
                     }
                 }
-            })
+            });
+
+            println!("\nBuild complete in {:.4}s.", t0.elapsed().as_secs_f64());
+
+            Ok(())
         }
         Command::Init { path } => init::init_project(path),
         // Command::Repl => {
@@ -115,5 +121,5 @@ fn run() -> AstryxResult<String> {
         //     Ok(())
         // }
     }
-    .map(|_| "\ndone.".to_string())
+    .map(|_| "done.".to_string())
 }

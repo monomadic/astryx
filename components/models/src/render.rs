@@ -10,7 +10,10 @@ use std::path::{Path, PathBuf};
 
 #[derive(Debug)]
 pub struct Site {
+    /// html page trees
     pub pages: HashMap<String, Node<HTMLNode>>,
+
+    /// static files
     pub files: HashMap<String, Vec<u8>>,
 }
 
