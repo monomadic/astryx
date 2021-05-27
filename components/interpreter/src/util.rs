@@ -1,9 +1,8 @@
-use error::{AstryxError, AstryxErrorKind, AstryxResult, Location};
+use error::{AstryxError, AstryxResult, Location};
 use glob::Paths;
 use models::object::Object;
 use parser::Span;
 use rctree::Node;
-use std::path::{Path, PathBuf};
 
 pub(crate) fn span_to_location(span: Span) -> Location {
     Location {
