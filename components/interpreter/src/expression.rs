@@ -5,6 +5,7 @@ use crate::util::span_to_location;
 use error::{AstryxError, AstryxErrorKind, AstryxResult};
 use models::{Node, Object, State};
 use parser::{Expression, Span};
+use std::path::PathBuf;
 
 pub fn eval_expression(
     state: Rc<RefCell<State>>,
@@ -52,7 +53,20 @@ pub fn eval_expression(
             parser::Literal::String(s) => Ok(Object::String(s.to_string())),
             parser::Literal::Number(_s, f) => Ok(Object::Number(f.clone())),
         },
-        Expression::RelativePath(s) => Ok(Object::Path(s.to_string())),
+        Expression::RelativePath(s) => {
+            let context_file = PathBuf::from(s.extra.to_string());
+            let rebased_file = context_file
+                .parent()
+                .expect("relative path with no context file. this should not happen.")
+                .join(s.to_string());
+
+            Ok(Object::Path(
+                rebased_file
+                    .to_str()
+                    .expect("os string to convert")
+                    .to_string(),
+            ))
+        }
         Expression::Array(arr) => Ok(Object::Array(
             arr.iter()
                 .map(|el| eval_expression(Rc::clone(&state), el, None))
@@ -61,7 +75,7 @@ pub fn eval_expression(
                 .map(Node::new)
                 .collect(),
         )),
-        Expression::GlobPattern(pattern) => glob(state, pattern),
+        Expression::GlobPattern(pattern) => glob(pattern),
         Expression::Index(l, r) => {
             let lexpr: Object = eval_expression(Rc::clone(&state), l, None)?;
 
@@ -175,6 +189,17 @@ pub fn eval_expression(
     }
 }
 
-fn glob(state: Rc<RefCell<State>>, pattern: &Span) -> AstryxResult<Object> {
-    crate::util::glob_files(pattern, state.borrow().get("$PWD"))
+fn glob(span: &Span) -> AstryxResult<Object> {
+    let context_file = PathBuf::from(span.extra.to_string());
+    let rebased_file = context_file
+        .parent()
+        .expect("relative path with no context file. this should not happen.")
+        .join(span.to_string());
+    let pattern = format!("./{}", rebased_file.to_str().unwrap()); // todo: security checks
+    crate::util::glob_files(pattern).map_err(|e| {
+        AstryxError::LocatedError(
+            span_to_location(*span),
+            AstryxErrorKind::FilePatternError(e.to_string()),
+        )
+    })
 }

@@ -24,7 +24,36 @@ pub fn import(state: Rc<RefCell<State>>) -> Rc<RefCell<State>> {
         .borrow_mut()
         .bind("copy", Object::BuiltinFunction(copy_file));
 
+    let _ = state
+        .borrow_mut()
+        .bind("require", Object::BuiltinFunction(require));
+
     state
+}
+
+/// an is_empty() that fails on empty... probably rename this?
+pub(crate) fn require(
+    state: Rc<RefCell<State>>,
+    input: Option<Node<Object>>,
+) -> AstryxResult<Object> {
+    let iter = match input.clone() {
+        Some(input) => input.borrow().clone(),
+        None => state
+            .borrow()
+            .get("iter")
+            .ok_or(AstryxError::Generic("variable path not found".into()))?, // todo: better error class
+    };
+
+    match &iter {
+        Object::Array(arr) => {
+            if arr.is_empty() {
+                Ok(iter)
+            } else {
+                Err(AstryxError::Generic("object not empty".into()))
+            }
+        }
+        _ => Err(AstryxError::Generic("object not an array".into())),
+    }
 }
 
 pub(crate) fn copy_file(

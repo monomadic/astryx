@@ -42,9 +42,8 @@ fn quoted_string<'a>(i: Span<'a>) -> IResult<Span, Span, ParserError<Span<'a>>> 
 }
 
 /// match glob patterns eg: ./*.txt and ../../*
-pub fn glob_pattern<'a>(i: Span<'a>) -> IResult<Span<'a>, Span<'a>, ParserError<Span<'a>>> {
+pub fn glob_pattern(i: Span) -> IResult<Span, Span, ParserError<Span>> {
     tuple((path_prefix, glob_pattern_characters))(i)
-        // .map(|(r, (prefix, pathname))| (r, Span::new(&format!("{}{}", prefix, pathname)))) // check this!
         .map(|(r, (_prefix, path))| (r, path)) // fix this so that prefix is included
         .map_err(|e| {
             e.map(|_| ParserError {
@@ -56,7 +55,7 @@ pub fn glob_pattern<'a>(i: Span<'a>) -> IResult<Span<'a>, Span<'a>, ParserError<
 }
 
 /// match relative paths eg: ./test.txt and ../../test.txt
-pub fn relative_path<'a>(i: Span<'a>) -> IResult<Span<'a>, Span<'a>, ParserError<Span<'a>>> {
+pub fn relative_path(i: Span) -> IResult<Span, Span, ParserError<Span>> {
     // we need to check for globs and return early or we'll trip up the parser with a full error condition.
     if i.contains("*") {
         return Err(nom::Err::Error(ParserError {

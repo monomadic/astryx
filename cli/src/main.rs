@@ -109,7 +109,7 @@ fn run() -> AstryxResult<String> {
                         site.write(output)
                     }
                 }
-            });
+            })?;
 
             println!("\nBuild complete in {:.4}s.", t0.elapsed().as_secs_f64());
 

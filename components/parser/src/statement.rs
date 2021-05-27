@@ -15,7 +15,7 @@ use nom::{
     combinator::{all_consuming, cut, map},
     multi::many0,
     sequence::{terminated, tuple},
-    IResult,
+    Err, IResult,
 };
 use rctree::Node;
 
@@ -57,6 +57,13 @@ pub(crate) fn statement_node<'a>(
     for child in node.children() {
         stmt_node.append({
             let (rem, st) = statement_node(child)?;
+            // return an error if there is unconsumed input
+            if !rem.is_empty() {
+                return Err(Err::Error(AstryxError::LocatedError(
+                    span_to_location(rem),
+                    AstryxErrorKind::UnexpectedToken(rem.to_string()),
+                )));
+            }
             st
         });
     }
