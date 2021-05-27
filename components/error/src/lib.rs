@@ -41,6 +41,7 @@ pub enum AstryxErrorKind {
     UnknownValue(String),
     Unimplemented(String),
     FilePatternError(String),
+    RequireMapIsEmpty,
 }
 
 #[derive(Debug, PartialEq, Clone)]

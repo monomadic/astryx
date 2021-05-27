@@ -166,6 +166,14 @@ fn for_loop(
 
     match iter {
         Object::Array(array) => {
+            // fixme: temporarily default to require_map behavior
+            if array.is_empty() {
+                return Err(AstryxError::LocatedError(
+                    span_to_location(ident),
+                    AstryxErrorKind::RequireMapIsEmpty,
+                ));
+            }
+
             let mut node = Node::new(Object::None);
 
             for index in array {
