@@ -2,15 +2,14 @@ use crate::{
     errorold::ParserErrorKind, statement::expression, Expression, FunctionCall, ParserError, Span,
 };
 use nom::{
-    character::complete::{alpha1, multispace0},
-    character::complete::{char, space0},
+    character::complete::{alpha1, char, multispace0, space0},
     combinator::cut,
     multi::separated_list0,
     sequence::{terminated, tuple},
     IResult,
 };
 
-fn function_call_argument(i: Span) -> IResult<Span, (Span, Expression), ParserError<Span>> {
+fn function_call_named_argument(i: Span) -> IResult<Span, (Span, Expression), ParserError<Span>> {
     tuple((
         alpha1,
         terminated(multispace0, char(':')),
@@ -27,31 +26,31 @@ fn function_call_argument(i: Span) -> IResult<Span, (Span, Expression), ParserEr
     })
 }
 
-fn function_call_arguments(i: Span) -> IResult<Span, Vec<(Span, Expression)>, ParserError<Span>> {
-    // many0(function_call_argument)(i)
-
-    separated_list0(tuple((space0, char(','), space0)), function_call_argument)(i)
-    // .map_err(|e:nom::Err<ParserError<_>>| {
-    //     e.map(|s| ParserError {
-    //         context: i,
-    //         kind: ParserErrorKind::UnexpectedToken("g".into()),
-    //         pos: s.context.into(),
-    //     })
-    // })
+fn function_call_named_arguments(
+    i: Span,
+) -> IResult<Span, Vec<(Span, Expression)>, ParserError<Span>> {
+    separated_list0(
+        tuple((space0, char(','), space0)),
+        function_call_named_argument,
+    )(i)
 }
 
 pub(crate) fn function_call(i: Span) -> IResult<Span, FunctionCall, ParserError<Span>> {
-    tuple((alpha1, char('('), function_call_arguments, cut(char(')'))))(i).map(
-        |(r, (ident, _, arguments, _))| {
-            (
-                r,
-                FunctionCall {
-                    ident: Box::new(Expression::Reference(ident)),
-                    arguments,
-                },
-            )
-        },
-    )
+    tuple((
+        alpha1,
+        char('('),
+        function_call_named_arguments,
+        cut(char(')')),
+    ))(i)
+    .map(|(r, (ident, _, arguments, _))| {
+        (
+            r,
+            FunctionCall {
+                ident: Box::new(Expression::Reference(ident)),
+                arguments,
+            },
+        )
+    })
     // .map_err(|e| {
     //     e.map(|s| ParserError {
     //         context: i,
@@ -68,7 +67,7 @@ mod test {
     #[test]
     fn test_function_call_arguments() {
         assert_eq!(
-            function_call_arguments(Span::new_extra("a:a,b:b", ""))
+            function_call_named_arguments(Span::new_extra("a:a,b:b", ""))
                 .unwrap()
                 .1
                 .len(),
