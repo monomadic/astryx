@@ -1,5 +1,5 @@
 use crate::Span;
-use std::fmt::Display;
+use std::fmt::{Debug, Display, Formatter};
 
 // #[derive(Debug, Clone, PartialEq)]
 // pub enum Token {
@@ -69,20 +69,30 @@ impl Expression<'_> {
 #[derive(Debug, Clone)]
 pub struct FunctionCall<'a> {
     pub ident: Box<Expression<'a>>,
-    pub arguments: Vec<(Span<'a>, Expression<'a>)>,
+    pub arguments: FunctionCallArguments<'a>,
+}
+
+// currently unused
+#[derive(Debug, Clone)]
+pub enum FunctionCallArguments<'a> {
+    None,
+    Named(Vec<(Span<'a>, Expression<'a>)>),
+    Unnamed(Vec<Span<'a>>),
 }
 
 impl FunctionCall<'_> {
     pub fn inspect(&self) -> String {
-        format!(
-            "{}({})",
-            self.ident.inspect(),
-            self.arguments
-                .iter()
-                .map(|(k, v)| format!("{}: {}", k, v.inspect()))
-                .collect::<Vec<String>>()
-                .join(", ")
-        )
+        // fixme: do not use debug, properly display args
+        format!("{}({:?})", self.ident.inspect(), self.arguments)
+        // format!(
+        //     "{}({})",
+        //     self.ident.inspect(),
+        //     self.arguments
+        //         .iter()
+        //         .map(|(k, v)| format!("{}: {}", k, v.inspect()))
+        //         .collect::<Vec<String>>()
+        //         .join(", ")
+        // )
     }
 }
 

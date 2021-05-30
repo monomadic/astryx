@@ -1,6 +1,9 @@
 use crate::{
-    errorold::ParserErrorKind, statement::expression, Expression, FunctionCall, ParserError, Span,
+    errorold::ParserErrorKind, statement::expression, Expression, FunctionCall,
+    FunctionCallArguments, ParserError, Span,
 };
+use nom::branch::alt;
+use nom::combinator::map;
 use nom::{
     character::complete::{alpha1, char, multispace0, space0},
     combinator::cut,
@@ -36,21 +39,17 @@ fn function_call_named_arguments(
 }
 
 pub(crate) fn function_call(i: Span) -> IResult<Span, FunctionCall, ParserError<Span>> {
-    tuple((
-        alpha1,
-        char('('),
-        function_call_named_arguments,
-        cut(char(')')),
-    ))(i)
-    .map(|(r, (ident, _, arguments, _))| {
-        (
-            r,
-            FunctionCall {
-                ident: Box::new(Expression::Reference(ident)),
-                arguments,
-            },
-        )
-    })
+    tuple((alpha1, char('('), function_call_arguments, cut(char(')'))))(i).map(
+        |(r, (ident, _, arguments, _))| {
+            (
+                r,
+                FunctionCall {
+                    ident: Box::new(Expression::Reference(ident)),
+                    arguments,
+                },
+            )
+        },
+    )
     // .map_err(|e| {
     //     e.map(|s| ParserError {
     //         context: i,
@@ -60,9 +59,23 @@ pub(crate) fn function_call(i: Span) -> IResult<Span, FunctionCall, ParserError<
     // })
 }
 
+fn function_call_arguments(i: Span) -> IResult<Span, FunctionCallArguments, ParserError<Span>> {
+    alt((
+        map(function_call_named_arguments, |v| {
+            FunctionCallArguments::Named(v)
+        }),
+        map(space0, |v| FunctionCallArguments::None),
+    ))(i)
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
+
+    // // todo: add arguments
+    // fn assert_function_call(f: FunctionCall, ident: &str) {
+    //
+    // }
 
     #[test]
     fn test_function_call_arguments() {
