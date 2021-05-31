@@ -16,6 +16,17 @@ pub enum Statement<'a> {
     Blank(Span<'a>),
 }
 
+// todo: extend with content
+impl Display for Statement<'_> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Statement::Blank(_) => f.write_str(""),
+            Statement::Expression(e) => f.write_str(&format!("Expression({})", e)),
+            _ => todo!("{:?}", self),
+        }
+    }
+}
+
 impl Statement<'_> {
     pub fn inspect(&self) -> String {
         match self {
@@ -42,6 +53,20 @@ pub enum Expression<'a> {
     Index(Box<Expression<'a>>, Box<Expression<'a>>), // eg a.b(), "hi".log(), a.b.c
 }
 
+impl Display for Expression<'_> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Expression::FunctionCall(func) => f.write_str(&format!("FunctionCall({})", func)),
+            Expression::GlobPattern(_) => todo!(),
+            Expression::RelativePath(_) => todo!(),
+            Expression::Reference(r) => f.write_str(&format!("Reference({})", r)),
+            Expression::Literal(l) => f.write_str(&format!("Literal({})", l)),
+            Expression::Array(_) => todo!(),
+            Expression::Index(_, _) => todo!(),
+        }
+    }
+}
+
 impl Expression<'_> {
     pub fn inspect(&self) -> String {
         match self {
@@ -60,6 +85,12 @@ impl Expression<'_> {
 pub struct FunctionCall<'a> {
     pub ident: Box<Expression<'a>>,
     pub arguments: FunctionCallArguments<'a>,
+}
+
+impl Display for FunctionCall<'_> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&format!("{}", self.ident))
+    }
 }
 
 // currently unused
@@ -93,6 +124,15 @@ pub enum Literal<'a> {
     Number(Span<'a>, f64),
 }
 
+impl Display for Literal<'_> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Literal::String(s) => f.write_str(&format!("String({})", s)),
+            Literal::Number(_, l) => f.write_str(&format!("Number({})", l)),
+        }
+    }
+}
+
 // impl Literal {
 //     pub fn to_object(&self) -> Object {
 //         match self {
@@ -110,12 +150,6 @@ pub enum Literal<'a> {
 //         }
 //     }
 // }
-
-impl<'a> Display for Literal<'a> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self)
-    }
-}
 
 // impl <'a>Into<String> for Literal<'a> {
 //     fn into(self) -> String {
