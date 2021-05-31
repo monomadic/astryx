@@ -18,72 +18,53 @@ pub fn import(state: Rc<RefCell<State>>) -> Rc<RefCell<State>> {
         "copy",
         Object::BuiltinFunction(BuiltinFunction {
             args: vec!["file".to_string()],
-            closure: copy_file,
+            closure: asset,
         }),
     );
 
-    // let _ = state
-    //     .borrow_mut()
-    //     .bind("frontmatter", Object::BuiltinFunction(parse_frontmatter));
-    //
-    // let _ = state
-    //     .borrow_mut()
-    //     .bind("markdown", Object::BuiltinFunction(markdown));
-    //
-    // let _ = state
-    //     .borrow_mut()
-    //     .bind("asset", Object::BuiltinFunction(asset));
-    //
-    // let _ = state
-    //     .borrow_mut()
-    //     .bind("require", Object::BuiltinFunction(require));
+    let _ = state.borrow_mut().bind(
+        "markdown",
+        Object::BuiltinFunction(BuiltinFunction {
+            args: vec!["path".to_string()],
+            closure: markdown,
+        }),
+    );
+
+    let _ = state.borrow_mut().bind(
+        "frontmatter",
+        Object::BuiltinFunction(BuiltinFunction {
+            args: vec!["path".to_string()],
+            closure: parse_frontmatter,
+        }),
+    );
 
     state
 }
 
-/// an is_empty() that fails on empty... probably rename this?
-pub(crate) fn require(
-    state: Rc<RefCell<State>>,
-    input: Option<Node<Object>>,
-) -> AstryxResult<Object> {
-    let iter = match input.clone() {
-        Some(input) => input.borrow().clone(),
-        None => state
-            .borrow()
-            .get("iter")
-            .ok_or(AstryxError::Generic("variable path not found".into()))?, // todo: better error class
-    };
-
-    match &iter {
-        Object::Array(arr) => {
-            if arr.is_empty() {
-                Ok(iter)
-            } else {
-                Err(AstryxError::Generic("object not empty".into()))
-            }
-        }
-        _ => Err(AstryxError::Generic("object not an array".into())),
-    }
-}
-
-pub(crate) fn copy_file(
-    state: Rc<RefCell<State>>,
-    input: Option<Node<Object>>,
-) -> AstryxResult<Object> {
-    let path = match input.clone() {
-        Some(input) => input.borrow().clone(),
-        None => state
-            .borrow()
-            .get("path")
-            .ok_or(AstryxError::Generic("variable path not found".into()))?, // todo: better error class
-    };
-
-    // fixme: path should be relative to $PWD variable
-
-    // panic!("file {:?}", input);
-
-    Ok(Object::File(path.to_string()))
-}
+// /// an is_empty() that fails on empty... probably rename this?
+// pub(crate) fn require(
+//     state: Rc<RefCell<State>>,
+//     input: Option<Node<Object>>,
+// ) -> AstryxResult<Object> {
+//     let iter = match input.clone() {
+//         Some(input) => input.borrow().clone(),
+//         None => state
+//             .borrow()
+//             .get("iter")
+//             .ok_or(AstryxError::Generic("variable path not found".into()))?, // todo: better error class
+//     };
+//
+//     match &iter {
+//         Object::Array(arr) => {
+//             if arr.is_empty() {
+//                 Ok(iter)
+//             } else {
+//                 Err(AstryxError::Generic("object not empty".into()))
+//             }
+//         }
+//         _ => Err(AstryxError::Generic("object not an array".into())),
+//     }
+// }
 
 pub(crate) fn print(
     state: Rc<RefCell<State>>,
