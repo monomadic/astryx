@@ -1,4 +1,5 @@
 use error::{AstryxError, AstryxResult};
+use html::HTMLElement;
 use models::{object::Object, state::State, BuiltinFunction};
 use rctree::Node;
 use std::cell::RefCell;
@@ -35,6 +36,14 @@ pub fn import(state: Rc<RefCell<State>>) -> Rc<RefCell<State>> {
         Object::BuiltinFunction(BuiltinFunction {
             args: vec!["path".to_string()],
             closure: parse_frontmatter,
+        }),
+    );
+
+    let _ = state.borrow_mut().bind(
+        "h1",
+        Object::BuiltinFunction(BuiltinFunction {
+            args: vec![],
+            closure: html_tag,
         }),
     );
 
@@ -193,4 +202,14 @@ pub(crate) fn read<'a>(
             .map_err(|_| AstryxError::Generic("<can't read file>".into())),
         _ => unimplemented!(), // return error
     }
+}
+
+/// h1 html tag
+pub(crate) fn html_tag<'a>(
+    _state: Rc<RefCell<State>>,
+    _input: Option<Node<Object>>,
+) -> AstryxResult<Object> {
+    Ok(Object::HTMLElement(
+        HTMLElement::new("h1", Default::default()).expect("html error fixme"),
+    ))
 }
