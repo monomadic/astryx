@@ -2,3 +2,4 @@
   %div { href: "#" } Main section
 		%a { href: "#" } a link
 	%h2 Second Header
+	print("hi")

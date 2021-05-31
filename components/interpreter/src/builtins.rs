@@ -1,32 +1,42 @@
 use error::{AstryxError, AstryxResult};
-use models::{object::Object, state::State};
+use models::{object::Object, state::State, BuiltinFunction};
 use rctree::Node;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
 pub fn import(state: Rc<RefCell<State>>) -> Rc<RefCell<State>> {
-    let _ = state.borrow_mut().bind("log", Object::BuiltinFunction(log));
+    let _ = state.borrow_mut().bind(
+        "print",
+        Object::BuiltinFunction(BuiltinFunction {
+            args: vec!["obj".to_string()],
+            closure: print,
+        }),
+    );
 
-    let _ = state
-        .borrow_mut()
-        .bind("frontmatter", Object::BuiltinFunction(parse_frontmatter));
+    let _ = state.borrow_mut().bind(
+        "copy",
+        Object::BuiltinFunction(BuiltinFunction {
+            args: vec!["file".to_string()],
+            closure: copy_file,
+        }),
+    );
 
-    let _ = state
-        .borrow_mut()
-        .bind("markdown", Object::BuiltinFunction(markdown));
-
-    let _ = state
-        .borrow_mut()
-        .bind("asset", Object::BuiltinFunction(asset));
-
-    let _ = state
-        .borrow_mut()
-        .bind("copy", Object::BuiltinFunction(copy_file));
-
-    let _ = state
-        .borrow_mut()
-        .bind("require", Object::BuiltinFunction(require));
+    // let _ = state
+    //     .borrow_mut()
+    //     .bind("frontmatter", Object::BuiltinFunction(parse_frontmatter));
+    //
+    // let _ = state
+    //     .borrow_mut()
+    //     .bind("markdown", Object::BuiltinFunction(markdown));
+    //
+    // let _ = state
+    //     .borrow_mut()
+    //     .bind("asset", Object::BuiltinFunction(asset));
+    //
+    // let _ = state
+    //     .borrow_mut()
+    //     .bind("require", Object::BuiltinFunction(require));
 
     state
 }
@@ -75,7 +85,10 @@ pub(crate) fn copy_file(
     Ok(Object::File(path.to_string()))
 }
 
-pub(crate) fn log(state: Rc<RefCell<State>>, input: Option<Node<Object>>) -> AstryxResult<Object> {
+pub(crate) fn print(
+    state: Rc<RefCell<State>>,
+    input: Option<Node<Object>>,
+) -> AstryxResult<Object> {
     match input {
         Some(input) => {
             println!("{:?}", input.borrow().to_string());

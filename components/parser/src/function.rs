@@ -82,7 +82,8 @@ mod test {
         for (input, expected) in tests {
             match function_call_arguments(Span::from(input)) {
                 Ok(obj) => {
-                    assert_eq!(expected, format!("{:?}", obj.1), "for `{:?}`", input);
+                    assert!(obj.0.is_empty());
+                    assert_eq!(expected, obj.1.to_string(), "for `{}`", input);
                 }
                 Err(err) => {
                     panic!(
@@ -94,28 +95,13 @@ mod test {
         }
     }
 
-    // // todo: add arguments
-    // fn assert_function_call(f: FunctionCall, ident: &str) {
-    //
-    // }
-
     #[test]
     fn test_function_call_arguments() {
-        // todo: upgrade to inspect trait
         expect_function_call_arguments(vec![
             ("", "None"),
-            (
-                "5",
-                r#"Unnamed([Literal(Number(LocatedSpan { offset: 0, line: 1, fragment: "5", extra: "" }, 5.0))])"#,
-            ),
-            (
-                "arg: 0",
-                r#"Named([(LocatedSpan { offset: 0, line: 1, fragment: "arg", extra: "" }, Literal(Number(LocatedSpan { offset: 5, line: 1, fragment: "0", extra: "" }, 0.0)))])"#,
-            ),
-            (
-                "a:a,b:b",
-                r#"Named([(LocatedSpan { offset: 0, line: 1, fragment: "a", extra: "" }, Reference(LocatedSpan { offset: 2, line: 1, fragment: "a", extra: "" })), (LocatedSpan { offset: 4, line: 1, fragment: "b", extra: "" }, Reference(LocatedSpan { offset: 6, line: 1, fragment: "b", extra: "" }))])"#,
-            ),
+            ("5", "Unnamed"),
+            ("arg: 0", "Named"),
+            ("a:a,b:b", "Named"),
         ]);
     }
 

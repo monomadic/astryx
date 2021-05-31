@@ -1,5 +1,5 @@
 use crate::Span;
-use std::fmt::{Debug, Display};
+use std::fmt::{Debug, Display, Formatter};
 
 #[derive(Debug, Clone)]
 pub enum Statement<'a> {
@@ -70,30 +70,22 @@ pub enum FunctionCallArguments<'a> {
     Unnamed(Vec<Expression<'a>>),
 }
 
+impl Display for FunctionCallArguments<'_> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            FunctionCallArguments::None => f.write_str("None"),
+            FunctionCallArguments::Named(_args) => f.write_str("Named"),
+            FunctionCallArguments::Unnamed(_args) => f.write_str("Unnamed"),
+        }
+    }
+}
+
 impl FunctionCall<'_> {
     pub fn inspect(&self) -> String {
         // fixme: do not use debug, properly display args
         format!("{}({:?})", self.ident.inspect(), self.arguments)
-        // format!(
-        //     "{}({})",
-        //     self.ident.inspect(),
-        //     self.arguments
-        //         .iter()
-        //         .map(|(k, v)| format!("{}: {}", k, v.inspect()))
-        //         .collect::<Vec<String>>()
-        //         .join(", ")
-        // )
     }
 }
-
-// #[derive(Debug, Clone)]
-// pub enum Variable<'a> {
-//     RelativePath(Span<'a>),
-//     QuotedString(Span<'a>), // todo: make this Value(Value)?
-//     Reference(Span<'a>),
-//     // TemplateFile(TemplateFile),
-//     // FunctionCall()
-// }
 
 #[derive(Debug, Clone)]
 pub enum Literal<'a> {

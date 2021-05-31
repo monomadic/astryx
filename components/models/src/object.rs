@@ -7,7 +7,11 @@ use std::collections::HashMap;
 use std::rc::Rc;
 use yaml_rust::Yaml;
 
-pub type BuiltinFunction = fn(Rc<RefCell<State>>, Option<Node<Object>>) -> AstryxResult<Object>;
+#[derive(Clone, Debug)]
+pub struct BuiltinFunction {
+    pub args: Vec<String>,
+    pub closure: fn(Rc<RefCell<State>>, Option<Node<Object>>) -> AstryxResult<Object>,
+}
 
 #[derive(Clone, Debug)]
 pub enum Object {

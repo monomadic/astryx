@@ -34,19 +34,17 @@ pub fn eval_expression(
                         }
                         FunctionCallArguments::Unnamed(args) => {
                             // need to get symbols from the Function...
-                            todo!();
-                            // for (k, expr) in args {
-                            //     inner.bind(
-                            //         // the symbol side
-                            //         &k.to_string(),
-                            //         // evaluate the expression side
-                            //         eval_expression(Rc::clone(&state), expr, None)?,
-                            //     )?;
-                            // }
+
+                            for (i, arg) in builtin.args.iter().enumerate() {
+                                inner.bind(
+                                    arg,
+                                    eval_expression(Rc::clone(&state), &args[i], None)?,
+                                )?;
+                            }
                         }
                     };
 
-                    builtin(Rc::new(RefCell::new(inner)), input)
+                    (builtin.closure)(Rc::new(RefCell::new(inner)), input)
                 }
                 _ => unimplemented!(), // throw error
             }
