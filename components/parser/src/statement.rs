@@ -121,8 +121,10 @@ mod test {
     fn test_statement() {
         expect_statement(vec![
             ("", ""),
+            (" ", ""),
             ("5", "Expression(Literal(Number(5)))"),
             ("a", "Expression(Reference(a))"),
+            ("h1 {}", "Expression(FunctionCall(Reference(h1)))"),
             ("print()", "Expression(FunctionCall(Reference(print)))"),
         ]);
     }
@@ -229,59 +231,3 @@ fn binding<'a>(i: Span<'a>) -> IResult<Span, (Span<'a>, Expression<'a>), ParserE
     ))(i)
     .map(|(r, (_, _, ident, _, _, expr))| (r, (ident, expr)))
 }
-
-// #[cfg(test)]
-// mod test {
-//     use super::*;
-//
-//     #[test]
-//     fn test_expression() {
-//         assert!(expression(Span::new_extra("./posts/*.md", "")).is_ok());
-//     }
-//
-//     #[test]
-//     fn test_for_loop() {
-//         // println!("{:?}", for_loop(Span::new("for x in ./posts/*.md")));
-//         assert!(for_loop(Span::new_extra("for x in ./posts/*.md", "")).is_ok());
-//     }
-//
-//     #[test]
-//     fn test_index() {
-//         assert!(index(Span::new_extra("test", "")).is_err());
-//         assert!(index(Span::new_extra("test.blah", "")).is_ok());
-//         assert!(index(Span::new_extra("test.log()", "")).is_ok());
-//     }
-//
-//     #[test]
-//     fn test_binding() {
-//         assert!(binding(Span::new_extra("let a=5", "")).is_ok());
-//         // assert_eq!(binding(Span::new("let a=5")).unwrap().0.fragment().to_string(), "a");
-//         assert!(binding(Span::new_extra("let a = 5", "")).is_ok());
-//         assert!(binding(Span::new_extra("let print = print()", "")).is_ok());
-//         assert!(binding(Span::new_extra("let print = fn print()", "")).is_ok());
-//         assert!(binding(Span::new_extra("g()", "")).is_err());
-//     }
-//
-//     #[test]
-//     fn test_route() {
-//         assert!(route(Span::new_extra("", "")).is_err());
-//         assert!(route(Span::new_extra("@", "")).is_err());
-//         assert!(route(Span::new_extra("@route", "")).is_ok());
-//         assert_eq!(
-//             route(Span::new_extra("@route", ""))
-//                 .unwrap()
-//                 .1
-//                 .ident
-//                 .to_string(),
-//             "route"
-//         );
-//         assert!(route(Span::new_extra("@route a=5", "")).is_ok());
-//     }
-//
-//     #[test]
-//     fn test_statement() {
-//         assert!(statement(Span::new_extra("", "")).is_err()); // do not allow blank lines to slip through
-//         assert!(statement(Span::new_extra("g()", "")).is_ok());
-//         assert!(statement(Span::new_extra("for x in ./posts/*.md", "")).is_ok());
-//     }
-// }
