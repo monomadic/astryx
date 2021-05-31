@@ -17,6 +17,7 @@ use nom::{
     sequence::{terminated, tuple},
     Err, IResult,
 };
+use nom_locate::LocatedSpan;
 use rctree::Node;
 
 pub(crate) fn span_to_location(span: Span) -> Location {
@@ -72,7 +73,9 @@ pub(crate) fn statement_node<'a>(
 }
 
 /// Attempt to parse a Statement from a text Span
-pub fn statement<'a>(i: Span<'a>) -> IResult<Span, Statement<'a>, AstryxError> {
+pub fn statement<'a, S: Into<LocatedSpan<&'a str, &'a str>>>(
+    i: S,
+) -> IResult<Span<'a>, Statement<'a>, AstryxError> {
     all_consuming(alt((
         // map(function_call, |f| Statement::FunctionCall(f)),
         map(comment, Statement::Comment),
@@ -85,7 +88,7 @@ pub fn statement<'a>(i: Span<'a>) -> IResult<Span, Statement<'a>, AstryxError> {
         map(space0, |ws| Statement::Blank(ws)),
         // map(alpha1, |e| Statement::Element(e)),
         // return_statement
-    )))(i)
+    )))(i.into())
     .map_err(|e| {
         e.map(|e| {
             AstryxError::LocatedError(

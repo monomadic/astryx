@@ -34,6 +34,8 @@ use error::AstryxResult;
 pub type Span<'a> = LocatedSpan<&'a str, &'a str>;
 pub type ParserResult<T, I> = Result<T, ParserError<I>>;
 
+pub use statement::statement;
+
 /// Parses a tree of Spans into a tree of Statements.
 pub fn parse(lines: Vec<Node<Span>>) -> AstryxResult<Vec<Node<Statement>>> {
     lines

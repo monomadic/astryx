@@ -62,7 +62,7 @@ impl Display for Expression<'_> {
             Expression::Reference(r) => f.write_str(&format!("Reference({})", r)),
             Expression::Literal(l) => f.write_str(&format!("Literal({})", l)),
             Expression::Array(_) => todo!(),
-            Expression::Index(_, _) => todo!(),
+            Expression::Index(l, r) => f.write_str(&format!("Expression::Index({}, {})", l, r)),
         }
     }
 }

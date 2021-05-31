@@ -13,6 +13,10 @@ use nom::{
     IResult,
 };
 
+pub(crate) fn function_call(i: Span) -> IResult<Span, FunctionCall, ParserError<Span>> {
+    alt((bracketed_function_call, hashmap_function_call))(i)
+}
+
 fn function_call_named_argument(i: Span) -> IResult<Span, (Span, Expression), ParserError<Span>> {
     tuple((
         alpha1,
@@ -41,10 +45,6 @@ fn function_call_named_arguments(
 
 fn function_call_unnamed_arguments(i: Span) -> IResult<Span, Vec<Expression>, ParserError<Span>> {
     separated_list1(tuple((space0, char(','), space0)), expression)(i)
-}
-
-pub(crate) fn function_call(i: Span) -> IResult<Span, FunctionCall, ParserError<Span>> {
-    alt((bracketed_function_call, hashmap_function_call))(i)
 }
 
 pub fn bracketed_function_call(i: Span) -> IResult<Span, FunctionCall, ParserError<Span>> {
@@ -97,7 +97,7 @@ fn function_call_arguments(i: Span) -> IResult<Span, FunctionCallArguments, Pars
 }
 
 #[cfg(test)]
-mod test_2 {
+mod test {
     use super::*;
 
     fn expect_function_call_arguments(tests: Vec<(&str, &str)>) {
@@ -127,59 +127,10 @@ mod test_2 {
         ]);
     }
 
-    #[test]
-    fn test_function_call() {
-        assert!(function_call(Span::new_extra("g()", "")).is_ok());
-
-        assert_eq!(
-            &function_call(Span::new_extra("print(text: \"hello\")", ""))
-                .unwrap()
-                .1
-                .inspect(),
-            "print(text: \"hello\")"
-        );
-
-        assert_eq!(
-            &function_call(Span::new_extra(
-                "print(text: \"hello\", another: \"hi\")",
-                ""
-            ))
-            .unwrap()
-            .1
-            .inspect(),
-            "print(text: \"hello\", another: \"hi\")"
-        );
-
-        // check ident Span
-        // let f: FunctionCall = function_call(Span::new("function()")).unwrap().1;
-        // assert_eq!(f.ident.to_string(), "function");
-        // assert_eq!(f.ident.location_line(), 1);
-        // assert_eq!(f.ident.location_offset(), 0);
-        // assert_eq!(f.ident.get_column(), 1);
-
-        // check no-match with error
-        let e = function_call(Span::new_extra("g", ""));
-        match e {
-            Err(nom::Err::Error(_)) => (),
-            _ => panic!("expected Error, got {:?}", e),
-        };
-
-        // check partial match with fail
-        let e = function_call(Span::new_extra("g(1)", ""));
-        match e {
-            Err(nom::Err::Failure(_)) => (),
-            _ => panic!("expected Failure, got {:?}", e),
-        };
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
     /// generic assertion of parser/combinator results
     fn assert_result<S: ToString>(args: (IResult<Span, S, ParserError<Span>>, &str, &str)) {
         let (result, input, expected) = args;
+
         match result {
             Ok((rem, obj)) => {
                 assert!(rem.is_empty());
@@ -192,6 +143,22 @@ mod test {
                 );
             }
         }
+    }
+
+    #[test]
+    fn test_function_call() {
+        let _ = vec![
+            ("a", "Reference(a)"),
+            ("print()", "Reference()"),
+            ("h1 {}", "Reference(h1)"),
+            ("h1 { }", "Reference(h1)"),
+            ("h1{}", "Reference(h1)"),
+            ("h1 {a:1}", "Reference(h1)"),
+        ]
+        .into_iter()
+        .map(|(input, expected)| (function_call(Span::from(input)), input, expected))
+        .map(assert_result)
+        .collect::<Vec<_>>();
     }
 
     #[test]
