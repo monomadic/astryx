@@ -160,7 +160,7 @@ pub(crate) fn asset<'a>(
 ) -> AstryxResult<Object> {
     let path = state
         .borrow()
-        .get("path")
+        .get("file")
         .ok_or(AstryxError::Generic("variable path not found".into()))?;
 
     Ok(Object::File(path.to_string()))
