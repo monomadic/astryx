@@ -84,38 +84,6 @@ pub fn hashmap_function_call(i: Span) -> IResult<Span, FunctionCall, ParserError
     })
 }
 
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    fn expect_hashmap_function_call(tests: Vec<(&str, &str)>) {
-        for (input, expected) in tests {
-            match hashmap_function_call(Span::from(input)) {
-                Ok(obj) => {
-                    assert!(obj.0.is_empty());
-                    assert_eq!(expected, obj.1.to_string(), "for `{}`", input);
-                }
-                Err(err) => {
-                    panic!(
-                        "expected `{}`, but got error=`{}` for `{}`",
-                        expected, err, input
-                    );
-                }
-            }
-        }
-    }
-
-    #[test]
-    fn test_hashmap_function_call() {
-        expect_hashmap_function_call(vec![
-            ("h1 {}", "Reference(h1)"),
-            ("h1 { }", "Reference(h1)"),
-            ("h1{}", "Reference(h1)"),
-            ("h1 {a:1}", "Reference(h1)"),
-        ]);
-    }
-}
-
 fn function_call_arguments(i: Span) -> IResult<Span, FunctionCallArguments, ParserError<Span>> {
     alt((
         map(function_call_named_arguments, |v| {
@@ -202,5 +170,40 @@ mod test_2 {
             Err(nom::Err::Failure(_)) => (),
             _ => panic!("expected Failure, got {:?}", e),
         };
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    /// generic assertion of parser/combinator results
+    fn assert_result<S: ToString>(args: (IResult<Span, S, ParserError<Span>>, &str, &str)) {
+        let (result, input, expected) = args;
+        match result {
+            Ok((rem, obj)) => {
+                assert!(rem.is_empty());
+                assert_eq!(expected, obj.to_string(), "for `{}`", input);
+            }
+            Err(err) => {
+                panic!(
+                    "expected `{}`, but got error=`{}` for `{}`",
+                    expected, err, input
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn test_hashmap_function_call() {
+        let _ = vec![
+            ("h1 {}", "Reference(h1)"),
+            ("h1 { }", "Reference(h1)"),
+            ("h1{}", "Reference(h1)"),
+            ("h1 {a:1}", "Reference(h1)"),
+        ]
+        .into_iter()
+        .map(|(input, expected)| (hashmap_function_call(Span::from(input)), input, expected))
+        .map(assert_result);
     }
 }
