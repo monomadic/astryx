@@ -2,12 +2,11 @@ use crate::{
     errorold::ParserErrorKind, statement::expression, Expression, FunctionCall,
     FunctionCallArguments, ParserError, Span,
 };
-use nom::branch::alt;
-use nom::combinator::map;
 use nom::{
+    branch::alt,
     character::complete::{alpha1, char, multispace0, space0},
-    combinator::cut,
-    multi::separated_list0,
+    combinator::{cut, map},
+    multi::separated_list1,
     sequence::{terminated, tuple},
     IResult,
 };
@@ -32,10 +31,14 @@ fn function_call_named_argument(i: Span) -> IResult<Span, (Span, Expression), Pa
 fn function_call_named_arguments(
     i: Span,
 ) -> IResult<Span, Vec<(Span, Expression)>, ParserError<Span>> {
-    separated_list0(
+    separated_list1(
         tuple((space0, char(','), space0)),
         function_call_named_argument,
     )(i)
+}
+
+fn function_call_unnamed_arguments(i: Span) -> IResult<Span, Vec<Expression>, ParserError<Span>> {
+    separated_list1(tuple((space0, char(','), space0)), expression)(i)
 }
 
 pub(crate) fn function_call(i: Span) -> IResult<Span, FunctionCall, ParserError<Span>> {
@@ -64,13 +67,32 @@ fn function_call_arguments(i: Span) -> IResult<Span, FunctionCallArguments, Pars
         map(function_call_named_arguments, |v| {
             FunctionCallArguments::Named(v)
         }),
-        map(space0, |v| FunctionCallArguments::None),
+        map(function_call_unnamed_arguments, |v| {
+            FunctionCallArguments::Unnamed(v)
+        }),
+        map(space0, |_| FunctionCallArguments::None),
     ))(i)
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
+
+    fn expect_function_call_arguments(tests: Vec<(&str, &str)>) {
+        for (input, expected) in tests {
+            match function_call_arguments(Span::from(input)) {
+                Ok(obj) => {
+                    assert_eq!(expected, format!("{:?}", obj.1), "for `{:?}`", input);
+                }
+                Err(err) => {
+                    panic!(
+                        "expected `{}`, but got error=`{}` for `{}`",
+                        expected, err, input
+                    );
+                }
+            }
+        }
+    }
 
     // // todo: add arguments
     // fn assert_function_call(f: FunctionCall, ident: &str) {
@@ -79,13 +101,22 @@ mod test {
 
     #[test]
     fn test_function_call_arguments() {
-        assert_eq!(
-            function_call_named_arguments(Span::new_extra("a:a,b:b", ""))
-                .unwrap()
-                .1
-                .len(),
-            2
-        );
+        // todo: upgrade to inspect trait
+        expect_function_call_arguments(vec![
+            ("", "None"),
+            (
+                "5",
+                r#"Unnamed([Literal(Number(LocatedSpan { offset: 0, line: 1, fragment: "5", extra: "" }, 5.0))])"#,
+            ),
+            (
+                "arg: 0",
+                r#"Named([(LocatedSpan { offset: 0, line: 1, fragment: "arg", extra: "" }, Literal(Number(LocatedSpan { offset: 5, line: 1, fragment: "0", extra: "" }, 0.0)))])"#,
+            ),
+            (
+                "a:a,b:b",
+                r#"Named([(LocatedSpan { offset: 0, line: 1, fragment: "a", extra: "" }, Reference(LocatedSpan { offset: 2, line: 1, fragment: "a", extra: "" })), (LocatedSpan { offset: 4, line: 1, fragment: "b", extra: "" }, Reference(LocatedSpan { offset: 6, line: 1, fragment: "b", extra: "" }))])"#,
+            ),
+        ]);
     }
 
     #[test]

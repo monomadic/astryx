@@ -12,6 +12,5 @@ models = { path = "components/models" }
 error = { path = "components/error" }
 
 [workspace]
-members = [
-  "cli",
-]
+default-members = ["cli"]
+members = ["cli"]

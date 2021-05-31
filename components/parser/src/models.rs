@@ -1,22 +1,12 @@
 use crate::Span;
-use std::fmt::{Debug, Display, Formatter};
-
-// #[derive(Debug, Clone, PartialEq)]
-// pub enum Token {
-//     Blank,
-//     Letter,
-// }
-
-// #[derive(Debug, Clone)]
-// pub enum Expression<'a> {
-// }
+use std::fmt::{Debug, Display};
 
 #[derive(Debug, Clone)]
 pub enum Statement<'a> {
     Expression(Expression<'a>),
     Binding(Span<'a>, Expression<'a>),
-    Route(Route<'a>),
-    Element(Element<'a>),
+    Route(Route<'a>),           // todo: remove
+    Element(Element<'a>),       // todo: remove?
     Text(Vec<StringToken<'a>>), // todo: replace with interpolatedstring
     Comment(Span<'a>),
     ForLoop {
@@ -77,7 +67,7 @@ pub struct FunctionCall<'a> {
 pub enum FunctionCallArguments<'a> {
     None,
     Named(Vec<(Span<'a>, Expression<'a>)>),
-    Unnamed(Vec<Span<'a>>),
+    Unnamed(Vec<Expression<'a>>),
 }
 
 impl FunctionCall<'_> {

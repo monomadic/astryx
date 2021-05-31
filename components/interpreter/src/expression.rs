@@ -4,7 +4,7 @@ use std::rc::Rc;
 use crate::util::span_to_location;
 use error::{AstryxError, AstryxErrorKind, AstryxResult};
 use models::{Node, Object, State};
-use parser::{Expression, Span};
+use parser::{Expression, FunctionCallArguments, Span};
 use std::path::PathBuf;
 
 pub fn eval_expression(
@@ -14,25 +14,41 @@ pub fn eval_expression(
 ) -> AstryxResult<Object> {
     match expr {
         Expression::FunctionCall(ref f) => {
-            let mut inner = State::new();
+            // try to resolve the symbol to a function
+            match eval_expression(Rc::clone(&state), &*f.ident, None)? {
+                Object::BuiltinFunction(builtin) => {
+                    let mut inner = State::new();
 
-            // add function arguments into scope
-            for (k, expr) in &f.arguments {
-                inner.bind(
-                    &k.to_string(),
-                    // evaluate the expression part of the argument
-                    eval_expression(Rc::clone(&state), expr, None).map_err(|_| {
-                        AstryxError::LocatedError(
-                            span_to_location(*k),
-                            AstryxErrorKind::UnknownValue(k.fragment().to_string()),
-                        )
-                    })?,
-                )?;
-            }
+                    // add function arguments into scope
+                    match &f.arguments {
+                        FunctionCallArguments::None => (),
+                        FunctionCallArguments::Named(args) => {
+                            for (k, expr) in args {
+                                inner.bind(
+                                    // the symbol side
+                                    &k.to_string(),
+                                    // evaluate the expression side
+                                    eval_expression(Rc::clone(&state), expr, None)?,
+                                )?;
+                            }
+                        }
+                        FunctionCallArguments::Unnamed(args) => {
+                            // need to get symbols from the Function...
+                            todo!();
+                            // for (k, expr) in args {
+                            //     inner.bind(
+                            //         // the symbol side
+                            //         &k.to_string(),
+                            //         // evaluate the expression side
+                            //         eval_expression(Rc::clone(&state), expr, None)?,
+                            //     )?;
+                            // }
+                        }
+                    };
 
-            match eval_expression(state, &*f.ident, None)? {
-                Object::BuiltinFunction(builtin) => builtin(Rc::new(RefCell::new(inner)), input),
-                _ => unimplemented!(),
+                    builtin(Rc::new(RefCell::new(inner)), input)
+                }
+                _ => unimplemented!(), // throw error
             }
         }
         Expression::Reference(r) => match input {
