@@ -111,7 +111,18 @@ impl Site {
     pub fn render_pages(&self) -> HashMap<String, String> {
         self.pages
             .iter()
-            .map(|(path, node)| (path.clone(), render_document(node)))
+            .map(|(path, node)| {
+                (
+                    path.clone(),
+                    write_html5_page_with_template(
+                        "title",
+                        &render_document(node),
+                        r#"<link rel: "stylesheet", href: "style.css" />"#,
+                        "description",
+                        "author",
+                    ),
+                )
+            })
             .collect()
     }
 
@@ -119,7 +130,18 @@ impl Site {
         let mut blobs = HashMap::new();
 
         for (path, node) in &self.pages {
-            blobs.insert(path.clone(), render_document(&node).as_bytes().to_vec());
+            blobs.insert(
+                path.clone(),
+                write_html5_page_with_template(
+                    "title",
+                    &render_document(node),
+                    r#"<link rel: "stylesheet", href: "style.css" />"#,
+                    "description",
+                    "author",
+                )
+                .as_bytes()
+                .to_vec(),
+            );
         }
 
         for (path, file) in &self.files {
@@ -135,12 +157,21 @@ impl Site {
             let output_dir = PathBuf::from("./")
                 .join(output_dir.as_ref())
                 .join(format!("./{}", route));
-            let file = output_dir.join("index.html");
+            let output_file_path = output_dir.join("index.html");
 
-            println!("writing {}", file.to_str().unwrap());
+            println!("writing {}", output_file_path.to_str().unwrap());
 
             std::fs::create_dir_all(output_dir)?;
-            std::fs::write(file, render_document(document))?;
+            std::fs::write(
+                output_file_path,
+                write_html5_page_with_template(
+                    "title",
+                    &render_document(document),
+                    r#"<link rel: "stylesheet", href: "style.css" />"#,
+                    "description",
+                    "author",
+                ),
+            )?;
         }
         for (route, document) in &self.files {
             let file = PathBuf::from("./")
@@ -154,42 +185,18 @@ impl Site {
         Ok(())
     }
 }
-//
-// fn walk_nodes(node: Node<Object>, buffer: &mut HashMap<String, String>, mut path: String) {
-//     // entry
-//     match node.borrow().clone() {
-//         Object::None => {}
-//         Object::String(s) => write_to_buffer(buffer, &path, &s),
-//         Object::Number(_) => unimplemented!(),
-//         Object::HTMLPage(p) => path = p,
-//         Object::HTMLElement(el) => write_to_buffer(buffer, &path, &el.open_tag()),
-//         Object::BuiltinFunction(_) => unimplemented!(), // todo: why is this here?
-//         Object::Array(arr) => {
-//             for item in arr {
-//                 walk_nodes(item, buffer, path.clone());
-//             }
-//         }
-//         Object::Map(_) => unimplemented!(),
-//         Object::Path(_) => unimplemented!(),
-//         _ => unimplemented!(),
-//     };
-//
-//     // children
-//     for child in node.children() {
-//         walk_nodes(child, buffer, path.clone());
-//     }
-//
-//     // exit
-//     match node.borrow().clone() {
-//         Object::HTMLElement(el) => write_to_buffer(buffer, &path, &el.close_tag()),
-//         _ => (),
-//     }
-// }
-//
-// fn write_to_buffer(buffer: &mut HashMap<String, String>, path: &str, content: &str) {
-//     if let Some(page) = buffer.get_mut(path) {
-//         *page = [page, content].concat();
-//     } else {
-//         buffer.insert(String::from(path), content.into());
-//     }
-// }
+
+fn write_html5_page_with_template(
+    title: &str,
+    body: &str,
+    header: &str,
+    description: &str,
+    author: &str,
+) -> String {
+    include_str!("../../../cli/templates/html5.html")
+        .replace("$TITLE", title)
+        .replace("$BODY", body)
+        .replace("$HEADER", header)
+        .replace("$DESCRIPTION", description)
+        .replace("$AUTHOR", author)
+}

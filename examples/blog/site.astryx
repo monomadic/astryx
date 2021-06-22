@@ -1,20 +1,17 @@
-%html
-  %head
-    %link { rel: "stylesheet", href: ./style.css }
-  %body
-    %h1 My Blog
-    for post in ./posts/*.md
-      let meta = post.frontmatter()
-      %ul
-        %li
-          %a { href: meta.route }
-            meta.title
-      @route path=meta.route
-        %html
-          %head
-            %link { rel: "stylesheet", href: ./style.css }
-          %body
-            %a { href: "/" } My Blog
-            %h1
-              meta.title
-            post.markdown()
+%h1 My Blog
+
+%header { title: "blah" }
+%select_wallet {}
+
+for post in ./posts/*.md
+  let meta = post.frontmatter()
+  %ul
+    %li
+      %a { href: meta.route }
+        meta.title
+
+  @route path=meta.route
+	  %a { href: "/" } My Blog
+	  %h1
+	    meta.title
+	  post.markdown()
