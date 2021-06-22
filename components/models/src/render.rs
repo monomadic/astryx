@@ -117,7 +117,7 @@ impl Site {
                     write_html5_page_with_template(
                         "title",
                         &render_document(node),
-                        r#"<link rel: "stylesheet", href: "style.css" />"#,
+                        r#"<link rel="stylesheet", href="style.css" />"#,
                         "description",
                         "author",
                     ),
@@ -135,7 +135,7 @@ impl Site {
                 write_html5_page_with_template(
                     "title",
                     &render_document(node),
-                    r#"<link rel: "stylesheet", href: "style.css" />"#,
+                    r#"<link rel="stylesheet", href="style.css" />"#,
                     "description",
                     "author",
                 )
@@ -167,7 +167,7 @@ impl Site {
                 write_html5_page_with_template(
                     "title",
                     &render_document(document),
-                    r#"<link rel: "stylesheet", href: "style.css" />"#,
+                    r#"<link rel="stylesheet", href="style.css" />"#,
                     "description",
                     "author",
                 ),
@@ -193,10 +193,12 @@ fn write_html5_page_with_template(
     description: &str,
     author: &str,
 ) -> String {
-    include_str!("../../../cli/templates/html5.html")
-        .replace("$TITLE", title)
-        .replace("$BODY", body)
-        .replace("$HEADER", header)
-        .replace("$DESCRIPTION", description)
-        .replace("$AUTHOR", author)
+    format!(
+        include_str!("../../../cli/templates/html5.html"),
+        title = title,
+        description = description,
+        author = author,
+        header = header,
+        body = body
+    )
 }
