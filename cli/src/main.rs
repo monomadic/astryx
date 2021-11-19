@@ -95,18 +95,19 @@ fn run() -> AstryxResult<String> {
             let t0 = Instant::now();
             println!("parsing {}\n", input.display());
 
-            astryx::parse_from_file(input, None).and_then(|site| {
+            astryx::_parse_from_file(input, None).and_then(|site| {
                 if check {
                     println!("read only check. skipping file write...");
                     Ok(())
                 } else {
                     if stdout {
-                        for (route, page) in site.render_pages() {
-                            println!("\n{}:\n{}", route, page);
-                        }
+                        // for (route, page) in site.render_pages() {
+                        //     println!("\n{}:\n{}", route, page);
+                        // }
                         Ok(())
                     } else {
-                        site.write(output)
+                        // site.write(output)
+                        Ok(())
                     }
                 }
             })?;

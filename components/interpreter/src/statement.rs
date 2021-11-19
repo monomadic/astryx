@@ -5,7 +5,23 @@ use html::HTMLElement;
 use models::{object::Object, state::State};
 use parser::{Expression, Span, Statement, StringToken};
 use rctree::Node;
+use sitebuilder::SiteBuilder;
+use std::cell::Ref;
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
+
+pub(crate) fn eval(
+    state: Rc<RefCell<State>>,
+    builder: &mut SiteBuilder,
+    statement: &Node<Statement>,
+) -> AstryxResult<()> {
+    match statement.borrow().clone() {
+        Statement::Element(e) => {
+            builder.write_to_page("<element>");
+            Ok(())
+        }
+        _ => todo!("{:?}", statement),
+    }
+}
 
 pub(crate) fn eval_statement(
     state: Rc<RefCell<State>>,

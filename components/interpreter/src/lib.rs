@@ -8,9 +8,10 @@
 //!
 
 use error::AstryxResult;
-use models::{object::Object, state::State};
+use models::{object::Object, state::State, Site};
 use parser::Statement;
 use rctree::Node;
+pub use sitebuilder::SiteBuilder;
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -35,4 +36,16 @@ pub fn run(
 /// evaluate a single expression with a given state
 pub fn eval(statement: Statement, state: Rc<RefCell<State>>) -> AstryxResult<Node<Object>> {
     statement::eval_statement(Rc::clone(&state), &Node::new(statement))
+}
+
+/// run the interpreter on an AST tree and return a HTMLNode tree for each page
+pub fn _run(nodes: &Vec<Node<Statement>>, state: Rc<RefCell<State>>) -> AstryxResult<SiteBuilder> {
+    let inner = &builtins::import(state);
+    let mut builder = SiteBuilder::default();
+
+    for node in nodes {
+        statement::eval(Rc::clone(inner), &mut builder, node);
+    }
+
+    Ok(builder)
 }
